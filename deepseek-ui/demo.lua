@@ -7,21 +7,21 @@ local Window = WindUI:CreateWindow({
 	Icon = "lucide:sparkles",
 	Author = "DeepSeek AI",
 	Folder = "DeepSeekUI",
-	Size = UDim2.fromOffset(660, 470),
-	MinSize = Vector2.new(560, 350),
-	MaxSize = Vector2.new(850, 560),
+	Size = UDim2.fromOffset(680, 480),
+	MinSize = Vector2.new(560, 360),
+	MaxSize = Vector2.new(880, 600),
 	Transparent = false,
 	Theme = nil,
 	HideSearchBar = false,
+	ScrollBarEnabled = false,
 	SideBarWidth = 200,
-	User = {
-		Enabled = true,
-		Anonymous = false,
-	},
+	Acrylic = false,
+	User = { Enabled = true, Anonymous = false },
 })
 
 local function Call(obj, name, props)
 	if not obj then
+		warn("[DeepSeekUI] tab is nil for " .. tostring(name))
 		return nil
 	end
 	local fn = obj[name]
@@ -37,218 +37,249 @@ local function Call(obj, name, props)
 	return res
 end
 
+local function notify(title, content)
+	WindUI:Notify({ Title = title, Content = content, Duration = 4 })
+end
+
+Window:CreateTopbarButton("Info", "info", function()
+	notify("DeepSeek UI", "WindUI 1.6.65 · square corners · random whale art")
+end, 24, nil, Color3.fromHex("#4D6BFE"))
+
 local Home = Window:Tab({ Title = "Home", Icon = "lucide:house" })
+local Controls = Window:Tab({ Title = "Controls", Icon = "lucide:sliders-horizontal" })
 local Scripts = Window:Tab({ Title = "Scripts", Icon = "lucide:code" })
-local Interface = Window:Tab({ Title = "Interface", Icon = "lucide:sliders-horizontal" })
-local About = Window:Tab({ Title = "About", Icon = "lucide:whale" })
+local Look = Window:Tab({ Title = "Look", Icon = "lucide:palette" })
+local Info = Window:Tab({ Title = "About", Icon = "lucide:whale" })
 
 Call(Home, "Section", { Title = "Overview" })
-
 Call(Home, "Paragraph", {
 	Title = "DeepSeek UI",
-	Desc = "Square corners, DeepSeek blue palette, random whale wallpapers and a pet peeking from the left edge.",
+	Desc = "Square corners, DeepSeek blue, random whale wallpaper, a pet hiding behind the left edge, a sitter on the top rail and a sticker in the corner. Drag the window and watch the frame glow.",
 })
-
 Call(Home, "Button", {
-	Title = "Say Hi",
-	Desc = "Fire a notification",
+	Title = "Send Notification",
+	Desc = "Top right toast",
 	Callback = function()
-		WindUI:Notify({
-			Title = "DeepSeek",
-			Content = "Hello from the whale.",
-			Duration = 4,
+		notify("DeepSeek", "Hello from the whale.")
+	end,
+})
+Call(Home, "Button", {
+	Title = "Open Dialog",
+	Desc = "Modal with two buttons",
+	Callback = function()
+		Window:Dialog({
+			Title = "Confirm",
+			Content = "Run the selected script now?",
+			Buttons = {
+				{ Title = "Cancel", Callback = function() end, Variant = "Secondary" },
+				{ Title = "Run", Callback = function() notify("Running", "Script started.") end, Variant = "Primary" },
+			},
 		})
 	end,
 })
-
+Call(Home, "Divider")
 Call(Home, "Toggle", {
 	Title = "Auto Run",
-	Desc = "Run scripts on injection",
+	Desc = "Execute on injection",
 	Value = true,
-	Callback = function(state)
-		print("[DeepSeekUI] AutoRun =", state)
-	end,
+	Callback = function(state) print("[AutoRun]", state) end,
 })
-
 Call(Home, "Slider", {
-	Title = "Speed",
-	Desc = "",
-	Value = { Min = 0, Max = 100, Default = 45 },
-	Callback = function(value)
-		print("[DeepSeekUI] Speed =", value)
-	end,
+	Title = "Walk Speed",
+	Desc = "Character movement speed",
+	Value = { Min = 16, Max = 300, Default = 32 },
+	Callback = function(v) print("[Speed]", v) end,
 })
-
 Call(Home, "Dropdown", {
-	Title = "Mode",
-	Values = { "Balanced", "Aggressive", "Silent" },
-	Value = "Balanced",
-	Callback = function(value)
-		print("[DeepSeekUI] Mode =", value)
-	end,
+	Title = "Target Mode",
+	Desc = "Who the script targets",
+	Values = { "Nearest", "Lowest Health", "Highest Health", "Random" },
+	Value = "Nearest",
+	Callback = function(v) print("[Target]", v) end,
 })
-
 Call(Home, "Input", {
-	Title = "Nickname",
-	Placeholder = "type something...",
+	Title = "Player Name",
+	Desc = "Whitelist a player",
+	Placeholder = "type a name...",
 	Value = "",
-	Callback = function(text)
-		print("[DeepSeekUI] Nickname =", text)
-	end,
+	Callback = function(v) print("[Name]", v) end,
 })
-
 Call(Home, "Keybind", {
 	Title = "Toggle Menu",
+	Desc = "Open or close the window",
 	Value = "K",
-	Callback = function(key)
-		print("[DeepSeekUI] Keybind =", key)
-	end,
+	Callback = function(k) print("[Keybind]", k) end,
+})
+Call(Home, "Colorpicker", {
+	Title = "Accent Color",
+	Desc = "Highlight tone",
+	Default = Color3.fromHex("#4D6BFE"),
+	Callback = function(c) print("[Accent]", c) end,
 })
 
-Call(Home, "Colorpicker", {
-	Title = "Accent",
-	Default = Color3.fromHex("#4D6BFE"),
-	Callback = function(color)
-		print("[DeepSeekUI] Accent =", color)
+Call(Controls, "Section", { Title = "Multi Choice" })
+Call(Controls, "Dropdown", {
+	Title = "Features",
+	Desc = "Multiple selection",
+	Values = { "ESP", "Aimbot", "Fly", "Speed", "Noclip", "Teleport" },
+	Value = { "ESP", "Speed" },
+	Multi = true,
+	Callback = function(list)
+		print("[Features]", table.concat(list, ", "))
 	end,
+})
+Call(Controls, "Section", { Title = "Numbers" })
+Call(Controls, "Slider", {
+	Title = "Field of View",
+	Desc = "Camera FOV",
+	Value = { Min = 40, Max = 120, Default = 70 },
+	Callback = function(v) print("[FOV]", v) end,
+})
+Call(Controls, "Slider", {
+	Title = "Volume",
+	Desc = "Sound level",
+	Value = { Min = 0, Max = 100, Default = 50 },
+	Callback = function(v) print("[Volume]", v) end,
+})
+Call(Controls, "Divider")
+Call(Controls, "Section", { Title = "Switches" })
+Call(Controls, "Toggle", {
+	Title = "ESP Boxes",
+	Desc = "Draw boxes around players",
+	Value = false,
+	Callback = function(v) print("[ESP]", v) end,
+})
+Call(Controls, "Toggle", {
+	Title = "Team Check",
+	Desc = "Ignore teammates",
+	Value = true,
+	Callback = function(v) print("[TeamCheck]", v) end,
+})
+Call(Controls, "Toggle", {
+	Title = "Silent Aim",
+	Desc = "Redirect bullets",
+	Value = false,
+	Callback = function(v) print("[SilentAim]", v) end,
+})
+Call(Controls, "Input", {
+	Title = "Custom Prefix",
+	Desc = "Command prefix",
+	Placeholder = ";",
+	Value = ";",
+	Callback = function(v) print("[Prefix]", v) end,
+})
+Call(Controls, "Keybind", {
+	Title = "Panic Key",
+	Desc = "Reset everything",
+	Value = "RightShift",
+	Callback = function(k) print("[Panic]", k) end,
 })
 
 Call(Scripts, "Section", { Title = "Loaders" })
-
 for _, item in ipairs({
-	{ title = "Infinite Yield", desc = "Admin panel" },
-	{ title = "ESP", desc = "Highlight all players" },
-	{ title = "Auto Farm", desc = "Loop tasks" },
+	{ title = "Infinite Yield", desc = "Admin panel", tag = "admin" },
+	{ title = "ESP Suite", desc = "Highlight all players", tag = "visual" },
+	{ title = "Auto Farm", desc = "Loop the grind", tag = "farm" },
+	{ title = "Teleport Hub", desc = "Waypoint travel", tag = "move" },
 }) do
 	Call(Scripts, "Button", {
 		Title = item.title,
 		Desc = item.desc,
 		Callback = function()
-			WindUI:Notify({
-				Title = item.title,
-				Content = "Started.",
-				Duration = 3,
-			})
+			notify(item.title, "Loaded (" .. item.tag .. ")")
 		end,
 	})
 end
-
 Call(Scripts, "Divider")
-
+Call(Scripts, "Paragraph", {
+	Title = "Notice",
+	Desc = "Buttons here only fire a toast. Wire your executor calls into the Callback field.",
+})
 Call(Scripts, "Button", {
 	Title = "Clear All",
 	Desc = "Reset every toggle",
 	Callback = function()
-		WindUI:Notify({
-			Title = "Cleared",
-			Content = "All toggles reset.",
-			Duration = 3,
-		})
+		notify("Cleared", "All toggles reset.")
 	end,
 })
 
-Call(Interface, "Section", { Title = "Appearance" })
-
-Call(Interface, "Button", {
-	Title = "Dark Theme",
+Call(Look, "Section", { Title = "Theme" })
+Call(Look, "Button", {
+	Title = "Dark",
 	Desc = "#070B13 with DeepSeek blue",
-	Callback = function()
-		WindUI:SetTheme("Dark")
-	end,
+	Callback = function() WindUI:SetTheme("Dark") end,
 })
-
-Call(Interface, "Button", {
-	Title = "Light Theme",
+Call(Look, "Button", {
+	Title = "Light",
 	Desc = "#FFFFFF with DeepSeek blue",
-	Callback = function()
-		WindUI:SetTheme("Light")
-	end,
+	Callback = function() WindUI:SetTheme("Light") end,
 })
-
-Call(Interface, "Slider", {
+Call(Look, "Button", {
+	Title = "Random",
+	Desc = "Pick a random palette",
+	Callback = function() WindUI:SetTheme(math.random(2) == 1 and "Dark" or "Light") end,
+})
+Call(Look, "Slider", {
 	Title = "UI Scale",
+	Desc = "Resize the whole interface",
 	Value = { Min = 70, Max = 130, Default = 100 },
-	Callback = function(value)
-		Window:SetUIScale(value / 100)
-	end,
+	Callback = function(v) Window:SetUIScale(v / 100) end,
 })
-
-Call(Interface, "Toggle", {
+Call(Look, "Toggle", {
 	Title = "Fullscreen",
+	Desc = "Stretch to the viewport",
 	Value = false,
-	Callback = function(state)
-		Window:ToggleFullscreen(state)
-	end,
+	Callback = function(v) Window:ToggleFullscreen(v) end,
 })
+Call(Look, "Divider")
+Call(Look, "Section", { Title = "Window" })
+Call(Look, "Button", { Title = "Center", Desc = "Snap to screen center", Callback = function() Window:SetToTheCenter() end })
+Call(Look, "Button", { Title = "Lock All", Desc = "Freeze every element", Callback = function() Window:LockAll() end })
+Call(Look, "Button", { Title = "Unlock All", Desc = "Release every element", Callback = function() Window:UnlockAll() end })
+Call(Look, "Input", { Title = "Window Title", Desc = "Rename the header", Placeholder = "DeepSeek", Value = "DeepSeek", Callback = function(v) Window:SetTitle(v) end })
+Call(Look, "Keybind", { Title = "Toggle Window", Desc = "Show or hide", Value = "RightControl", Callback = function(k) print("[Toggle]", k) end })
 
-Call(Interface, "Button", {
-	Title = "Center Window",
-	Desc = "",
-	Callback = function()
-		Window:SetToTheCenter()
-	end,
-})
-
-Call(Interface, "Button", {
-	Title = "Lock All",
-	Desc = "",
-	Callback = function()
-		Window:LockAll()
-	end,
-})
-
-Call(Interface, "Button", {
-	Title = "Unlock All",
-	Desc = "",
-	Callback = function()
-		Window:UnlockAll()
-	end,
-})
-
-Call(About, "Section", { Title = "DeepSeek UI" })
-
-Call(About, "Paragraph", {
+Call(Info, "Section", { Title = "DeepSeek UI" })
+Call(Info, "Paragraph", {
 	Title = "WindUI 1.6.65 fork",
-	Desc = "Square corners, search above tabs, random wallpapers, edge pet on the left, sitter on top.",
+	Desc = "Square corners, search bar above the tabs, DeepSeek blue palette, random whale wallpapers, edge pet behind the window, sitter on the top rail, corner sticker with drag shuffle.",
 })
-
-Call(About, "Button", {
-	Title = "Open Repo",
+Call(Info, "Paragraph", {
+	Title = "Assets",
+	Desc = "34 files on GitHub: 2 wallpapers, 5 cutouts, 10 banners and 17 expression stickers.",
+})
+Call(Info, "Divider")
+Call(Info, "Button", {
+	Title = "Copy Repo Link",
 	Desc = "github.com/lIllIIlII/NEW",
 	Callback = function()
-		if setclipboard then
-			setclipboard("https://github.com/lIllIIlII/NEW")
-		end
-		WindUI:Notify({
-			Title = "Copied",
-			Content = "https://github.com/lIllIIlII/NEW",
-			Duration = 4,
-		})
+		if setclipboard then setclipboard("https://github.com/lIllIIlII/NEW") end
+		notify("Copied", "https://github.com/lIllIIlII/NEW")
 	end,
 })
-
-Call(About, "Button", {
-	Title = "Switch Theme",
-	Desc = "Random dark / light",
+Call(Info, "Button", {
+	Title = "Reload Assets",
+	Desc = "Drop the local cache",
 	Callback = function()
-		WindUI:SetTheme(math.random(2) == 1 and "Dark" or "Light")
+		if delfile and isfile and isfile("DeepSeekUI") then delfile("DeepSeekUI") end
+		notify("Cache", "Cleared, rejoin to redownload.")
+	end,
+})
+Call(Info, "Toggle", {
+	Title = "Debug Mode",
+	Desc = "Print element errors",
+	Value = false,
+	Callback = function(v)
+		if Window.Window then Window.Window.Debug = v end
+		WindUI.Debug = v
 	end,
 })
 
-Window:OnClose(function()
-	print("[DeepSeekUI] window closed")
-end)
-
-Window:OnOpen(function()
-	print("[DeepSeekUI] window opened")
-end)
+Window:OnOpen(function() print("[DeepSeekUI] opened") end)
+Window:OnClose(function() print("[DeepSeekUI] closed") end)
 
 Window:SelectTab(Home)
 
 task.delay(0.6, function()
-	WindUI:Notify({
-		Title = "DeepSeek UI",
-		Content = "Loaded. Search bar is above the tabs.",
-		Duration = 5,
-	})
+	notify("DeepSeek UI", "Loaded. Search sits above the tabs now.")
 end)
