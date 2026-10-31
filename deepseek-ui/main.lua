@@ -15525,6 +15525,7 @@ local DS_TOP={"pet_02.png","pet_05.png","pet_01.png"}
 local DS_ART={"art_01.jpg","art_02.jpg","art_03.jpg","art_04.jpg","art_05.jpg","art_06.jpg","art_07.jpg","art_08.jpg","art_09.jpg","art_10.jpg"}
 local DS_STIKER={"stiker_01.png","stiker_02.png","stiker_03.png","stiker_04.png","stiker_05.png","stiker_06.png","stiker_07.png","stiker_08.png","stiker_09.png","stiker_10.png","stiker_11.png","stiker_12.png","stiker_13.png","stiker_14.png","stiker_15.png","stiker_16.png","stiker_17.png"}
 local DS_CACHE={}
+local DS_TS=game:GetService"TweenService"
 local function DS_Pick(t)
 return t[math.random(#t)]
 end
@@ -15584,6 +15585,7 @@ glass=0.52,
 banner=0.74,
 stroke=0.70,
 fade=0.34,
+glow=0.10,
 }
 end
 return{
@@ -15592,6 +15594,7 @@ glass=0.38,
 banner=0.52,
 stroke=0.62,
 fade=0.42,
+glow=0.05,
 }
 end
 local function DS_Node(c,p,k)
@@ -15604,15 +15607,22 @@ o.Parent=p
 end
 return o
 end
+local function DS_Tween(o,t,props,style,dir)
+local ti=TweenInfo.new(t,style or Enum.EasingStyle.Quad,dir or Enum.EasingDirection.Out)
+local tw=DS_TS:Create(o,ti,props)
+tw:Play()
+return tw
+end
 local function DS_Apply(h,w)
 local root=h and h.UIElements and h.UIElements.Main
 if not root then
 return
 end
 local pal=DS_Palette(w.Theme and w.Theme.Name or DS_THEME)
+local stroke
 local bg=root:FindFirstChild"Background"
 if bg then
-DS_Node("UIStroke",bg,{
+stroke=DS_Node("UIStroke",bg,{
 Color=pal.accent,
 Thickness=1,
 Transparency=pal.stroke,
@@ -15626,7 +15636,8 @@ Name="DeepSeekBackground",
 BackgroundTransparency=1,
 BorderSizePixel=0,
 ScaleType=Enum.ScaleType.Crop,
-Size=UDim2.fromScale(1,1),
+Size=UDim2.new(1,28,1,28),
+Position=UDim2.fromOffset(-14,-14),
 ZIndex=-20,
 ImageTransparency=pal.glass,
 Image=id,
@@ -15690,26 +15701,56 @@ Rotation=-3,
 ZIndex=-60,
 })
 task.spawn(function()
-local T=game:GetService"TweenService"
 local a=UDim2.new(0,-152,0.54,8)
 local b=UDim2.new(0,-152,0.54,0)
 while pet.Parent do
-T:Create(pet,TweenInfo.new(2.6,Enum.EasingStyle.Sine,Enum.EasingDirection.InOut),{Position=b}):Play()
+DS_Tween(pet,2.6,{Position=b},Enum.EasingStyle.Sine,Enum.EasingDirection.InOut)
 task.wait(2.6)
 if not pet.Parent then
 break
 end
-T:Create(pet,TweenInfo.new(2.6,Enum.EasingStyle.Sine,Enum.EasingDirection.InOut),{Position=a}):Play()
+DS_Tween(pet,2.6,{Position=a},Enum.EasingStyle.Sine,Enum.EasingDirection.InOut)
 task.wait(2.6)
 end
 end)
 end
-local stick=DS_Node("ImageLabel",root,{
+local sitId=DS_Asset(DS_Pick(DS_TOP))
+if sitId then
+local sitter=DS_Node("ImageLabel",root,{
+Name="DeepSeekSitter",
+BackgroundTransparency=1,
+BorderSizePixel=0,
+ScaleType=Enum.ScaleType.Fit,
+Image=sitId,
+Size=UDim2.fromOffset(156,156),
+AnchorPoint=Vector2.new(0.5,1),
+Position=UDim2.new(0.62,0,0,22),
+Rotation=2,
+ZIndex=320,
+})
+task.spawn(function()
+local up=UDim2.new(0.62,0,0,16)
+local dn=UDim2.new(0.62,0,0,24)
+while sitter.Parent do
+DS_Tween(sitter,1.9,{Position=up},Enum.EasingStyle.Sine,Enum.EasingDirection.InOut)
+task.wait(1.9)
+if not sitter.Parent then
+break
+end
+DS_Tween(sitter,1.9,{Position=dn},Enum.EasingStyle.Sine,Enum.EasingDirection.InOut)
+task.wait(1.9)
+end
+end)
+end
+local baseSize=UDim2.fromOffset(96,96)
+local stick=DS_Node("ImageButton",root,{
 Name="DeepSeekSticker",
 BackgroundTransparency=1,
 BorderSizePixel=0,
 ScaleType=Enum.ScaleType.Fit,
-Size=UDim2.fromOffset(96,96),
+AutoButtonColor=false,
+Active=true,
+Size=baseSize,
 AnchorPoint=Vector2.new(1,1),
 Position=UDim2.new(1,-8,1,-8),
 ZIndex=470,
@@ -15721,6 +15762,42 @@ stick.Image=id
 end
 end
 reshuffle()
+stick.MouseEnter:Connect(function()
+DS_Tween(stick,0.16,{Size=UDim2.fromOffset(108,108)})
+end)
+stick.MouseLeave:Connect(function()
+DS_Tween(stick,0.2,{Size=baseSize})
+end)
+stick.MouseButton1Click:Connect(function()
+reshuffle()
+DS_Tween(stick,0.1,{Size=UDim2.fromOffset(118,118)},Enum.EasingStyle.Back)
+task.delay(0.1,function()
+DS_Tween(stick,0.26,{Size=baseSize},Enum.EasingStyle.Back,Enum.EasingDirection.Out)
+end)
+end)
+task.spawn(function()
+while stick.Parent do
+task.wait(3.2)
+if not stick.Parent then
+break
+end
+DS_Tween(stick,0.3,{Rotation=math.random(-6,6)},Enum.EasingStyle.Sine,Enum.EasingDirection.InOut)
+end
+end)
+local glowSeq=0
+local function lightUp()
+glowSeq=glowSeq+1
+local mine=glowSeq
+if stroke then
+DS_Tween(stroke,0.12,{Transparency=pal.glow,Thickness=2.4})
+end
+task.delay(0.38,function()
+if mine==glowSeq and stroke then
+local ti=TweenInfo.new(0.55,Enum.EasingStyle.Quad,Enum.EasingDirection.Out)
+DS_TS:Create(stroke,ti,{Transparency=pal.stroke,Thickness=1}):Play()
+end
+end)
+end
 local lastShift=0
 root:GetPropertyChangedSignal"Position":Connect(function()
 local now=tick()
@@ -15728,9 +15805,13 @@ if now-lastShift>0.4 then
 lastShift=now
 reshuffle()
 end
+lightUp()
+end)
+root:GetPropertyChangedSignal"Size":Connect(function()
+lightUp()
 end)
 for _,n in ipairs(root:GetDescendants())do
-if n:IsA"GuiButton"and not n:FindFirstAncestor"Topbar"then
+if n:IsA"GuiButton"and not n:FindFirstAncestor"Topbar"and n~=stick then
 local an=n.AnchorPoint
 local po=n.Position
 if(an.X>0.9 or po.X.Scale>0.9)and(an.Y>0.9 or po.Y.Scale>0.9)then
@@ -15738,25 +15819,16 @@ pcall(function()
 n.ImageTransparency=1
 n.BackgroundTransparency=1
 n.BackgroundColor3=Color3.new(1,1,1)
+n.Active=false
 end)
 end
 end
 end
-local tid=DS_Asset(DS_Pick(DS_TOP))
-if tid then
-DS_Node("ImageLabel",root,{
-Name="DeepSeekSitter",
-BackgroundTransparency=1,
-BorderSizePixel=0,
-ScaleType=Enum.ScaleType.Fit,
-Image=tid,
-Size=UDim2.fromOffset(156,156),
-AnchorPoint=Vector2.new(0.5,1),
-Position=UDim2.new(0.62,0,0,22),
-Rotation=2,
-ZIndex=320,
-})
-end
+task.spawn(function()
+local s0=root.Size
+root.Size=UDim2.new(s0.X.Scale,s0.X.Offset*0.94,s0.Y.Scale,s0.Y.Offset*0.94)
+DS_Tween(root,0.3,{Size=s0},Enum.EasingStyle.Quint,Enum.EasingDirection.Out)
+end)
 end
 aa.Themes=a.load'v'(aa,as)
 
