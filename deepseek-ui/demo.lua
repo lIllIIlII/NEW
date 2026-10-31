@@ -76,7 +76,7 @@ local Info = Window:Tab({ Title = "关于", Icon = "lucide:whale" })
 Call(Home, "Section", { Title = "总览" })
 Call(Home, "Button", {
 	Title = "功能跳转",
-	Desc = "弹出功能索引，点一下直接飞过去",
+	Desc = "弹出功能索引，点一下直接飞过去（Jump）",
 	Callback = function()
 		if _G.DS_OpenJump then
 			_G.DS_OpenJump()
@@ -315,6 +315,35 @@ Call(Look, "Button", {
 	Desc = "把当前字体刷到每个控件",
 	Callback = function()
 		if _G.DS_ApplyFont then _G.DS_ApplyFont() end
+	end,
+})
+Call(Look, "Divider")
+Call(Look, "Section", { Title = "功能索引" })
+Call(Look, "Paragraph", {
+	Title = "跳跃式定位",
+	Desc = "点下面的按钮弹出功能索引面板，选中任意一项会滚动到那个控件，放大一点、描一圈蓝边，然后恢复。",
+})
+Call(Look, "Button", {
+	Title = "打开功能索引",
+	Desc = "浏览全部控件",
+	Callback = function()
+		if _G.DS_OpenJump then
+			_G.DS_OpenJump()
+		end
+	end,
+})
+Call(Look, "Button", {
+	Title = "手动登记一个入口",
+	Desc = "演示 _G.DS_RegisterJump(name, 控件对象)",
+	Callback = function()
+		local obj = Call(Look, "Paragraph", {
+			Title = "临时入口 " .. tostring(math.random(100, 999)),
+			Desc = "这个控件是刚生成的，并且被手动登记进了索引。",
+		})
+		if obj and _G.DS_RegisterJump then
+			_G.DS_RegisterJump("手动登记测试", obj)
+		end
+		notify("已登记", "打开功能索引看看最后一项。")
 	end,
 })
 Call(Look, "Divider")
