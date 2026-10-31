@@ -44,15 +44,6 @@ local function notify(title, content)
 	WindUI:Notify({ Title = title, Content = content, Duration = 4 })
 end
 
-local function tick(name, on)
-	if not _G.DS_Ticker then return end
-	if on then
-		_G.DS_Ticker.Add(name)
-	else
-		_G.DS_Ticker.Remove(name)
-	end
-end
-
 Window:CreateTopbarButton("关于", "info", function()
 	notify("DeepSeek UI", "WindUI 1.6.65 · 不规则轮廓 · 37 款字体 · 随机鲸鱼娘")
 end, 24, nil, Color3.fromHex("#4D6BFE"))
@@ -115,7 +106,6 @@ Call(Home, "Toggle", {
 	Value = true,
 	Callback = function(state)
 		print("[自动运行]", state)
-		tick("自动运行", state)
 	end,
 })
 Call(Home, "Slider", {
@@ -183,7 +173,6 @@ Call(Controls, "Toggle", {
 	Value = false,
 	Callback = function(v)
 		print("[透视]", v)
-		tick("透视方框", v)
 	end,
 })
 Call(Controls, "Toggle", {
@@ -192,7 +181,6 @@ Call(Controls, "Toggle", {
 	Value = true,
 	Callback = function(v)
 		print("[队伍检测]", v)
-		tick("队伍检测", v)
 	end,
 })
 Call(Controls, "Toggle", {
@@ -201,7 +189,6 @@ Call(Controls, "Toggle", {
 	Value = false,
 	Callback = function(v)
 		print("[静默瞄准]", v)
-		tick("静默瞄准", v)
 	end,
 })
 Call(Controls, "Input", {
@@ -274,7 +261,6 @@ Call(Look, "Toggle", {
 	Value = false,
 	Callback = function(v)
 		Window:ToggleFullscreen(v)
-		tick("全屏", v)
 	end,
 })
 Call(Look, "Divider")
@@ -396,8 +382,42 @@ Window:OnClose(function() print("[DeepSeekUI] 窗口已关闭") end)
 Window:SelectTab(Home)
 
 task.delay(0.6, function()
-	if _G.DS_Ticker then
-		_G.DS_Ticker.Set({ "自动运行", "队伍检测" })
-	end
 	notify("DeepSeek UI", "加载完成。搜索栏在标签栏上方。")
 end)
+
+local Index = Window:Tab({ Title = "索引", Icon = "lucide:list" })
+
+Call(Index, "Section", { Title = "功能定位" })
+Call(Index, "Paragraph", {
+	Title = "跳转到任意控件",
+	Desc = "选中一项后会先切到它所在的页，再滚动过去，轻微放大并描一圈高亮，然后恢复。",
+})
+Call(Index, "Dropdown", {
+	Title = "选择功能",
+	Desc = "全部已登记控件",
+	Values = (_G.DS_JumpNames and _G.DS_JumpNames()) or { "暂无" },
+	Callback = function(v)
+		if _G.DS_JumpToName then _G.DS_JumpToName(v) end
+	end,
+})
+Call(Index, "Button", {
+	Title = "悬浮索引",
+	Desc = "在窗口左上角弹出下拉列表",
+	Callback = function()
+		if _G.DS_OpenJump then _G.DS_OpenJump() end
+	end,
+})
+Call(Index, "Button", {
+	Title = "登记当前入口",
+	Desc = "演示 _G.DS_RegisterJump(name, 控件对象)",
+	Callback = function()
+		local obj = Call(Index, "Paragraph", {
+			Title = "临时入口 " .. tostring(math.random(100, 999)),
+			Desc = "刚生成并手动登记进索引的控件。",
+		})
+		if obj and _G.DS_RegisterJump then
+			_G.DS_RegisterJump("手动登记测试", obj)
+		end
+		notify("已登记", "重新打开下拉列表就能看到最后一项。")
+	end,
+})
