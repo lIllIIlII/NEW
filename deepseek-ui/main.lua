@@ -175,7 +175,7 @@ end
 
 function m.SetRadius(u,v)
 m.Radius=v
-r.SliceScale=0
+r.SliceScale=math.max(v/GetShape(m.Type).Radius,0.0001)
 return m
 end
 
@@ -183,15 +183,7 @@ function m.SetType(u,v)
 m.Type=v
 local x=GetShape(v)
 r.Image=x.Image
-local w0=x.Rect.Max.X-x.Rect.Min.X
-local h0=x.Rect.Max.Y-x.Rect.Min.Y
-local ss=math.min(w0,h0)*0.16
-local cx=(x.Rect.Min.X+x.Rect.Max.X)/2
-local cy=(x.Rect.Min.Y+x.Rect.Max.Y)/2
-r.ScaleType=Enum.ScaleType.Stretch
-r.SliceCenter=Rect.new(0,0,0,0)
-r.ImageRectOffset=Vector2.new(cx-ss,cy-ss)
-r.ImageRectSize=Vector2.new(ss*2,ss*2)
+r.SliceCenter=x.Rect
 m:SetRadius(m.Radius)
 return m
 end
@@ -850,22 +842,13 @@ end
 
 function r.UpdateFont(u)
 r.Font=u
-local ok,fnt=pcall(function()
-return Font.fromEnum(Enum.Font.Arcade)
-end)
-if not ok or not fnt then
-ok,fnt=pcall(function()
-return Font.fromEnum(Enum.Font.PressStart2P)
-end)
-end
-if not ok or not fnt then
-ok,fnt=pcall(function()
-return Font.fromEnum(Enum.Font.Code)
-end)
+local f=nil
+if _G and _G.DS_FontGet and _G.DS_FaceOf then
+f=_G.DS_FaceOf((_G.DS_FontGet()))
 end
 for v,x in next,r.FontObjects do
-if ok and fnt then
-x.FontFace=fnt
+if f then
+x.FontFace=f
 else
 x.FontFace=Font.new(u,x.FontFace.Weight,x.FontFace.Style)
 end
@@ -1160,9 +1143,6 @@ for A,B in next,x or{}do
 B.Parent=z
 end
 
-if u=="UICorner"then
-z.CornerRadius=UDim.new(0,0)
-end
 if v and v.ThemeTag then
 r.AddThemeObject(z,v.ThemeTag)
 end
@@ -15549,10 +15529,27 @@ local DS_PET={"pet_01.png","pet_02.png","pet_03.png","pet_04.png","pet_05.png","
 local DS_TOP={"pet_03.png","pet_07.png","pet_10.png","pet_12.png"}
 local DS_ART={"art_01.jpg","art_02.jpg","art_03.jpg","art_04.jpg","art_05.jpg","art_06.jpg","art_07.jpg","art_08.jpg","art_09.jpg","art_10.jpg"}
 local DS_STIKER={"pet_01.png","pet_02.png","pet_04.png","pet_05.png","pet_06.png","pet_08.png","pet_09.png","pet_11.png"}
+local DS_FONTS={
+"Arcade","SciFi","Fantasy","Code","Highway","Cartoon","Bangers","LuckiestGuy",
+"Creepster","DenkOne","FredokaOne","Michroma","Nunito","Oswald","Ubuntu","Jura",
+"Roboto","RobotoMono","Sarpanch","TitilliumWeb","PermanentMarker","PatrickHand",
+"IndieFlower","AmaticSC","GrenzeGotisch","SpecialElite","Merriweather","Antique",
+"Bodoni","Garamond","SourceSans","SourceSansBold","Gotham","GothamBold","GothamBlack",
+"Arial","Legacy",
+}
 local DS_CACHE={}
 local DS_TS=game:GetService"TweenService"
+local DS_ROOT=nil
+local DS_FONT="Arcade"
+local DS_FONTSCALE=0.92
+local DS_FACES={}
 local function DS_Pick(t)
 return t[math.random(#t)]
+end
+local function DS_Set(o,k,v)
+pcall(function()
+o[k]=v
+end)
 end
 local function DS_Request(u)
 local r=http_request or(syn and syn.request)or request
@@ -15572,7 +15569,7 @@ end
 if not(writefile and getcustomasset)then
 return nil
 end
-local p="DeepSeekUI/v3_"..n
+local p="DeepSeekUI/v4_"..n
 local ok=false
 if isfile and isfile(p)then
 ok=true
@@ -15601,6 +15598,59 @@ DS_CACHE[n]=a
 return a
 end
 return nil
+end
+local function DS_Face(name)
+if DS_FACES[name]~=nil then
+return DS_FACES[name]
+end
+local ok,f=pcall(function()
+return Font.fromEnum(Enum.Font[name])
+end)
+if not ok or not f then
+f=false
+end
+DS_FACES[name]=f
+return f
+end
+local function DS_Walk(o,fn)
+fn(o)
+for _,c in next,o:GetChildren()do
+DS_Walk(c,fn)
+end
+end
+local function DS_ApplyFont()
+local r=DS_ROOT
+if not r then
+return
+end
+local f=DS_Face(DS_FONT)or DS_Face"Code"
+DS_Walk(r,function(o)
+if o:IsA"TextLabel"or o:IsA"TextButton"or o:IsA"TextBox"then
+local b=o:GetAttribute"DS_Base"
+if not b then
+b=o.TextSize
+o:SetAttribute("DS_Base",b)
+end
+if o.TextScaled then
+return
+end
+DS_Set(o,"TextSize",math.max(6,math.floor(b*DS_FONTSCALE+0.5)))
+if f then
+DS_Set(o,"FontFace",f)
+end
+end
+end)
+end
+local function DS_SetFont(n)
+if type(n)~="string"then
+return
+end
+DS_FONT=n
+DS_ApplyFont()
+end
+local function DS_SetFontScale(v)
+DS_FONTSCALE=math.clamp(tonumber(v)or 1,0.5,2)
+DS_ApplyFont()
 end
 local function DS_Palette(t)
 if t=="Light"then
@@ -15643,9 +15693,12 @@ local root=h and h.UIElements and h.UIElements.Main
 if not root then
 return
 end
+DS_ROOT=root.Parent or root
+local rad=tonumber(h.Radius)or 16
 local pal=DS_Palette(w.Theme and w.Theme.Name or DS_THEME)
 local stroke
 local bg=root:FindFirstChild"Background"
+local bgImg
 if bg then
 stroke=DS_Node("UIStroke",bg,{
 Color=pal.accent,
@@ -15656,18 +15709,19 @@ Name="DeepSeekOutline",
 })
 local id=DS_Asset(DS_Pick(DS_BG))
 if id then
-local img=DS_Node("ImageLabel",bg,{
+bgImg=DS_Node("ImageLabel",bg,{
 Name="DeepSeekBackground",
 BackgroundTransparency=1,
 BorderSizePixel=0,
 ScaleType=Enum.ScaleType.Crop,
-Size=UDim2.new(1,28,1,28),
-Position=UDim2.fromOffset(-14,-14),
-ZIndex=-20,
+Size=UDim2.fromScale(1,1),
+Position=UDim2.fromOffset(0,0),
+ZIndex=2,
 ImageTransparency=pal.glass,
 Image=id,
 })
-DS_Node("UIGradient",img,{
+DS_Node("UICorner",bgImg,{CornerRadius=UDim.new(0,rad)})
+DS_Node("UIGradient",bgImg,{
 Rotation=90,
 Transparency=NumberSequence.new{
 NumberSequenceKeypoint.new(0,pal.glass),
@@ -15839,9 +15893,6 @@ lastShift=now
 reshuffle()
 end
 lightUp()
-if bgImg then
-DS_Tween(bgImg,0.6,{Position=UDim2.fromOffset(-14+math.random(-6,6),-14+math.random(-6,6))},Enum.EasingStyle.Sine,Enum.EasingDirection.Out)
-end
 end)
 root:GetPropertyChangedSignal"Size":Connect(function()
 lightUp()
@@ -15860,78 +15911,101 @@ end)
 end
 end
 end
-local CM=16
-local function mark(px,py,ax,ay)
-DS_Node("Frame",root,{
-AnchorPoint=Vector2.new(ax,ay),
-Position=UDim2.new(px,0,py,0),
-Size=UDim2.fromOffset(CM,1),
-BackgroundColor3=pal.accent,
-BackgroundTransparency=0.30,
-BorderSizePixel=0,
-ZIndex=430,
-})
-DS_Node("Frame",root,{
-AnchorPoint=Vector2.new(ax,ay),
-Position=UDim2.new(px,0,py,0),
-Size=UDim2.fromOffset(1,CM),
-BackgroundColor3=pal.accent,
-BackgroundTransparency=0.30,
-BorderSizePixel=0,
-ZIndex=430,
-})
-end
-mark(0,0,0,0)
-mark(1,0,1,0)
-mark(0,1,0,1)
-mark(1,1,1,1)
-local bgImg=bg and bg:FindFirstChild"DeepSeekBackground"
 local obId=DS_Asset"open.png"
 local ob=h.OpenButtonMain
-if ob and ob.Button and obId then
-local holder=ob.Button
-pcall(function()
-holder.AutomaticSize=Enum.AutomaticSize.None
-holder.Size=UDim2.fromOffset(184,104)
-holder.ClipsDescendants=false
-end)
-pcall(function()
-local up=holder.Parent
-while up and not up:IsA"ScreenGui"do
-if up:IsA"ImageLabel"then
-up.ImageTransparency=1
-up.BackgroundTransparency=1
+if ob and ob.Button then
+local an=ob.Button
+local al=an.Parent
+DS_Set(an,"AutomaticSize",Enum.AutomaticSize.None)
+DS_Set(an,"Size",UDim2.fromOffset(210,158))
+DS_Set(an,"Position",UDim2.fromOffset(0,0))
+DS_Set(an,"AnchorPoint",Vector2.new(0,0))
+DS_Set(an,"BackgroundTransparency",1)
+DS_Set(an,"ClipsDescendants",false)
+DS_Set(an,"Active",true)
+local l=an:FindFirstChildOfClass"UIListLayout"
+if l then
+l.Enabled=false
 end
-if up:IsA"Frame"then
-up.BackgroundTransparency=1
+local p0=an:FindFirstChildOfClass"UIPadding"
+if p0 then
+DS_Set(p0,"PaddingLeft",UDim.new(0,0))
+DS_Set(p0,"PaddingRight",UDim.new(0,0))
+DS_Set(p0,"PaddingTop",UDim.new(0,0))
+DS_Set(p0,"PaddingBottom",UDim.new(0,0))
 end
-up=up.Parent
+local s0=an:FindFirstChildOfClass"UIStroke"
+if s0 then
+s0.Transparency=1
 end
-end)
-DS_Node("ImageLabel",holder,{
+local c0=an:FindFirstChildOfClass"UICorner"
+if c0 then
+c0.CornerRadius=UDim.new(0,16)
+end
+if al then
+DS_Set(al,"BackgroundTransparency",1)
+DS_Set(al,"ClipsDescendants",false)
+DS_Set(al,"Size",UDim2.fromOffset(210,158))
+DS_Set(al,"Position",UDim2.new(0.5,0,0,120))
+DS_Set(al,"AnchorPoint",Vector2.new(0.5,0.5))
+end
+if obId then
+DS_Node("ImageLabel",an,{
 Name="DeepSeekOpenFish",
 BackgroundTransparency=1,
 BorderSizePixel=0,
 ScaleType=Enum.ScaleType.Fit,
 Size=UDim2.fromScale(1,1),
-ZIndex=0,
+Position=UDim2.fromOffset(0,0),
+AnchorPoint=Vector2.new(0,0),
+ZIndex=1,
 Image=obId,
 })
-local pad=holder:FindFirstChildOfClass"UIPadding"
-if not pad then
-pad=DS_Node("UIPadding",holder,{})
 end
-pad.PaddingTop=UDim.new(0,18)
-for _,d in ipairs(holder:GetDescendants())do
+local tb2=an:FindFirstChild"TextButton"
+if tb2 then
+DS_Set(tb2,"AutomaticSize",Enum.AutomaticSize.None)
+DS_Set(tb2,"Size",UDim2.fromScale(1,1))
+DS_Set(tb2,"Position",UDim2.fromOffset(0,0))
+DS_Set(tb2,"AnchorPoint",Vector2.new(0,0))
+DS_Set(tb2,"BackgroundTransparency",1)
+local l2=tb2:FindFirstChildOfClass"UIListLayout"
+if l2 then
+l2.Enabled=false
+end
+local p1=tb2:FindFirstChildOfClass"UIPadding"
+if p1 then
+DS_Set(p1,"PaddingLeft",UDim.new(0,0))
+DS_Set(p1,"PaddingRight",UDim.new(0,0))
+DS_Set(p1,"PaddingTop",UDim.new(0,0))
+DS_Set(p1,"PaddingBottom",UDim.new(0,0))
+end
+local c1=tb2:FindFirstChildOfClass"UICorner"
+if c1 then
+c1.CornerRadius=UDim.new(0,16)
+end
+for _,d in ipairs(tb2:GetDescendants())do
 if d:IsA"TextLabel"then
-d.TextColor3=Color3.fromHex"#16233F"
-d.TextTransparency=0
-d.TextStrokeTransparency=1
-d.ZIndex=5
+DS_Set(d,"AutomaticSize",Enum.AutomaticSize.XY)
+DS_Set(d,"AnchorPoint",Vector2.new(0.5,0.5))
+DS_Set(d,"Position",UDim2.new(0.5,0,0.63,0))
+DS_Set(d,"TextSize",18)
+DS_Set(d,"TextColor3",Color3.fromHex"#16233F")
+DS_Set(d,"TextTransparency",0)
+DS_Set(d,"TextStrokeTransparency",1)
+DS_Set(d,"ZIndex",6)
+elseif d:IsA"ImageLabel"then
+DS_Set(d,"Size",UDim2.fromOffset(32,32))
+DS_Set(d,"AnchorPoint",Vector2.new(0.5,0.5))
+DS_Set(d,"Position",UDim2.new(0.5,0,0.19,0))
+DS_Set(d,"ImageColor3",Color3.fromHex"#16233F")
+DS_Set(d,"ZIndex",6)
 end
-if d:IsA"ImageLabel"and d.Name~="DeepSeekOpenFish"then
-d.ImageColor3=Color3.fromHex"#16233F"
-d.ZIndex=5
+end
+end
+for _,c in ipairs(an:GetChildren())do
+if c:IsA"Frame"and c~=tb2 then
+c.Visible=false
 end
 end
 end
@@ -15953,13 +16027,16 @@ NumberSequenceKeypoint.new(1,1),
 },
 })
 task.spawn(function()
-local s0=root.Size
-root.Size=UDim2.new(s0.X.Scale,s0.X.Offset*0.90,s0.Y.Scale,s0.Y.Offset*0.90)
-DS_Tween(root,0.36,{Size=s0},Enum.EasingStyle.Quint,Enum.EasingDirection.Out)
+local sc=root:FindFirstChildOfClass"UIScale"
+if not sc then
+return
+end
+local target=sc.Scale
+sc.Scale=target*0.92
+DS_Tween(sc,0.34,{Scale=target},Enum.EasingStyle.Quint,Enum.EasingDirection.Out)
 end)
 task.spawn(function()
 task.wait(0.04)
-local bgImg=bg and bg:FindFirstChild"DeepSeekBackground"
 if not bgImg then
 return
 end
@@ -15990,6 +16067,22 @@ task.wait(0.16)
 stick.Position=UDim2.new(1,140,1,-8)
 DS_Tween(stick,0.5,{Position=UDim2.new(1,-8,1,-8)},Enum.EasingStyle.Back,Enum.EasingDirection.Out)
 end)
+task.delay(1.4,DS_ApplyFont)
+end
+DS_SetFont=DS_SetFont
+DS_SetFontScale=DS_SetFontScale
+DS_ApplyFont=DS_ApplyFont
+DS_FontList=DS_FONTS
+DS_FontGet=function()
+return DS_FONT,DS_FONTSCALE
+end
+if _G then
+_G.DS_SetFont=DS_SetFont
+_G.DS_SetFontScale=DS_SetFontScale
+_G.DS_ApplyFont=DS_ApplyFont
+_G.DS_FontList=DS_FONTS
+_G.DS_FontGet=DS_FontGet
+_G.DS_FaceOf=DS_Face
 end
 aa.Themes=a.load'v'(aa,as)
 
