@@ -15556,7 +15556,7 @@ local DS_ROOT=nil
 local DS_WIN=nil
 local DS_PAL=nil
 local DS_FONT="Arcade"
-local DS_FONTSCALE=0.92
+local DS_FONTSCALE=1.08
 local DS_FACES={}
 local DS_VER="v7_"
 local DS_Flash=nil
@@ -16500,6 +16500,11 @@ DS_WIN=h
 local pal=DS_Palette(w.Theme and w.Theme.Name or DS_THEME)
 DS_PAL=pal
 DS_Stage("scale",function()
+pcall(function()
+local vp=DS_Viewport()
+local m=math.min(vp.X,vp.Y)
+DS_FONTSCALE=m<700 and 1.16 or 1.07
+end)
 local cam=workspace.CurrentCamera
 local F=cam and cam.ViewportSize
 if not F or F.X<200 or F.Y<200 then
@@ -16869,6 +16874,14 @@ DS_Tween(sheen,2.1,{Position=UDim2.new(1.4,0,0.5,0)},Enum.EasingStyle.Sine,Enum.
 task.wait(6.4)
 end
 end)
+local function DS_WaitVisible()
+for _=1,120 do
+if root.Visible then
+return
+end
+task.wait(0.03)
+end
+end
 local glowSeq=0
 local function lightUp()
 glowSeq=glowSeq+1
@@ -16932,36 +16945,38 @@ end
 DS_MinBusy=true
 pcall(function()
 local sc=root:FindFirstChildOfClass"UIScale"
-if not sc then
-return
-end
+if sc then
 local t=sc.Scale
-DS_Tween(sc,0.22,{Scale=t*0.88},Enum.EasingStyle.Quad,Enum.EasingDirection.In)
-task.delay(0.24,function()
+DS_Tween(sc,0.24,{Scale=t*0.84},Enum.EasingStyle.Quad,Enum.EasingDirection.In)
+task.delay(0.26,function()
 pcall(function()
 sc.Scale=t
 end)
 end)
+end
 end)
 pcall(function()
-local m=DS_ScreenRoot(root,h,al):FindFirstChild"DeepSeekMini"
+local sg=DS_ScreenRoot(root,h,al)
+local m=sg and sg:FindFirstChild"DeepSeekMini"
 if m then
-m.Rotation=0
-DS_Tween(m,0.3,{Rotation=6},Enum.EasingStyle.Back,Enum.EasingDirection.Out)
-task.delay(0.3,function()
-DS_Tween(m,0.35,{Rotation=0},Enum.EasingStyle.Quad,Enum.EasingDirection.Out)
+DS_Tween(m,0.26,{Rotation=8},Enum.EasingStyle.Back,Enum.EasingDirection.Out)
+task.delay(0.26,function()
+DS_Tween(m,0.40,{Rotation=0},Enum.EasingStyle.Quad,Enum.EasingDirection.Out)
 end)
 end
 end)
-task.delay(0.1,function()
+task.delay(0.26,function()
 DS_MinBusy=false
+pcall(function()
+origClose(self,a)
 end)
-return origClose(self,a)
+end)
 end
-if _G then
-_G.DS_Bye=DS_Bye
-_G.DS_Close=DS_Close
-end
+pcall(function()
+h:CreateTopbarButton("关闭","x",function()
+DS_Close()
+end,24,nil,Color3.fromHex"#FF6B6B")
+end)
 end)
 
 DS_Stage("mini",function()
@@ -17058,6 +17073,41 @@ AutoButtonColor=false,
 Active=true,
 ZIndex=4,
 })
+local bubble=DS_Node("Frame",mini,{
+Name="DeepSeekBubble",
+AnchorPoint=Vector2.new(0.5,1),
+Position=UDim2.new(0.5,0,0.03,0),
+Size=UDim2.new(0.74,0,0.175,0),
+BackgroundColor3=Color3.fromHex"#0A1220",
+BackgroundTransparency=0.05,
+BorderSizePixel=0,
+Visible=false,
+ZIndex=8,
+})
+DS_Node("UIStroke",bubble,{Color=pal.accent,Thickness=1,Transparency=0.15})
+local bsc=DS_Node("UIScale",bubble,{Name="BubblePop",Scale=1})
+local bt=DS_Node("TextLabel",bubble,{
+Size=UDim2.fromScale(1,1),
+BackgroundTransparency=1,
+BorderSizePixel=0,
+Text="哎呀!疼疼疼!",
+TextColor3=Color3.new(1,1,1),
+TextScaled=true,
+TextStrokeTransparency=1,
+ZIndex=9,
+})
+DS_Node("UITextSizeConstraint",bt,{MaxTextSize=44})
+local function showBubble()
+bubble.Visible=true
+bsc.Scale=0.35
+DS_Tween(bsc,0.26,{Scale=1},Enum.EasingStyle.Back,Enum.EasingDirection.Out)
+end
+local function hideBubble()
+DS_Tween(bsc,0.16,{Scale=0.35},Enum.EasingStyle.Quad,Enum.EasingDirection.In)
+task.delay(0.18,function()
+bubble.Visible=false
+end)
+end
 local dragging=false
 local moved=0
 local startPos
@@ -17071,6 +17121,7 @@ startIn=i.Position
 if dragId then
 fish.Image=dragId
 end
+showBubble()
 end
 end)
 DS_UIS.InputChanged:Connect(function(i)
@@ -17096,6 +17147,7 @@ dragging=false
 if openId then
 fish.Image=openId
 end
+hideBubble()
 end
 end)
 miniBtn.Activated:Connect(function()
@@ -17174,6 +17226,7 @@ task.delay(2.5,function()
 pcall(DS_HairPass)
 end)
 task.spawn(function()
+DS_WaitVisible()
 local sc=root:FindFirstChildOfClass"UIScale"
 if not sc then
 return
@@ -17183,6 +17236,7 @@ sc.Scale=target*0.80
 DS_Tween(sc,0.62,{Scale=target},Enum.EasingStyle.Back,Enum.EasingDirection.Out)
 end)
 task.spawn(function()
+DS_WaitVisible()
 task.wait(0.04)
 if not bgImg then
 return
@@ -17192,6 +17246,7 @@ bgImg.ImageTransparency=1
 DS_Tween(bgImg,0.55,{ImageTransparency=target},Enum.EasingStyle.Quad,Enum.EasingDirection.Out)
 end)
 task.spawn(function()
+DS_WaitVisible()
 task.wait(0.08)
 local sitter=root:FindFirstChild"DeepSeekSitter"
 if sitter then
@@ -17201,6 +17256,7 @@ DS_Tween(sitter,0.5,{Position=p0},Enum.EasingStyle.Back,Enum.EasingDirection.Out
 end
 end)
 task.spawn(function()
+DS_WaitVisible()
 task.wait(0.12)
 local pet=root:FindFirstChild"DeepSeekPet"
 if pet then
@@ -17210,6 +17266,7 @@ DS_Tween(pet,0.55,{Position=p0},Enum.EasingStyle.Quint,Enum.EasingDirection.Out)
 end
 end)
 task.spawn(function()
+DS_WaitVisible()
 task.wait(0.16)
 stick.Position=UDim2.new(1,140,1,-8)
 DS_Tween(stick,0.5,{Position=UDim2.new(1,-8,1,-8)},Enum.EasingStyle.Back,Enum.EasingDirection.Out)
@@ -17237,6 +17294,7 @@ end)
 end)
 end)
 task.spawn(function()
+DS_WaitVisible()
 task.wait(0.02)
 pcall(function()
 DS_Tween(intro,0.46,{Size=UDim2.new(1,0,0,2)},Enum.EasingStyle.Quint,Enum.EasingDirection.Out)
@@ -17258,6 +17316,7 @@ task.wait(0.22)
 DS_Tween(DS_Flash,0.55,{BackgroundTransparency=1},Enum.EasingStyle.Quad,Enum.EasingDirection.Out)
 end)
 task.spawn(function()
+DS_WaitVisible()
 task.wait(0.05)
 pcall(function()
 foot.Size=UDim2.new(0,0,0,1)
