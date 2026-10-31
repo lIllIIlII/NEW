@@ -175,7 +175,7 @@ end
 
 function m.SetRadius(u,v)
 m.Radius=v
-r.SliceScale=math.max(v/GetShape(m.Type).Radius,0.0001)
+r.SliceScale=0
 return m
 end
 
@@ -183,7 +183,15 @@ function m.SetType(u,v)
 m.Type=v
 local x=GetShape(v)
 r.Image=x.Image
-r.SliceCenter=x.Rect
+local w0=x.Rect.Max.X-x.Rect.Min.X
+local h0=x.Rect.Max.Y-x.Rect.Min.Y
+local ss=math.min(w0,h0)*0.16
+local cx=(x.Rect.Min.X+x.Rect.Max.X)/2
+local cy=(x.Rect.Min.Y+x.Rect.Max.Y)/2
+r.ScaleType=Enum.ScaleType.Stretch
+r.SliceCenter=Rect.new(0,0,0,0)
+r.ImageRectOffset=Vector2.new(cx-ss,cy-ss)
+r.ImageRectSize=Vector2.new(ss*2,ss*2)
 m:SetRadius(m.Radius)
 return m
 end
@@ -1143,6 +1151,9 @@ for A,B in next,x or{}do
 B.Parent=z
 end
 
+if u=="UICorner"then
+z.CornerRadius=UDim.new(0,0)
+end
 if v and v.ThemeTag then
 r.AddThemeObject(z,v.ThemeTag)
 end
@@ -14668,6 +14679,9 @@ local F=a.load'ab'
 local G=C.Init(aw,av.WindUI,av.WindUI.TooltipGui)
 G:OnChange(function(H)
 aw.CurrentTab=H
+if _G and _G.DS_OnTab then
+pcall(_G.DS_OnTab,H)
+end
 end)
 
 aw.TabModule=G
@@ -15539,11 +15553,15 @@ local DS_FONTS={
 }
 local DS_CACHE={}
 local DS_TS=game:GetService"TweenService"
+local DS_UIS=game:GetService"UserInputService"
 local DS_ROOT=nil
+local DS_WIN=nil
 local DS_FONT="Arcade"
 local DS_FONTSCALE=0.92
 local DS_FACES={}
-local DS_VER="v5_"
+local DS_VER="v6_"
+local DS_TabBar=nil
+local DS_Flash=nil
 local function DS_Pick(t)
 return t[math.random(#t)]
 end
@@ -15602,7 +15620,7 @@ DS_CACHE[n]=got
 return got
 end
 end
-for _,old in next,{"DeepSeekUI/v4_"..n,"DeepSeekUI/v3_"..n,"DeepSeekUI/"..n}do
+for _,old in next,{"DeepSeekUI/v5_"..n,"DeepSeekUI/v4_"..n,"DeepSeekUI/v3_"..n,"DeepSeekUI/"..n}do
 if isfile and isfile(old)then
 local got=DS_Try(old)
 if got then
@@ -15706,13 +15724,60 @@ local tw=DS_TS:Create(o,ti,props)
 tw:Play()
 return tw
 end
+local function DS_OnTab(key)
+local h=DS_WIN
+if not h then
+return
+end
+local G=h.TabModule
+if not G or not G.Tabs then
+return
+end
+local t=G.Tabs[key]
+if not t then
+return
+end
+local btn=t.UIElements and t.UIElements.Main
+if btn and DS_TabBar then
+local sf=DS_TabBar.Parent
+if sf then
+pcall(function()
+local y=btn.AbsolutePosition.Y-sf.AbsolutePosition.Y
+local cp=sf:FindFirstChildOfClass"ScrollingFrame"
+if cp then
+y=y+cp.CanvasPosition.Y
+end
+DS_Tween(DS_TabBar,0.32,{
+Position=UDim2.new(0,0,0,y),
+Size=UDim2.new(0,3,0,btn.AbsoluteSize.Y),
+},Enum.EasingStyle.Quint,Enum.EasingDirection.Out)
+end)
+end
+end
+if btn then
+local us=btn:FindFirstChild"DeepSeekPop"
+if not us then
+us=DS_Node("UIScale",btn,{Name="DeepSeekPop",Scale=1})
+end
+us.Scale=0.90
+DS_Tween(us,0.36,{Scale=1},Enum.EasingStyle.Back,Enum.EasingDirection.Out)
+end
+if DS_Flash then
+DS_Flash.BackgroundTransparency=1
+DS_Tween(DS_Flash,0.09,{BackgroundTransparency=0.86})
+task.delay(0.09,function()
+DS_Tween(DS_Flash,0.38,{BackgroundTransparency=1},Enum.EasingStyle.Quad,Enum.EasingDirection.Out)
+end)
+end
+end
 local function DS_Apply(h,w)
 local root=h and h.UIElements and h.UIElements.Main
 if not root then
 return
 end
 DS_ROOT=root.Parent or root
-local rad=tonumber(h.Radius)or 16
+DS_WIN=h
+local rad=0
 local pal=DS_Palette(w.Theme and w.Theme.Name or DS_THEME)
 local bg=root:FindFirstChild"Background"
 local bgImg
@@ -15720,18 +15785,22 @@ local glowStroke
 if bg then
 local id=DS_Asset(DS_Pick(DS_BG))
 if id then
+local bl=math.random(18,34)
+local br=math.random(18,34)
+local bt=math.random(14,26)
+local bb=math.random(14,26)
 bgImg=DS_Node("ImageLabel",bg,{
 Name="DeepSeekBackground",
 BackgroundTransparency=1,
 BorderSizePixel=0,
 ScaleType=Enum.ScaleType.Crop,
-Size=UDim2.new(1,28,1,28),
-Position=UDim2.fromOffset(-14,-14),
+Size=UDim2.new(1,bl+br,1,bt+bb),
+Position=UDim2.fromOffset(-bl,-bt),
+Rotation=math.random(-22,22)/10,
 ZIndex=-20,
 ImageTransparency=pal.glass,
 Image=id,
 })
-DS_Node("UICorner",bgImg,{CornerRadius=UDim.new(0,rad+14)})
 DS_Node("UIGradient",bgImg,{
 Rotation=90,
 Transparency=NumberSequence.new{
@@ -15751,7 +15820,7 @@ BackgroundTransparency=1,
 BorderSizePixel=0,
 ZIndex=445,
 })
-DS_Node("UICorner",glow,{CornerRadius=UDim.new(0,rad)})
+DS_Node("UICorner",glow,{CornerRadius=UDim.new(0,0)})
 glowStroke=DS_Node("UIStroke",glow,{
 Color=pal.accent,
 Thickness=1,
@@ -15768,12 +15837,22 @@ BackgroundTransparency=1,
 BorderSizePixel=0,
 ZIndex=444,
 })
-DS_Node("UICorner",hair,{CornerRadius=UDim.new(0,math.max(1,rad-2))})
+DS_Node("UICorner",hair,{CornerRadius=UDim.new(0,0)})
 DS_Node("UIStroke",hair,{
 Color=Color3.new(1,1,1),
 Thickness=1,
 Transparency=pal.hair,
 ApplyStrokeMode=Enum.ApplyStrokeMode.Border,
+})
+DS_Flash=DS_Node("Frame",root,{
+Name="DeepSeekFlash",
+AnchorPoint=Vector2.new(0.5,0.5),
+Position=UDim2.new(0.5,0,0.5,0),
+Size=UDim2.fromScale(1,1),
+BackgroundColor3=pal.accent,
+BackgroundTransparency=1,
+BorderSizePixel=0,
+ZIndex=452,
 })
 local tb=root:FindFirstChild"Topbar"
 if tb then
@@ -15936,7 +16015,6 @@ BorderSizePixel=0,
 ClipsDescendants=true,
 ZIndex=455,
 })
-DS_Node("UICorner",sheenHolder,{CornerRadius=UDim.new(0,rad)})
 local sheen=DS_Node("Frame",sheenHolder,{
 Name="DeepSeekSheen",
 Size=UDim2.new(0,90,1,240),
@@ -16004,8 +16082,9 @@ end
 end
 end
 local CM=18
+local marks={}
 local function bracket(px,py,ax,ay)
-DS_Node("Frame",root,{
+table.insert(marks,DS_Node("Frame",root,{
 AnchorPoint=Vector2.new(ax,ay),
 Position=UDim2.new(px,0,py,0),
 Size=UDim2.fromOffset(CM,1),
@@ -16013,8 +16092,8 @@ BackgroundColor3=pal.soft,
 BackgroundTransparency=0.55,
 BorderSizePixel=0,
 ZIndex=430,
-})
-DS_Node("Frame",root,{
+}))
+table.insert(marks,DS_Node("Frame",root,{
 AnchorPoint=Vector2.new(ax,ay),
 Position=UDim2.new(px,0,py,0),
 Size=UDim2.fromOffset(1,CM),
@@ -16022,13 +16101,48 @@ BackgroundColor3=pal.soft,
 BackgroundTransparency=0.55,
 BorderSizePixel=0,
 ZIndex=430,
-})
+}))
 end
 bracket(0,12,0,0)
 bracket(1,12,1,0)
 bracket(0,12,0,1)
 bracket(1,12,1,1)
-local obId=DS_Asset"open.png"
+task.spawn(function()
+while root.Parent do
+for _,m in ipairs(marks)do
+DS_Tween(m,2.4,{BackgroundTransparency=0.20},Enum.EasingStyle.Sine,Enum.EasingDirection.InOut)
+end
+task.wait(2.4)
+for _,m in ipairs(marks)do
+if m.Parent then
+DS_Tween(m,2.4,{BackgroundTransparency=0.62},Enum.EasingStyle.Sine,Enum.EasingDirection.InOut)
+end
+end
+task.wait(2.4)
+end
+end)
+local side=h.UIElements.SideBar
+local sideFrame=side and side.Frame
+if side and sideFrame then
+DS_TabBar=DS_Node("Frame",side,{
+Name="DeepSeekTabBar",
+Size=UDim2.new(0,3,0,0),
+Position=UDim2.new(0,0,0,0),
+BackgroundColor3=pal.accent,
+BackgroundTransparency=0,
+BorderSizePixel=0,
+ZIndex=600,
+})
+DS_Node("UIGradient",DS_TabBar,{
+Rotation=90,
+Transparency=NumberSequence.new{
+NumberSequenceKeypoint.new(0,0),
+NumberSequenceKeypoint.new(1,0.45),
+},
+})
+end
+local openId=DS_Asset"open.png"
+local dragId=DS_Asset"open_drag.png"
 local ob=h.OpenButtonMain
 if ob and ob.Button then
 local an=ob.Button
@@ -16043,15 +16157,27 @@ local host=(al and al.Parent)or root.Parent
 local mini=DS_Node("Frame",host,{
 Name="DeepSeekMini",
 AnchorPoint=Vector2.new(0.5,0),
-Position=UDim2.new(0.5,0,0,34),
-Size=UDim2.fromOffset(220,164),
+Position=UDim2.new(0.5,0,0.012,0),
+Size=UDim2.fromScale(0.07,0.1),
 BackgroundTransparency=1,
 BorderSizePixel=0,
 Visible=false,
 ZIndex=520,
 })
+local function fitMini()
+local a=host.AbsoluteSize
+if a.X<=0 or a.Y<=0 then
+return
+end
+local sw=0.072
+mini.Size=UDim2.new(sw,0,sw*a.X/(1.354*a.Y),0)
+end
+fitMini()
+pcall(function()
+host:GetPropertyChangedSignal"AbsoluteSize":Connect(fitMini)
+end)
 local fish
-if obId then
+if openId then
 fish=DS_Node("ImageLabel",mini,{
 Name="DeepSeekMiniFish",
 BackgroundTransparency=1,
@@ -16060,7 +16186,7 @@ ScaleType=Enum.ScaleType.Fit,
 Size=UDim2.fromScale(1,1),
 Position=UDim2.fromOffset(0,0),
 ZIndex=1,
-Image=obId,
+Image=openId,
 })
 else
 fish=DS_Node("Frame",mini,{
@@ -16071,22 +16197,21 @@ BackgroundTransparency=0.06,
 BorderSizePixel=0,
 ZIndex=1,
 })
-DS_Node("UICorner",fish,{CornerRadius=UDim.new(0,18)})
 end
 local miniLabel=DS_Node("TextLabel",mini,{
 Name="DeepSeekMiniLabel",
 BackgroundTransparency=1,
 BorderSizePixel=0,
-Size=UDim2.fromOffset(0,0),
-AutomaticSize=Enum.AutomaticSize.XY,
+Size=UDim2.new(0.72,0,0.115,0),
 AnchorPoint=Vector2.new(0.5,0.5),
-Position=UDim2.new(0.5,0,0.60,0),
+Position=UDim2.new(0.5,0,0.615,0),
 Text=tostring(h.Title or"DeepSeek"),
 TextColor3=Color3.fromHex"#16233F",
-TextSize=17,
+TextScaled=true,
 TextStrokeTransparency=1,
 ZIndex=3,
 })
+DS_Node("UITextSizeConstraint",miniLabel,{MaxTextSize=72})
 local miniBtn=DS_Node("TextButton",mini,{
 Name="DeepSeekMiniButton",
 Size=UDim2.fromScale(1,1),
@@ -16097,25 +16222,70 @@ AutoButtonColor=false,
 Active=true,
 ZIndex=4,
 })
-local baseFish=fish.Size
-miniBtn.MouseEnter:Connect(function()
-DS_Tween(fish,0.16,{Size=UDim2.fromScale(1.04,1.04)},Enum.EasingStyle.Quad,Enum.EasingDirection.Out)
-DS_Tween(miniLabel,0.16,{TextColor3=Color3.fromHex"#0A1220"})
+local dragging=false
+local moved=0
+local startPos
+local startIn
+miniBtn.InputBegan:Connect(function(i)
+if i.UserInputType==Enum.UserInputType.MouseButton1 or i.UserInputType==Enum.UserInputType.Touch then
+dragging=true
+moved=0
+startPos=mini.Position
+startIn=i.Position
+if dragId then
+fish.Image=dragId
+end
+DS_Tween(mini,0.14,{Size=mini.Size*1.0})
+end
 end)
-miniBtn.MouseLeave:Connect(function()
-DS_Tween(fish,0.20,{Size=baseFish},Enum.EasingStyle.Quad,Enum.EasingDirection.Out)
-DS_Tween(miniLabel,0.20,{TextColor3=Color3.fromHex"#16233F"})
+DS_UIS.InputChanged:Connect(function(i)
+if not dragging then
+return
+end
+if i.UserInputType==Enum.UserInputType.MouseMovement or i.UserInputType==Enum.UserInputType.Touch then
+local a=host.AbsoluteSize
+if a.X<=0 or a.Y<=0 then
+return
+end
+local d=i.Position-startIn
+moved=math.max(moved,math.abs(d.X)+math.abs(d.Y))
+mini.Position=UDim2.new(startPos.X.Scale+d.X/a.X,0,startPos.Y.Scale+d.Y/a.Y,0)
+end
 end)
-miniBtn.MouseButton1Click:Connect(function()
-DS_Tween(fish,0.08,{Size=UDim2.fromScale(0.96,0.96)},Enum.EasingStyle.Back)
-task.delay(0.08,function()
-DS_Tween(fish,0.30,{Size=baseFish},Enum.EasingStyle.Back,Enum.EasingDirection.Out)
+DS_UIS.InputEnded:Connect(function(i)
+if not dragging then
+return
+end
+if i.UserInputType==Enum.UserInputType.MouseButton1 or i.UserInputType==Enum.UserInputType.Touch then
+dragging=false
+if openId then
+fish.Image=openId
+end
+end
+end)
+miniBtn.Activated:Connect(function()
+if moved>10 then
+return
+end
+DS_Tween(mini,0.09,{Size=mini.Size*0.94},Enum.EasingStyle.Back)
+task.delay(0.09,function()
+fitMini()
 end)
 task.delay(0.10,function()
 pcall(function()
 h:Open()
 end)
 end)
+end)
+miniBtn.MouseEnter:Connect(function()
+if not dragging then
+DS_Tween(mini,0.16,{Size=UDim2.new(mini.Size.X.Scale*1.05,0,mini.Size.Y.Scale*1.05,0)})
+end
+end)
+miniBtn.MouseLeave:Connect(function()
+if not dragging then
+fitMini()
+end
 end)
 if al then
 local function sync()
@@ -16154,9 +16324,8 @@ DS_Walk(root,function(o)
 if o:IsA"Frame"or o:IsA"TextButton"or o:IsA"ImageButton"then
 local c=o:FindFirstChildOfClass"UICorner"
 if c then
-local r=c.CornerRadius
-if r.Scale==0 and r.Offset>12 then
-DS_Set(c,"CornerRadius",UDim.new(0,12))
+if c.CornerRadius.Scale~=0 or c.CornerRadius.Offset~=0 then
+DS_Set(c,"CornerRadius",UDim.new(0,0))
 end
 if o.BackgroundTransparency<0.5 and not o:FindFirstChildOfClass"UIStroke"and o.Name~="DeepSeekSheen"then
 DS_Node("UIStroke",o,{
@@ -16229,6 +16398,7 @@ DS_FontList=DS_FONTS
 DS_FontGet=function()
 return DS_FONT,DS_FONTSCALE
 end
+DS_OnTab=DS_OnTab
 if _G then
 _G.DS_SetFont=DS_SetFont
 _G.DS_SetFontScale=DS_SetFontScale
@@ -16236,6 +16406,7 @@ _G.DS_ApplyFont=DS_ApplyFont
 _G.DS_FontList=DS_FONTS
 _G.DS_FontGet=DS_FontGet
 _G.DS_FaceOf=DS_Face
+_G.DS_OnTab=DS_OnTab
 end
 aa.Themes=a.load'v'(aa,as)
 
