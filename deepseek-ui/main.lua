@@ -15568,6 +15568,10 @@ local DS_FONTSCALE=0.92
 local DS_FACES={}
 local DS_VER="v7_"
 local DS_Flash=nil
+local DS_TickerRoot=nil
+local DS_TickerRows={}
+local DS_TickerList={}
+local DS_TickerRowH=28
 local function DS_Pick(t)
 return t[math.random(#t)]
 end
@@ -16148,6 +16152,156 @@ end
 local function DS_OpenJump()
 DS_BuildJumpPanel()
 end
+local function DS_TickerMetrics()
+local vp=DS_Viewport()
+local m=math.min(vp.X,vp.Y)
+local s=math.clamp(m/592,0.7,2.2)
+local rowH=math.max(14,math.floor(28*s))
+local pad=math.max(1,math.floor(2*s))
+local w=math.clamp(math.floor(0.42*m),140,math.floor(vp.X*0.55))
+local hgt=math.max(120,math.floor(vp.Y*0.78))
+local x=math.max(6,math.floor(vp.X*0.03))
+local y=math.max(6,math.floor(vp.Y*0.055))
+return w,hgt,rowH,pad,x,y
+end
+local function DS_TickerApplySize()
+if not DS_TickerRoot then
+return
+end
+local w,hgt,rowH,pad,x,y=DS_TickerMetrics()
+DS_TickerRowH=rowH
+DS_TickerRoot.Size=UDim2.fromOffset(w,hgt)
+DS_TickerRoot.Position=UDim2.new(1,-x,0,y)
+local lay=DS_TickerRoot:FindFirstChildOfClass"UIListLayout"
+if lay then
+lay.Padding=UDim.new(0,pad)
+end
+for _,r in next,DS_TickerRows do
+if r.holder and r.holder.Parent then
+r.holder.Size=UDim2.new(1,0,0,rowH)
+end
+end
+end
+local function DS_TickerRow(name,order)
+local holder=DS_Node("Frame",DS_TickerRoot,{
+Name="TickerRow",
+BackgroundTransparency=1,
+BorderSizePixel=0,
+Size=UDim2.new(1,0,0,DS_TickerRowH),
+LayoutOrder=order,
+ZIndex=701,
+})
+local glow=DS_Node("TextLabel",holder,{
+BackgroundTransparency=1,
+BorderSizePixel=0,
+Size=UDim2.fromScale(1,1),
+Text=name,
+TextScaled=true,
+TextXAlignment=Enum.TextXAlignment.Right,
+TextColor3=Color3.fromRGB(45,145,255),
+TextTransparency=0.72,
+ZIndex=701,
+})
+pcall(function()
+glow.FontFace=DS_Face"GothamBold"
+end)
+DS_Node("UIStroke",glow,{Color=Color3.fromRGB(40,130,255),Thickness=0.8,Transparency=0.65})
+local label=DS_Node("TextLabel",holder,{
+BackgroundTransparency=1,
+BorderSizePixel=0,
+Size=UDim2.fromScale(1,1),
+Text=name,
+TextScaled=true,
+TextXAlignment=Enum.TextXAlignment.Right,
+TextColor3=Color3.fromRGB(90,170,255),
+ZIndex=702,
+})
+pcall(function()
+label.FontFace=DS_Face"GothamBold"
+end)
+local grad=DS_Node("UIGradient",label,{
+Color=ColorSequence.new({
+ColorSequenceKeypoint.new(0,Color3.fromRGB(40,110,220)),
+ColorSequenceKeypoint.new(0.35,Color3.fromRGB(100,175,255)),
+ColorSequenceKeypoint.new(0.5,Color3.fromRGB(255,255,255)),
+ColorSequenceKeypoint.new(0.65,Color3.fromRGB(100,175,255)),
+ColorSequenceKeypoint.new(1,Color3.fromRGB(40,110,220)),
+}),
+Offset=Vector2.new(-1,0),
+})
+DS_Node("UIStroke",label,{Color=Color3.fromRGB(45,130,255),Thickness=0.45,Transparency=0.48})
+return{holder=holder,glow=glow,label=label,grad=grad}
+end
+local function DS_TickerSync()
+if not DS_TickerRoot then
+return
+end
+local want={}
+for _,n in next,DS_TickerList do
+want[n]=true
+end
+for name,r in next,DS_TickerRows do
+if not want[name] then
+DS_TickerRows[name]=nil
+local holder=r.holder
+DS_Tween(r.label,0.16,{TextTransparency=1})
+DS_Tween(r.glow,0.16,{TextTransparency=1})
+DS_Tween(holder,0.24,{Size=UDim2.new(1,0,0,0)},Enum.EasingStyle.Quad,Enum.EasingDirection.In)
+task.delay(0.26,function()
+if holder and holder.Parent then
+holder:Destroy()
+end
+end)
+end
+end
+local order=0
+for _,name in next,DS_TickerList do
+order=order+1
+local r=DS_TickerRows[name]
+if not r then
+r=DS_TickerRow(name,order)
+DS_TickerRows[name]=r
+r.holder.Size=UDim2.new(1,0,0,0)
+r.label.TextTransparency=1
+r.glow.TextTransparency=1
+DS_Tween(r.holder,0.28,{Size=UDim2.new(1,0,0,DS_TickerRowH)},Enum.EasingStyle.Quint,Enum.EasingDirection.Out)
+DS_Tween(r.label,0.32,{TextTransparency=0})
+DS_Tween(r.glow,0.32,{TextTransparency=0.72})
+else
+r.holder.LayoutOrder=order
+end
+end
+end
+local function DS_TickerSet(list)
+DS_TickerList={}
+for _,v in next,list or{}do
+table.insert(DS_TickerList,tostring(v))
+end
+DS_TickerSync()
+end
+local function DS_TickerAdd(name)
+name=tostring(name)
+for _,v in next,DS_TickerList do
+if v==name then
+return
+end
+end
+table.insert(DS_TickerList,name)
+DS_TickerSync()
+end
+local function DS_TickerRemove(name)
+name=tostring(name)
+for i=#DS_TickerList,1,-1 do
+if DS_TickerList[i]==name then
+table.remove(DS_TickerList,i)
+end
+end
+DS_TickerSync()
+end
+local function DS_TickerClear()
+DS_TickerList={}
+DS_TickerSync()
+end
 local function DS_ScreenRoot(root,h,al)
 local c
 pcall(function()
@@ -16191,6 +16345,49 @@ DS_ROOT=root.Parent or root
 DS_WIN=h
 local pal=DS_Palette(w.Theme and w.Theme.Name or DS_THEME)
 DS_PAL=pal
+DS_Stage("ticker",function()
+local sg=DS_ScreenRoot(root,h,al)
+DS_TickerRoot=DS_Node("Frame",sg,{
+Name="DeepSeekTicker",
+AnchorPoint=Vector2.new(1,0),
+Position=UDim2.new(1,-10,0,10),
+Size=UDim2.fromOffset(200,300),
+BackgroundTransparency=1,
+BorderSizePixel=0,
+ClipsDescendants=true,
+ZIndex=700,
+})
+DS_Node("UIListLayout",DS_TickerRoot,{
+SortOrder=Enum.SortOrder.LayoutOrder,
+HorizontalAlignment=Enum.HorizontalAlignment.Right,
+VerticalAlignment=Enum.VerticalAlignment.Top,
+Padding=UDim.new(0,2),
+})
+DS_TickerApplySize()
+DS_TickerSync()
+task.spawn(function()
+while DS_TickerRoot and DS_TickerRoot.Parent do
+for _,r in next,DS_TickerRows do
+if r.grad and r.grad.Parent then
+r.grad.Offset=Vector2.new(-1,0)
+end
+end
+for _,r in next,DS_TickerRows do
+if r.grad and r.grad.Parent then
+DS_Tween(r.grad,3,{Offset=Vector2.new(1,0)},Enum.EasingStyle.Sine,Enum.EasingDirection.InOut)
+end
+end
+task.wait(3.1)
+end
+end)
+task.spawn(function()
+while DS_TickerRoot and DS_TickerRoot.Parent do
+task.wait(0.5)
+pcall(DS_TickerApplySize)
+end
+end)
+end)
+
 local bg=root:FindFirstChild"Background"
 local bgImg
 local glowStroke
@@ -16783,17 +16980,17 @@ DS_OpenJump=DS_OpenJump
 DS_RegisterJump=DS_RegisterJump
 DS_JumpNames=DS_JumpNames
 DS_JumpToName=DS_JumpToName
+DS_Ticker={Set=DS_TickerSet,Add=DS_TickerAdd,Remove=DS_TickerRemove,Clear=DS_TickerClear}
 DS_Errors=DS_ERR
 DS_SetMiniScale=function(k)
 DS_MINI_K=math.clamp(tonumber(k)or 0.14,0.04,0.5)
 pcall(function()
 local m=DS_ROOT and DS_ROOT:FindFirstChild"DeepSeekMini"
-if m and DS_WIN then
-local v=DS_Viewport()
-local a=v
+if m then
+local vp=DS_Viewport()
 local px=DS_DeviceScale()
-local sw=math.clamp(px/a.X,0.015,0.5)
-m.Size=UDim2.new(sw,0,sw*a.X/(1.354*a.Y),0)
+local sw=math.clamp(px/vp.X,0.015,0.5)
+m.Size=UDim2.new(sw,0,sw*vp.X/(1.354*vp.Y),0)
 end
 end)
 end
@@ -16803,7 +17000,7 @@ if not h then
 return
 end
 pcall(function()
-if h.IsFullscreen or not h.AutoScale then
+if h.IsFullscreen then
 return
 end
 local cam=workspace.CurrentCamera
@@ -16811,55 +17008,8 @@ local F=cam and cam.ViewportSize
 if not F or F.X<200 or F.Y<200 then
 return
 end
-local G=Vector2.new(h.Size.X.Offset,h.Size.Y.Offset)
-if G.X<=0 or G.Y<=0 then
-return
-end
-local Q=math.clamp(math.min((F.X-80)/G.X,(F.Y-80)/G.Y),0.3,1.0)
+local Q=math.clamp(math.min(F.X/1280,F.Y/720),0.45,1.6)
 if math.abs(Q-(h:GetUIScale()or 1))>0.01 then
-h:SetUIScale(Q)
-end
-end)
-end
-DS_OpenJump=DS_OpenJump
-DS_RegisterJump=DS_RegisterJump
-DS_JumpNames=DS_JumpNames
-DS_JumpToName=DS_JumpToName
-DS_Errors=DS_ERR
-DS_SetMiniScale=function(k)
-DS_MINI_K=math.clamp(tonumber(k)or 0.14,0.04,0.5)
-pcall(function()
-local m=DS_ROOT and DS_ROOT:FindFirstChild"DeepSeekMini"
-if m and DS_WIN then
-local v=DS_Viewport()
-local a=v
-local px=DS_DeviceScale()
-local sw=math.clamp(px/a.X,0.015,0.5)
-m.Size=UDim2.new(sw,0,sw*a.X/(1.354*a.Y),0)
-end
-end)
-end
-DS_ReScale=function()
-local h=DS_WIN
-if not h then
-return
-end
-pcall(function()
-if h.IsFullscreen or not h.AutoScale then
-return
-end
-local F=workspace.CurrentCamera.ViewportSize
-if not F or F.X<=0 then
-return
-end
-local G=Vector2.new(h.Size.X.Offset,h.Size.Y.Offset)
-if G.X<=0 or G.Y<=0 then
-return
-end
-local N=math.min((F.X-80)/G.X,(F.Y-80)/G.Y)
-local Q=math.clamp(N,0.3,1.0)
-local R=h:GetUIScale()or 1
-if math.abs(Q-R)>0.05 then
 h:SetUIScale(Q)
 end
 end)
@@ -16868,6 +17018,7 @@ DS_Debug=function()
 local v=DS_Viewport()
 local o={}
 table.insert(o,"viewport="..math.floor(v.X).."x"..math.floor(v.Y))
+table.insert(o,"uiscale="..tostring(DS_WIN and DS_WIN:GetUIScale()))
 table.insert(o,"errors="..#DS_ERR)
 for _,e in next,DS_ERR do
 table.insert(o,tostring(e))
@@ -16886,10 +17037,11 @@ _G.DS_OpenJump=DS_OpenJump
 _G.DS_RegisterJump=DS_RegisterJump
 _G.DS_JumpNames=DS_JumpNames
 _G.DS_JumpToName=DS_JumpToName
+_G.DS_Ticker=DS_Ticker
 _G.DS_Errors=DS_ERR
-_G.DS_Debug=DS_Debug
 _G.DS_SetMiniScale=DS_SetMiniScale
 _G.DS_ReScale=DS_ReScale
+_G.DS_Debug=DS_Debug
 end
 aa.Themes=a.load'v'(aa,as)
 
