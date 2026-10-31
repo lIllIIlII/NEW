@@ -183,7 +183,15 @@ function m.SetType(u,v)
 m.Type=v
 local x=GetShape(v)
 r.Image=x.Image
-r.SliceCenter=x.Rect
+local w0=x.Rect.Max.X-x.Rect.Min.X
+local h0=x.Rect.Max.Y-x.Rect.Min.Y
+local ss=math.min(w0,h0)*0.16
+local cx=(x.Rect.Min.X+x.Rect.Max.X)/2
+local cy=(x.Rect.Min.Y+x.Rect.Max.Y)/2
+r.ScaleType=Enum.ScaleType.Stretch
+r.SliceCenter=Rect.new(0,0,0,0)
+r.ImageRectOffset=Vector2.new(cx-ss,cy-ss)
+r.ImageRectSize=Vector2.new(ss*2,ss*2)
 m:SetRadius(m.Radius)
 return m
 end
@@ -15519,7 +15527,7 @@ local DS_CDN={
 "https://raw.githubusercontent.com/lIllIIlII/NEW/main/deepseek-ui/assets/",
 "https://cdn.jsdelivr.net/gh/lIllIIlII/NEW@main/deepseek-ui/assets/",
 }
-local DS_BG={"bg_01.jpg","bg_02.jpg","bg_03.jpg","bg_04.jpg"}
+local DS_BG={"bg_01.jpg","bg_02.jpg","bg_03.jpg","bg_04.jpg","bg_05.jpg"}
 local DS_PET={"pet_01.png","pet_02.png","pet_03.png","pet_04.png","pet_05.png","pet_06.png","pet_07.png","pet_08.png","pet_09.png","pet_10.png","pet_11.png","pet_12.png"}
 local DS_TOP={"pet_03.png","pet_07.png","pet_10.png","pet_12.png"}
 local DS_ART={"art_01.jpg","art_02.jpg","art_03.jpg","art_04.jpg","art_05.jpg","art_06.jpg","art_07.jpg","art_08.jpg","art_09.jpg","art_10.jpg"}
@@ -15547,7 +15555,7 @@ end
 if not(writefile and getcustomasset)then
 return nil
 end
-local p="DeepSeekUI/"..n
+local p="DeepSeekUI/v3_"..n
 local ok=false
 if isfile and isfile(p)then
 ok=true
@@ -15806,6 +15814,9 @@ lastShift=now
 reshuffle()
 end
 lightUp()
+if bgImg then
+DS_Tween(bgImg,0.6,{Position=UDim2.fromOffset(-14+math.random(-6,6),-14+math.random(-6,6))},Enum.EasingStyle.Sine,Enum.EasingDirection.Out)
+end
 end)
 root:GetPropertyChangedSignal"Size":Connect(function()
 lightUp()
@@ -15849,6 +15860,38 @@ mark(0,0,0,0)
 mark(1,0,1,0)
 mark(0,1,0,1)
 mark(1,1,1,1)
+local bgImg=bg and bg:FindFirstChild"DeepSeekBackground"
+local obId=DS_Asset"open.png"
+local ob=h.OpenButtonMain
+if ob and ob.Button and obId then
+local holder=ob.Button
+holder.ClipsDescendants=false
+local fish=DS_Node("ImageLabel",holder,{
+Name="DeepSeekOpenFish",
+BackgroundTransparency=1,
+BorderSizePixel=0,
+ScaleType=Enum.ScaleType.Fit,
+Size=UDim2.fromOffset(196,146),
+AnchorPoint=Vector2.new(0.5,0.5),
+Position=UDim2.new(0.5,0,0.5,-14),
+ZIndex=-5,
+Image=obId,
+})
+local pad=holder:FindFirstChildOfClass"UIPadding"
+if not pad then
+pad=DS_Node("UIPadding",holder,{})
+end
+pad.PaddingTop=UDim.new(0,22)
+for _,d in ipairs(holder:GetDescendants())do
+if d:IsA"TextLabel"then
+d.TextColor3=Color3.fromHex"#16233F"
+d.TextTransparency=0
+end
+if d:IsA"ImageLabel"and d~=fish then
+d.ImageColor3=Color3.fromHex"#16233F"
+end
+end
+end
 task.spawn(function()
 local s0=root.Size
 root.Size=UDim2.new(s0.X.Scale,s0.X.Offset*0.90,s0.Y.Scale,s0.Y.Offset*0.90)
