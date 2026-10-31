@@ -42,7 +42,7 @@ local function notify(title, content)
 end
 
 Window:CreateTopbarButton("Info", "info", function()
-	notify("DeepSeek UI", "WindUI 1.6.65 · square corners · random whale art")
+	notify("DeepSeek UI", "WindUI 1.6.65 · rounded · 37 fonts · random whale art")
 end, 24, nil, Color3.fromHex("#4D6BFE"))
 
 pcall(function()
@@ -58,7 +58,7 @@ local Info = Window:Tab({ Title = "About", Icon = "lucide:whale" })
 Call(Home, "Section", { Title = "Overview" })
 Call(Home, "Paragraph", {
 	Title = "DeepSeek UI",
-	Desc = "Square corners, DeepSeek blue, random whale wallpaper, a pet hiding behind the left edge, a sitter on the top rail and a sticker in the corner. Drag the window and watch the frame glow.",
+	Desc = "Rounded corners, DeepSeek blue, random whale wallpaper, a pet hiding behind the left edge, a sitter on the top rail and a sticker in the corner. Drag the window and watch the frame glow.",
 })
 Call(Home, "Button", {
 	Title = "Send Notification",
@@ -236,6 +236,46 @@ Call(Look, "Toggle", {
 	Callback = function(v) Window:ToggleFullscreen(v) end,
 })
 Call(Look, "Divider")
+Call(Look, "Section", { Title = "Font" })
+local FONTS = _G.DS_FontList or { "Arcade", "Code", "SciFi" }
+local curFont, curScale = "Arcade", 0.92
+if _G.DS_FontGet then
+	curFont, curScale = _G.DS_FontGet()
+end
+Call(Look, "Dropdown", {
+	Title = "Font Family",
+	Desc = "Roblox built-in typefaces",
+	Values = FONTS,
+	Value = curFont,
+	Callback = function(v)
+		if _G.DS_SetFont then _G.DS_SetFont(v) end
+		notify("Font", tostring(v))
+	end,
+})
+Call(Look, "Slider", {
+	Title = "Font Size",
+	Desc = "Scale every label",
+	Value = { Min = 70, Max = 150, Default = math.floor(curScale * 100) },
+	Callback = function(v)
+		if _G.DS_SetFontScale then _G.DS_SetFontScale(v / 100) end
+	end,
+})
+Call(Look, "Button", {
+	Title = "Pixel Font",
+	Desc = "Back to the arcade face",
+	Callback = function()
+		if _G.DS_SetFont then _G.DS_SetFont("Arcade") end
+		if _G.DS_SetFontScale then _G.DS_SetFontScale(0.92) end
+	end,
+})
+Call(Look, "Button", {
+	Title = "Reapply Font",
+	Desc = "Refresh every label",
+	Callback = function()
+		if _G.DS_ApplyFont then _G.DS_ApplyFont() end
+	end,
+})
+Call(Look, "Divider")
 Call(Look, "Section", { Title = "Window" })
 Call(Look, "Button", { Title = "Center", Desc = "Snap to screen center", Callback = function() Window:SetToTheCenter() end })
 Call(Look, "Button", { Title = "Lock All", Desc = "Freeze every element", Callback = function() Window:LockAll() end })
@@ -246,7 +286,7 @@ Call(Look, "Keybind", { Title = "Toggle Window", Desc = "Show or hide", Value = 
 Call(Info, "Section", { Title = "DeepSeek UI" })
 Call(Info, "Paragraph", {
 	Title = "WindUI 1.6.65 fork",
-	Desc = "Square corners, search bar above the tabs, DeepSeek blue palette, random whale wallpapers, edge pet behind the window, sitter on the top rail, corner sticker with drag shuffle.",
+	Desc = "Rounded corners, search bar above the tabs, DeepSeek blue palette, random whale wallpapers, edge pet behind the window, sitter on the top rail, corner sticker with drag shuffle, 37 built-in fonts with a live size slider.",
 })
 Call(Info, "Paragraph", {
 	Title = "Assets",
