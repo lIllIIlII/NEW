@@ -16347,60 +16347,99 @@ if not DS_ROOT or DS_ByeBusy then
 return
 end
 DS_ByeBusy=true
-local ok=pcall(function()
+pcall(function()
 local sg=DS_ScreenRoot(DS_ROOT,DS_WIN,nil)
 if not sg then
+DS_ByeBusy=false
 return
 end
 local pal=DS_PAL or{accent=Color3.fromHex"#4D6BFE",soft=Color3.fromHex"#7C97FF"}
+local scrim=DS_Node("Frame",sg,{
+Name="DeepSeekByeScrim",
+Size=UDim2.fromScale(1,1),
+BackgroundColor3=Color3.fromHex"#04070D",
+BackgroundTransparency=1,
+BorderSizePixel=0,
+ZIndex=948,
+})
+DS_Tween(scrim,0.30,{BackgroundTransparency=0.34},Enum.EasingStyle.Quad,Enum.EasingDirection.Out)
 local box=DS_Node("Frame",sg,{
 Name="DeepSeekBye",
 AnchorPoint=Vector2.new(0.5,0.5),
-Position=UDim2.new(0.5,0,0.46,0),
-Size=UDim2.fromOffset(380,210),
+Position=UDim2.new(0.5,0,0.44,0),
+Size=UDim2.fromOffset(420,300),
 BackgroundTransparency=1,
 BorderSizePixel=0,
 ZIndex=950,
 })
-local slots={{-96,-6,-9,0.00},{-6,-26,4,0.07},{88,-2,10,0.14}}
+local line=DS_Node("Frame",box,{
+AnchorPoint=Vector2.new(0.5,0),
+Position=UDim2.new(0.5,0,0.70,0),
+Size=UDim2.new(0,0,0,1),
+BackgroundColor3=pal.accent,
+BackgroundTransparency=0,
+BorderSizePixel=0,
+ZIndex=952,
+})
+DS_Node("UIGradient",line,{
+Transparency=NumberSequence.new{
+NumberSequenceKeypoint.new(0,1),
+NumberSequenceKeypoint.new(0.5,0.05),
+NumberSequenceKeypoint.new(1,1),
+},
+})
+local slots={{-106,-2,-13,0.00,116},{-2,-20,6,0.07,136},{98,-2,15,0.14,112}}
 for i,sl in next,slots do
 local id=DS_Asset(DS_Pick(DS_PET))
 if id then
 local img=DS_Node("ImageLabel",box,{
 Size=UDim2.fromOffset(0,0),
 AnchorPoint=Vector2.new(0.5,0.5),
-Position=UDim2.new(0.5,sl[1],0.5,sl[2]),
+Position=UDim2.new(0.5,sl[1],0.42,sl[2]+46),
 BackgroundTransparency=1,
 BorderSizePixel=0,
 ScaleType=Enum.ScaleType.Fit,
 Image=id,
 ImageTransparency=1,
 Rotation=sl[3],
-ZIndex=951+i,
+ZIndex=953+i,
 })
 task.delay(sl[4],function()
 if not img.Parent then
 return
 end
-DS_Tween(img,0.36,{Size=UDim2.fromOffset(128,128),ImageTransparency=0},Enum.EasingStyle.Back,Enum.EasingDirection.Out)
+DS_Tween(img,0.40,{
+Size=UDim2.fromOffset(sl[5],sl[5]),
+ImageTransparency=0,
+Position=UDim2.new(0.5,sl[1],0.42,sl[2]),
+},Enum.EasingStyle.Back,Enum.EasingDirection.Out)
 end)
-task.delay(sl[4]+0.1,function()
+task.delay(sl[4]+0.42,function()
 if not img.Parent then
 return
 end
-DS_Tween(img,1.6,{Position=UDim2.new(0.5,sl[1]*0.82,0.5,sl[2]-4)},Enum.EasingStyle.Sine,Enum.EasingDirection.InOut)
+DS_Tween(img,1.5,{
+Position=UDim2.new(0.5,sl[1]*0.74,0.42,sl[2]-3),
+Rotation=sl[3]*0.25,
+},Enum.EasingStyle.Sine,Enum.EasingDirection.InOut)
 end)
 end
 end
+task.delay(0.18,function()
+if not line.Parent then
+return
+end
+DS_Tween(line,0.46,{Size=UDim2.new(0,250,0,1)},Enum.EasingStyle.Quint,Enum.EasingDirection.Out)
+end)
 local txt=DS_Node("TextLabel",box,{
 BackgroundTransparency=1,
 BorderSizePixel=0,
-Size=UDim2.new(1,0,0,30),
+Size=UDim2.new(1,0,0,34),
 AnchorPoint=Vector2.new(0.5,0.5),
-Position=UDim2.new(0.5,0,1,26),
+Position=UDim2.new(0.5,0,0.82,22),
 Text="再见 祝您天天开心",
 TextColor3=Color3.new(1,1,1),
-TextSize=22,
+TextSize=23,
 TextTransparency=1,
 TextStrokeTransparency=1,
 ZIndex=960,
@@ -16410,21 +16449,32 @@ txt.FontFace=DS_Face"Arcade"
 end)
 DS_Node("UIGradient",txt,{
 Color=ColorSequence.new({
-ColorSequenceKeypoint.new(0,Color3.fromRGB(90,150,255)),
+ColorSequenceKeypoint.new(0,Color3.fromRGB(96,156,255)),
 ColorSequenceKeypoint.new(0.5,Color3.fromRGB(255,255,255)),
-ColorSequenceKeypoint.new(1,Color3.fromRGB(90,150,255)),
+ColorSequenceKeypoint.new(1,Color3.fromRGB(96,156,255)),
 }),
 })
-DS_Node("UIStroke",txt,{Color=pal.accent,Thickness=1.6,Transparency=0.45})
-task.delay(0.24,function()
+local ts=DS_Node("UIStroke",txt,{Color=pal.accent,Thickness=1.6,Transparency=0.55})
+task.delay(0.26,function()
 if not txt.Parent then
 return
 end
-txt.Position=UDim2.new(0.5,0,1,44)
-DS_Tween(txt,0.42,{TextTransparency=0,Position=UDim2.new(0.5,0,1,26)},Enum.EasingStyle.Quint,Enum.EasingDirection.Out)
+DS_Tween(txt,0.46,{TextTransparency=0,Position=UDim2.new(0.5,0,0.82,0)},Enum.EasingStyle.Quint,Enum.EasingDirection.Out)
+task.delay(0.46,function()
+if not ts.Parent then
+return
+end
+DS_Tween(ts,0.7,{Transparency=0.15},Enum.EasingStyle.Sine,Enum.EasingDirection.InOut)
+task.delay(0.7,function()
+if ts.Parent then
+DS_Tween(ts,0.7,{Transparency=0.55},Enum.EasingStyle.Sine,Enum.EasingDirection.InOut)
+end
 end)
-task.delay(1.75,function()
+end)
+end)
+task.delay(1.95,function()
 if not box.Parent then
+DS_ByeBusy=false
 return
 end
 for _,c in next,box:GetChildren()do
@@ -16432,19 +16482,22 @@ if c:IsA"TextLabel"then
 DS_Tween(c,0.45,{TextTransparency=1})
 elseif c:IsA"ImageLabel"then
 DS_Tween(c,0.45,{ImageTransparency=1})
+elseif c:IsA"Frame"then
+DS_Tween(c,0.45,{BackgroundTransparency=1})
 end
 end
-task.delay(0.5,function()
+DS_Tween(scrim,0.5,{BackgroundTransparency=1},Enum.EasingStyle.Quad,Enum.EasingDirection.Out)
+task.delay(0.55,function()
 if box.Parent then
 box:Destroy()
 end
-DS_ByeBusy=false
-end)
-end)
-end)
-if not ok then
-DS_ByeBusy=false
+if scrim.Parent then
+scrim:Destroy()
 end
+DS_ByeBusy=false
+end)
+end)
+end)
 end
 local function DS_Apply(h,w)
 local root=h and h.UIElements and h.UIElements.Main
@@ -16455,6 +16508,18 @@ DS_ROOT=root.Parent or root
 DS_WIN=h
 local pal=DS_Palette(w.Theme and w.Theme.Name or DS_THEME)
 DS_PAL=pal
+DS_Stage("scale",function()
+local cam=workspace.CurrentCamera
+local F=cam and cam.ViewportSize
+if not F or F.X<200 or F.Y<200 then
+return
+end
+local Q=math.clamp(math.min(F.X/1280,F.Y/720),0.45,1.6)
+local sc=root:FindFirstChildOfClass"UIScale"
+if sc then
+sc.Scale=Q
+end
+end)
 DS_Stage("ticker",function()
 local sg=DS_ScreenRoot(root,h,al)
 DS_TickerRoot=DS_Node("Frame",sg,{
@@ -16855,33 +16920,18 @@ local openId=DS_Asset"open.png"
 local dragId=DS_Asset"open_drag.png"
 local ob=h.OpenButtonMain
 DS_Stage("bye",function()
-local orig=h.Close
-h.Close=function(self,a)
-if DS_ByeBusy then
-return
-end
+DS_Bye=DS_Goodbye
+DS_Close=function()
 DS_Goodbye()
 task.delay(0.26,function()
 pcall(function()
-orig(self,a)
+h:Close()
 end)
 end)
 end
-local origT=h.Toggle
-h.Toggle=function(self,a)
-if self.IsOpen and self.IsOpen~=false then
-if DS_ByeBusy then
-return
-end
-DS_Goodbye()
-task.delay(0.26,function()
-pcall(function()
-origT(self,a)
-end)
-end)
-return
-end
-return origT(self,a)
+if _G then
+_G.DS_Bye=DS_Bye
+_G.DS_Close=DS_Close
 end
 end)
 
@@ -16914,10 +16964,20 @@ end
 if a.X<=0 or a.Y<=0 then
 return
 end
-local px=DS_DeviceScale()
+local m=math.min(a.X,a.Y)
+local k
+if DS_UIS.TouchEnabled and not DS_UIS.KeyboardEnabled then
+k=(m<700)and(DS_MINI_K+0.06)or DS_MINI_K
+elseif DS_UIS.KeyboardEnabled then
+k=DS_MINI_K-0.005
+else
+k=DS_MINI_K-0.025
+end
+local px=m*k
 local sw=math.clamp(px/a.X,0.015,0.5)
 mini.Size=UDim2.new(sw,0,sw*a.X/(1.354*a.Y),0)
 end
+DS_FitMini=fitMini
 fitMini()
 pcall(function()
 host:GetPropertyChangedSignal"AbsoluteSize":Connect(fitMini)
@@ -17229,6 +17289,9 @@ end
 local Q=math.clamp(math.min(F.X/1280,F.Y/720),0.45,1.6)
 if math.abs(Q-(h:GetUIScale()or 1))>0.01 then
 h:SetUIScale(Q)
+end
+if DS_FitMini then
+pcall(DS_FitMini)
 end
 end)
 end
