@@ -15519,11 +15519,11 @@ local DS_CDN={
 "https://raw.githubusercontent.com/lIllIIlII/NEW/main/deepseek-ui/assets/",
 "https://cdn.jsdelivr.net/gh/lIllIIlII/NEW@main/deepseek-ui/assets/",
 }
-local DS_BG={"bg_01.jpg","bg_02.jpg"}
-local DS_PET={"pet_05.png","pet_04.png","pet_01.png","pet_02.png","pet_03.png"}
-local DS_TOP={"pet_02.png","pet_05.png","pet_01.png"}
+local DS_BG={"bg_01.jpg","bg_02.jpg","bg_03.jpg","bg_04.jpg"}
+local DS_PET={"pet_01.png","pet_02.png","pet_03.png","pet_04.png","pet_05.png","pet_06.png","pet_07.png","pet_08.png","pet_09.png","pet_10.png","pet_11.png","pet_12.png"}
+local DS_TOP={"pet_03.png","pet_07.png","pet_10.png","pet_12.png"}
 local DS_ART={"art_01.jpg","art_02.jpg","art_03.jpg","art_04.jpg","art_05.jpg","art_06.jpg","art_07.jpg","art_08.jpg","art_09.jpg","art_10.jpg"}
-local DS_STIKER={"stiker_01.png","stiker_02.png","stiker_03.png","stiker_04.png","stiker_05.png","stiker_06.png","stiker_07.png","stiker_08.png","stiker_09.png","stiker_10.png","stiker_11.png","stiker_12.png","stiker_13.png","stiker_14.png","stiker_15.png","stiker_16.png","stiker_17.png"}
+local DS_STIKER={"pet_01.png","pet_02.png","pet_04.png","pet_05.png","pet_06.png","pet_08.png","pet_09.png","pet_11.png"}
 local DS_CACHE={}
 local DS_TS=game:GetService"TweenService"
 local function DS_Pick(t)
@@ -15824,10 +15824,68 @@ end)
 end
 end
 end
+local CM=16
+local function mark(px,py,ax,ay)
+DS_Node("Frame",root,{
+AnchorPoint=Vector2.new(ax,ay),
+Position=UDim2.new(px,0,py,0),
+Size=UDim2.fromOffset(CM,1),
+BackgroundColor3=pal.accent,
+BackgroundTransparency=0.30,
+BorderSizePixel=0,
+ZIndex=430,
+})
+DS_Node("Frame",root,{
+AnchorPoint=Vector2.new(ax,ay),
+Position=UDim2.new(px,0,py,0),
+Size=UDim2.fromOffset(1,CM),
+BackgroundColor3=pal.accent,
+BackgroundTransparency=0.30,
+BorderSizePixel=0,
+ZIndex=430,
+})
+end
+mark(0,0,0,0)
+mark(1,0,1,0)
+mark(0,1,0,1)
+mark(1,1,1,1)
 task.spawn(function()
 local s0=root.Size
-root.Size=UDim2.new(s0.X.Scale,s0.X.Offset*0.94,s0.Y.Scale,s0.Y.Offset*0.94)
-DS_Tween(root,0.3,{Size=s0},Enum.EasingStyle.Quint,Enum.EasingDirection.Out)
+root.Size=UDim2.new(s0.X.Scale,s0.X.Offset*0.90,s0.Y.Scale,s0.Y.Offset*0.90)
+DS_Tween(root,0.36,{Size=s0},Enum.EasingStyle.Quint,Enum.EasingDirection.Out)
+end)
+task.spawn(function()
+task.wait(0.04)
+local bgImg=bg and bg:FindFirstChild"DeepSeekBackground"
+if not bgImg then
+return
+end
+local target=bgImg.ImageTransparency
+bgImg.ImageTransparency=1
+DS_Tween(bgImg,0.5,{ImageTransparency=target},Enum.EasingStyle.Quad,Enum.EasingDirection.Out)
+end)
+task.spawn(function()
+task.wait(0.08)
+local sitter=root:FindFirstChild"DeepSeekSitter"
+if sitter then
+local p0=sitter.Position
+sitter.Position=UDim2.new(p0.X.Scale,0,-0.06,0)
+DS_Tween(sitter,0.5,{Position=p0},Enum.EasingStyle.Back,Enum.EasingDirection.Out)
+end
+end)
+task.spawn(function()
+task.wait(0.12)
+local pet=root:FindFirstChild"DeepSeekPet"
+if pet then
+local p0=pet.Position
+pet.Position=UDim2.new(0,-260,p0.Y.Scale,0)
+DS_Tween(pet,0.55,{Position=p0},Enum.EasingStyle.Quint,Enum.EasingDirection.Out)
+end
+end)
+task.spawn(function()
+task.wait(0.16)
+stick.Position=UDim2.new(1,140,1,-8)
+DS_Tween(stick,0.5,{Position=UDim2.new(1,-8,1,-8)},Enum.EasingStyle.Back,Enum.EasingDirection.Out)
 end)
 end
 aa.Themes=a.load'v'(aa,as)
