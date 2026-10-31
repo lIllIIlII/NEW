@@ -15556,12 +15556,15 @@ local DS_TS=game:GetService"TweenService"
 local DS_UIS=game:GetService"UserInputService"
 local DS_ROOT=nil
 local DS_WIN=nil
+local DS_PAL=nil
 local DS_FONT="Arcade"
 local DS_FONTSCALE=0.92
 local DS_FACES={}
-local DS_VER="v6_"
-local DS_TabBar=nil
+local DS_VER="v7_"
 local DS_Flash=nil
+local DS_TickerHolder=nil
+local DS_TickerText=nil
+local DS_TickerList={}
 local function DS_Pick(t)
 return t[math.random(#t)]
 end
@@ -15620,7 +15623,7 @@ DS_CACHE[n]=got
 return got
 end
 end
-for _,old in next,{"DeepSeekUI/v5_"..n,"DeepSeekUI/v4_"..n,"DeepSeekUI/v3_"..n,"DeepSeekUI/"..n}do
+for _,old in next,{"DeepSeekUI/v6_"..n,"DeepSeekUI/v5_"..n,"DeepSeekUI/v4_"..n,"DeepSeekUI/"..n}do
 if isfile and isfile(old)then
 local got=DS_Try(old)
 if got then
@@ -15724,6 +15727,91 @@ local tw=DS_TS:Create(o,ti,props)
 tw:Play()
 return tw
 end
+local function DS_Rainbow()
+local t={}
+for i=0,6 do
+t[#t+1]=ColorSequenceKeypoint.new(i/6,Color3.fromHSV((i%6)/6,0.70,1))
+end
+return ColorSequence.new(t)
+end
+local function DS_TickerRefresh()
+if not DS_TickerText or not DS_TickerHolder then
+return
+end
+local s
+if #DS_TickerList>0 then
+s=table.concat(DS_TickerList,"   ·   ")
+else
+s="暂无开启功能"
+end
+DS_TickerText.Text=s
+task.defer(function()
+if not DS_TickerText.Parent then
+return
+end
+local w=DS_TickerText.AbsoluteSize.X
+local cap=math.min(w,DS_TickerHolder.Parent.AbsoluteSize.X*0.52)
+DS_Tween(DS_TickerHolder,0.34,{Size=UDim2.new(0,cap+18,0,DS_TickerHolder.Size.Y.Offset)},Enum.EasingStyle.Quint,Enum.EasingDirection.Out)
+DS_TickerText.TextTransparency=1
+DS_TickerText.Position=UDim2.new(0,20,0.5,0)
+DS_Tween(DS_TickerText,0.36,{TextTransparency=0,Position=UDim2.new(0,0,0.5,0)},Enum.EasingStyle.Quint,Enum.EasingDirection.Out)
+end)
+end
+local function DS_TickerSet(list)
+DS_TickerList={}
+for _,v in next,list or{}do
+table.insert(DS_TickerList,tostring(v))
+end
+DS_TickerRefresh()
+end
+local function DS_TickerAdd(name)
+name=tostring(name)
+for _,v in next,DS_TickerList do
+if v==name then
+return
+end
+end
+table.insert(DS_TickerList,name)
+DS_TickerRefresh()
+end
+local function DS_TickerRemove(name)
+name=tostring(name)
+for i=#DS_TickerList,1,-1 do
+if DS_TickerList[i]==name then
+table.remove(DS_TickerList,i)
+end
+end
+DS_TickerRefresh()
+end
+local function DS_TickerClear()
+DS_TickerList={}
+DS_TickerRefresh()
+end
+local function DS_TabEdge(btn)
+local e=btn:FindFirstChild"DeepSeekTabEdge"
+if e then
+return e
+end
+e=DS_Node("Frame",btn,{
+Name="DeepSeekTabEdge",
+AnchorPoint=Vector2.new(0,0.5),
+Position=UDim2.new(0,0,0.5,0),
+Size=UDim2.new(0,0,0.62,0),
+BackgroundColor3=DS_PAL and DS_PAL.accent or Color3.fromHex"#4D6BFE",
+BackgroundTransparency=1,
+BorderSizePixel=0,
+ZIndex=700,
+})
+DS_Node("UIGradient",e,{
+Rotation=90,
+Transparency=NumberSequence.new{
+NumberSequenceKeypoint.new(0,0),
+NumberSequenceKeypoint.new(0.5,0.15),
+NumberSequenceKeypoint.new(1,0.70),
+},
+})
+return e
+end
 local function DS_OnTab(key)
 local h=DS_WIN
 if not h then
@@ -15733,40 +15821,32 @@ local G=h.TabModule
 if not G or not G.Tabs then
 return
 end
+for k,t in next,G.Tabs do
+local b=t.UIElements and t.UIElements.Main
+if b then
+local e=DS_TabEdge(b)
+if k==key then
+DS_Tween(e,0.34,{Size=UDim2.new(0,3,0.62,0),BackgroundTransparency=0},Enum.EasingStyle.Quint,Enum.EasingDirection.Out)
+else
+DS_Tween(e,0.20,{Size=UDim2.new(0,0,0.62,0),BackgroundTransparency=1},Enum.EasingStyle.Quad,Enum.EasingDirection.Out)
+end
+end
+end
 local t=G.Tabs[key]
-if not t then
-return
-end
-local btn=t.UIElements and t.UIElements.Main
-if btn and DS_TabBar then
-local sf=DS_TabBar.Parent
-if sf then
-pcall(function()
-local y=btn.AbsolutePosition.Y-sf.AbsolutePosition.Y
-local cp=sf:FindFirstChildOfClass"ScrollingFrame"
-if cp then
-y=y+cp.CanvasPosition.Y
-end
-DS_Tween(DS_TabBar,0.32,{
-Position=UDim2.new(0,0,0,y),
-Size=UDim2.new(0,3,0,btn.AbsoluteSize.Y),
-},Enum.EasingStyle.Quint,Enum.EasingDirection.Out)
-end)
-end
-end
+local btn=t and t.UIElements and t.UIElements.Main
 if btn then
 local us=btn:FindFirstChild"DeepSeekPop"
 if not us then
 us=DS_Node("UIScale",btn,{Name="DeepSeekPop",Scale=1})
 end
-us.Scale=0.90
-DS_Tween(us,0.36,{Scale=1},Enum.EasingStyle.Back,Enum.EasingDirection.Out)
+us.Scale=0.92
+DS_Tween(us,0.38,{Scale=1},Enum.EasingStyle.Back,Enum.EasingDirection.Out)
 end
 if DS_Flash then
 DS_Flash.BackgroundTransparency=1
-DS_Tween(DS_Flash,0.09,{BackgroundTransparency=0.86})
+DS_Tween(DS_Flash,0.09,{BackgroundTransparency=0.88})
 task.delay(0.09,function()
-DS_Tween(DS_Flash,0.38,{BackgroundTransparency=1},Enum.EasingStyle.Quad,Enum.EasingDirection.Out)
+DS_Tween(DS_Flash,0.40,{BackgroundTransparency=1},Enum.EasingStyle.Quad,Enum.EasingDirection.Out)
 end)
 end
 end
@@ -15777,18 +15857,18 @@ return
 end
 DS_ROOT=root.Parent or root
 DS_WIN=h
-local rad=0
 local pal=DS_Palette(w.Theme and w.Theme.Name or DS_THEME)
+DS_PAL=pal
 local bg=root:FindFirstChild"Background"
 local bgImg
 local glowStroke
 if bg then
 local id=DS_Asset(DS_Pick(DS_BG))
 if id then
-local bl=math.random(18,34)
-local br=math.random(18,34)
-local bt=math.random(14,26)
-local bb=math.random(14,26)
+local bl=math.random(7,14)
+local br=math.random(7,14)
+local bt=math.random(6,11)
+local bb=math.random(6,11)
 bgImg=DS_Node("ImageLabel",bg,{
 Name="DeepSeekBackground",
 BackgroundTransparency=1,
@@ -15796,7 +15876,7 @@ BorderSizePixel=0,
 ScaleType=Enum.ScaleType.Crop,
 Size=UDim2.new(1,bl+br,1,bt+bb),
 Position=UDim2.fromOffset(-bl,-bt),
-Rotation=math.random(-22,22)/10,
+Rotation=math.random(-14,14)/10,
 ZIndex=-20,
 ImageTransparency=pal.glass,
 Image=id,
@@ -15824,7 +15904,7 @@ DS_Node("UICorner",glow,{CornerRadius=UDim.new(0,0)})
 glowStroke=DS_Node("UIStroke",glow,{
 Color=pal.accent,
 Thickness=1,
-Transparency=0.62,
+Transparency=0.94,
 ApplyStrokeMode=Enum.ApplyStrokeMode.Border,
 Name="DeepSeekGlowStroke",
 })
@@ -15854,6 +15934,17 @@ BackgroundTransparency=1,
 BorderSizePixel=0,
 ZIndex=452,
 })
+local N=20
+for i=0,N-1 do
+local a=UDim2.new(i/N,0,0,math.random(-20,20)/10)
+local b=UDim2.new(i/N,0,1,math.random(-20,20)/10)
+local c=UDim2.new(0,math.random(-20,20)/10,i/N,0)
+local d=UDim2.new(1,math.random(-20,20)/10,i/N,0)
+DS_Node("Frame",root,{AnchorPoint=Vector2.new(0,0),Position=a,Size=UDim2.new(1/N,0,0,1),BackgroundColor3=pal.soft,BackgroundTransparency=0.40,BorderSizePixel=0,ZIndex=431})
+DS_Node("Frame",root,{AnchorPoint=Vector2.new(0,1),Position=b,Size=UDim2.new(1/N,0,0,1),BackgroundColor3=pal.soft,BackgroundTransparency=0.40,BorderSizePixel=0,ZIndex=431})
+DS_Node("Frame",root,{AnchorPoint=Vector2.new(0,0),Position=c,Size=UDim2.new(0,1,1/N,0),BackgroundColor3=pal.soft,BackgroundTransparency=0.40,BorderSizePixel=0,ZIndex=431})
+DS_Node("Frame",root,{AnchorPoint=Vector2.new(1,0),Position=d,Size=UDim2.new(0,1,1/N,0),BackgroundColor3=pal.soft,BackgroundTransparency=0.40,BorderSizePixel=0,ZIndex=431})
+end
 local tb=root:FindFirstChild"Topbar"
 if tb then
 local id=DS_Asset(DS_Pick(DS_ART))
@@ -16051,7 +16142,7 @@ DS_Tween(glowStroke,0.10,{Transparency=pal.glow,Thickness=2.2})
 task.delay(0.36,function()
 if mine==glowSeq then
 local ti=TweenInfo.new(0.6,Enum.EasingStyle.Quad,Enum.EasingDirection.Out)
-DS_TS:Create(glowStroke,ti,{Transparency=0.62,Thickness=1}):Play()
+DS_TS:Create(glowStroke,ti,{Transparency=0.94,Thickness=1}):Play()
 end
 end)
 end
@@ -16081,66 +16172,6 @@ end)
 end
 end
 end
-local CM=18
-local marks={}
-local function bracket(px,py,ax,ay)
-table.insert(marks,DS_Node("Frame",root,{
-AnchorPoint=Vector2.new(ax,ay),
-Position=UDim2.new(px,0,py,0),
-Size=UDim2.fromOffset(CM,1),
-BackgroundColor3=pal.soft,
-BackgroundTransparency=0.55,
-BorderSizePixel=0,
-ZIndex=430,
-}))
-table.insert(marks,DS_Node("Frame",root,{
-AnchorPoint=Vector2.new(ax,ay),
-Position=UDim2.new(px,0,py,0),
-Size=UDim2.fromOffset(1,CM),
-BackgroundColor3=pal.soft,
-BackgroundTransparency=0.55,
-BorderSizePixel=0,
-ZIndex=430,
-}))
-end
-bracket(0,12,0,0)
-bracket(1,12,1,0)
-bracket(0,12,0,1)
-bracket(1,12,1,1)
-task.spawn(function()
-while root.Parent do
-for _,m in ipairs(marks)do
-DS_Tween(m,2.4,{BackgroundTransparency=0.20},Enum.EasingStyle.Sine,Enum.EasingDirection.InOut)
-end
-task.wait(2.4)
-for _,m in ipairs(marks)do
-if m.Parent then
-DS_Tween(m,2.4,{BackgroundTransparency=0.62},Enum.EasingStyle.Sine,Enum.EasingDirection.InOut)
-end
-end
-task.wait(2.4)
-end
-end)
-local side=h.UIElements.SideBar
-local sideFrame=side and side.Frame
-if side and sideFrame then
-DS_TabBar=DS_Node("Frame",side,{
-Name="DeepSeekTabBar",
-Size=UDim2.new(0,3,0,0),
-Position=UDim2.new(0,0,0,0),
-BackgroundColor3=pal.accent,
-BackgroundTransparency=0,
-BorderSizePixel=0,
-ZIndex=600,
-})
-DS_Node("UIGradient",DS_TabBar,{
-Rotation=90,
-Transparency=NumberSequence.new{
-NumberSequenceKeypoint.new(0,0),
-NumberSequenceKeypoint.new(1,0.45),
-},
-})
-end
 local openId=DS_Asset"open.png"
 local dragId=DS_Asset"open_drag.png"
 local ob=h.OpenButtonMain
@@ -16169,7 +16200,15 @@ local a=host.AbsoluteSize
 if a.X<=0 or a.Y<=0 then
 return
 end
-local sw=0.072
+local m=math.min(a.X,a.Y)
+local k
+if DS_UIS.TouchEnabled and not DS_UIS.KeyboardEnabled then
+k=m<820 and 0.135 or 0.115
+else
+k=0.105
+end
+local px=m*k
+local sw=px/a.X
 mini.Size=UDim2.new(sw,0,sw*a.X/(1.354*a.Y),0)
 end
 fitMini()
@@ -16235,7 +16274,6 @@ startIn=i.Position
 if dragId then
 fish.Image=dragId
 end
-DS_Tween(mini,0.14,{Size=mini.Size*1.0})
 end
 end)
 DS_UIS.InputChanged:Connect(function(i)
@@ -16267,11 +16305,7 @@ miniBtn.Activated:Connect(function()
 if moved>10 then
 return
 end
-DS_Tween(mini,0.09,{Size=mini.Size*0.94},Enum.EasingStyle.Back)
-task.delay(0.09,function()
-fitMini()
-end)
-task.delay(0.10,function()
+task.delay(0.06,function()
 pcall(function()
 h:Open()
 end)
@@ -16287,21 +16321,84 @@ if not dragging then
 fitMini()
 end
 end)
-if al then
 local function sync()
-mini.Visible=al.Visible
+mini.Visible=(not root.Visible)and(#root:GetChildren()>0)
 end
 pcall(function()
-al:GetPropertyChangedSignal"Visible":Connect(sync)
+root:GetPropertyChangedSignal"Visible":Connect(sync)
 end)
 task.spawn(function()
 while mini.Parent do
 sync()
-task.wait(0.2)
+task.wait(0.15)
 end
 end)
 end
+DS_TickerHolder=DS_Node("Frame",DS_ROOT,{
+Name="DeepSeekTicker",
+AnchorPoint=Vector2.new(1,0),
+Position=UDim2.new(1,-14,0.095,0),
+Size=UDim2.new(0,140,0,32),
+BackgroundTransparency=1,
+BorderSizePixel=0,
+ClipsDescendants=true,
+ZIndex=700,
+})
+DS_TickerText=DS_Node("TextLabel",DS_TickerHolder,{
+Name="DeepSeekTickerText",
+BackgroundTransparency=1,
+BorderSizePixel=0,
+AutomaticSize=Enum.AutomaticSize.XY,
+AnchorPoint=Vector2.new(0,0.5),
+Position=UDim2.new(0,0,0.5,0),
+Text="",
+TextColor3=Color3.new(1,1,1),
+TextSize=15,
+TextStrokeTransparency=1,
+ZIndex=701,
+})
+DS_Node("UIGradient",DS_TickerText,{Name="DeepSeekTickerGrad",Color=DS_Rainbow()})
+local tickStroke=DS_Node("UIStroke",DS_TickerText,{
+Color=Color3.new(1,1,1),
+Thickness=2,
+Transparency=0.55,
+ApplyStrokeMode=Enum.ApplyStrokeMode.Contextual,
+})
+DS_Node("UIGradient",tickStroke,{Color=DS_Rainbow()})
+task.spawn(function()
+local r=0
+while DS_TickerText.Parent do
+r=(r+3)%360
+local g=DS_TickerText:FindFirstChildOfClass"UIGradient"
+if g then
+g.Rotation=r
 end
+if tickStroke.Parent then
+local g2=tickStroke:FindFirstChildOfClass"UIGradient"
+if g2 then
+g2.Rotation=r
+end
+end
+task.wait(0.06)
+end
+end)
+task.spawn(function()
+while DS_TickerHolder.Parent do
+local w=DS_TickerText.AbsoluteSize.X
+local hw=DS_TickerHolder.AbsoluteSize.X
+if w>hw+6 then
+local dist=w-hw
+local d=math.max(1.4,dist/55)
+DS_Tween(DS_TickerText,math.min(d,3.2),{Position=UDim2.new(0,-dist,0.5,0)},Enum.EasingStyle.Linear)
+task.wait(math.min(d,3.2)+0.9)
+DS_TickerText.Position=UDim2.new(0,0,0.5,0)
+task.wait(0.7)
+else
+task.wait(0.5)
+end
+end
+end)
+DS_TickerRefresh()
 local foot=DS_Node("Frame",root,{
 Name="DeepSeekFoot",
 AnchorPoint=Vector2.new(0.5,1),
@@ -16384,11 +16481,6 @@ task.wait(0.16)
 stick.Position=UDim2.new(1,140,1,-8)
 DS_Tween(stick,0.5,{Position=UDim2.new(1,-8,1,-8)},Enum.EasingStyle.Back,Enum.EasingDirection.Out)
 end)
-task.spawn(function()
-task.wait(0.05)
-glowStroke.Transparency=1
-DS_Tween(glowStroke,0.55,{Transparency=0.62},Enum.EasingStyle.Quad,Enum.EasingDirection.Out)
-end)
 task.delay(1.4,DS_ApplyFont)
 end
 DS_SetFont=DS_SetFont
@@ -16399,6 +16491,7 @@ DS_FontGet=function()
 return DS_FONT,DS_FONTSCALE
 end
 DS_OnTab=DS_OnTab
+DS_Ticker={Set=DS_TickerSet,Add=DS_TickerAdd,Remove=DS_TickerRemove,Clear=DS_TickerClear}
 if _G then
 _G.DS_SetFont=DS_SetFont
 _G.DS_SetFontScale=DS_SetFontScale
@@ -16407,6 +16500,7 @@ _G.DS_FontList=DS_FONTS
 _G.DS_FontGet=DS_FontGet
 _G.DS_FaceOf=DS_Face
 _G.DS_OnTab=DS_OnTab
+_G.DS_Ticker=DS_Ticker
 end
 aa.Themes=a.load'v'(aa,as)
 
