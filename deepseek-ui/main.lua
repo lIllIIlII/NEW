@@ -15685,14 +15685,14 @@ ScaleType=Enum.ScaleType.Fit,
 Image=pid,
 Size=UDim2.fromOffset(214,214),
 AnchorPoint=Vector2.new(0,0.5),
-Position=UDim2.new(0,-74,0.54,8),
+Position=UDim2.new(0,-152,0.54,8),
 Rotation=-3,
 ZIndex=-60,
 })
 task.spawn(function()
 local T=game:GetService"TweenService"
-local a=UDim2.new(0,-74,0.54,8)
-local b=UDim2.new(0,-74,0.54,0)
+local a=UDim2.new(0,-152,0.54,8)
+local b=UDim2.new(0,-152,0.54,0)
 while pet.Parent do
 T:Create(pet,TweenInfo.new(2.6,Enum.EasingStyle.Sine,Enum.EasingDirection.InOut),{Position=b}):Play()
 task.wait(2.6)
