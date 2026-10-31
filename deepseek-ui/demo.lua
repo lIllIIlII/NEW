@@ -35,10 +35,12 @@ local function Call(obj, name, props)
 		return nil
 	end
 	if res and props and props.Title and _G.DS_RegisterJump then
-		_G.DS_RegisterJump(props.Title, res)
+		_G.DS_RegisterJump(props.Title, res, Group)
 	end
 	return res
 end
+
+local Group = "首页"
 
 local function notify(title, content)
 	WindUI:Notify({ Title = title, Content = content, Duration = 4 })
@@ -141,6 +143,7 @@ Call(Home, "Colorpicker", {
 	Callback = function(c) print("[主题色]", c) end,
 })
 
+Group = "控件"
 Call(Controls, "Section", { Title = "多选" })
 Call(Controls, "Dropdown", {
 	Title = "功能开关",
@@ -205,6 +208,7 @@ Call(Controls, "Keybind", {
 	Callback = function(k) print("[紧急停止]", k) end,
 })
 
+Group = "脚本"
 Call(Scripts, "Section", { Title = "脚本中心" })
 for _, item in ipairs({
 	{ title = "无限收益", desc = "管理员面板", tag = "管理" },
@@ -233,6 +237,7 @@ Call(Scripts, "Button", {
 	end,
 })
 
+Group = "外观"
 Call(Look, "Section", { Title = "主题配色" })
 Call(Look, "Button", {
 	Title = "深色",
@@ -340,6 +345,7 @@ Call(Look, "Button", { Title = "解锁全部", Desc = "释放所有元素", Call
 Call(Look, "Input", { Title = "窗口标题", Desc = "改掉左上角的字", Placeholder = "DeepSeek", Value = "DeepSeek", Callback = function(v) Window:SetTitle(v) end })
 Call(Look, "Keybind", { Title = "显示 / 隐藏", Desc = "用快捷键开关窗口", Value = "RightControl", Callback = function(k) print("[开关]", k) end })
 
+Group = "关于"
 Call(Info, "Section", { Title = "DeepSeek UI" })
 Call(Info, "Paragraph", {
 	Title = "WindUI 1.6.65 改版",
@@ -387,6 +393,7 @@ end)
 
 local Index = Window:Tab({ Title = "索引", Icon = "lucide:list" })
 
+Group = "索引"
 Call(Index, "Section", { Title = "功能定位" })
 Call(Index, "Paragraph", {
 	Title = "跳转到任意控件",
