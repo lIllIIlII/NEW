@@ -16296,6 +16296,72 @@ local function DS_TickerClear()
 DS_TickerList={}
 DS_TickerSync()
 end
+local DS_Snd=nil
+local DS_SndVol=0.55
+local function DS_PlaySound(vol)
+if vol then
+DS_SndVol=math.clamp(tonumber(vol)or 0.55,0,3)
+end
+if not(writefile and getcustomasset)then
+return nil
+end
+local name="DeepSeekUI/load.mp3"
+local have=false
+if isfile and isfile(name)then
+have=true
+end
+if not have then
+if isfolder and not isfolder"DeepSeekUI"then
+pcall(makefolder,"DeepSeekUI")
+end
+local b
+for _,x in next,DS_CDN do
+b=DS_Request(x.."load.mp3")
+if b then
+break
+end
+end
+if not b then
+return nil
+end
+if not pcall(writefile,name,b)then
+return nil
+end
+end
+local id
+local ok=pcall(function()
+id=getcustomasset(name)
+end)
+if not ok or type(id)~="string"then
+return nil
+end
+pcall(function()
+if DS_Snd then
+DS_Snd:Destroy()
+end
+end)
+local svc=game:GetService"SoundService"
+DS_Snd=DS_Node("Sound",svc,{
+Name="DeepSeekLoad",
+SoundId=id,
+Volume=DS_SndVol,
+PlayOnRemove=false,
+Looped=false,
+})
+pcall(function()
+DS_Snd:Play()
+end)
+return DS_Snd
+end
+local function DS_StopSound()
+pcall(function()
+if DS_Snd then
+DS_Snd:Stop()
+DS_Snd:Destroy()
+DS_Snd=nil
+end
+end)
+end
 local function DS_ScreenRoot(root,h,al)
 local c
 pcall(function()
@@ -16766,6 +16832,10 @@ _G._G.DS_Close=DS_Close
 end
 end)
 
+DS_Stage("sound",function()
+DS_PlaySound()
+end)
+
 DS_Stage("mini",function()
 if ob and ob.Button then
 local an=ob.Button
@@ -17112,6 +17182,8 @@ _G.DS_Ticker=DS_Ticker
 _G.DS_Errors=DS_ERR
 _G.DS_SetMiniScale=DS_SetMiniScale
 _G.DS_ReScale=DS_ReScale
+_G.DS_PlaySound=DS_PlaySound
+_G.DS_StopSound=DS_StopSound
 _G.DS_Debug=DS_Debug
 end
 aa.Themes=a.load'v'(aa,as)
