@@ -282,43 +282,25 @@ Call(Look, "Toggle", {
 	end,
 })
 Call(Look, "Divider")
-Call(Look, "Section", { Title = "字体" })
-local FONTS = _G.DS_FontList or { "Arcade", "Code", "SciFi" }
-local curFont, curScale = "Arcade", 0.92
+Call(Look, "Section", { Title = "文字大小" })
+local _, curScale = 0.92, 0.92
 if _G.DS_FontGet then
-	curFont, curScale = _G.DS_FontGet()
+	local _
+	_, curScale = _G.DS_FontGet()
 end
-Call(Look, "Dropdown", {
-	Title = "字体样式",
-	Desc = "Roblox 内置字体，37 款",
-	Values = FONTS,
-	Value = curFont,
-	Callback = function(v)
-		if _G.DS_SetFont then _G.DS_SetFont(v) end
-		notify("字体已切换", tostring(v))
-	end,
-})
 Call(Look, "Slider", {
 	Title = "字号大小",
-	Desc = "缩放所有文字",
+	Desc = "缩放所有文字，字体保持系统默认",
 	Value = { Min = 70, Max = 150, Default = math.floor(curScale * 100) },
 	Callback = function(v)
 		if _G.DS_SetFontScale then _G.DS_SetFontScale(v / 100) end
 	end,
 })
 Call(Look, "Button", {
-	Title = "恢复像素字体",
-	Desc = "回到 Arcade 街机字",
+	Title = "恢复默认字号",
+	Desc = "回到 100%",
 	Callback = function()
-		if _G.DS_SetFont then _G.DS_SetFont("Arcade") end
-		if _G.DS_SetFontScale then _G.DS_SetFontScale(0.92) end
-	end,
-})
-Call(Look, "Button", {
-	Title = "重新应用字体",
-	Desc = "把当前字体刷到每个控件",
-	Callback = function()
-		if _G.DS_ApplyFont then _G.DS_ApplyFont() end
+		if _G.DS_SetFontScale then _G.DS_SetFontScale(1.0) end
 	end,
 })
 Call(Look, "Divider")
