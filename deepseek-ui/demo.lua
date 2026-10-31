@@ -45,6 +45,10 @@ Window:CreateTopbarButton("Info", "info", function()
 	notify("DeepSeek UI", "WindUI 1.6.65 · square corners · random whale art")
 end, 24, nil, Color3.fromHex("#4D6BFE"))
 
+pcall(function()
+	Window:Tag({ Title = "v1.6.65", Icon = "lucide:badge-check" })
+end)
+
 local Home = Window:Tab({ Title = "Home", Icon = "lucide:house" })
 local Controls = Window:Tab({ Title = "Controls", Icon = "lucide:sliders-horizontal" })
 local Scripts = Window:Tab({ Title = "Scripts", Icon = "lucide:code" })
