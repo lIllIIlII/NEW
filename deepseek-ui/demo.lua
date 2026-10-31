@@ -363,6 +363,20 @@ Call(Info, "Paragraph", {
 })
 Call(Info, "Divider")
 Call(Info, "Button", {
+	Title = "播放加载音效",
+	Desc = "重新播放启动音",
+	Callback = function()
+		if _G.DS_PlaySound then _G.DS_PlaySound(0.6) end
+	end,
+})
+Call(Info, "Button", {
+	Title = "停止音效",
+	Desc = "关掉正在播的声音",
+	Callback = function()
+		if _G.DS_StopSound then _G.DS_StopSound() end
+	end,
+})
+Call(Info, "Button", {
 	Title = "复制仓库地址",
 	Desc = "github.com/lIllIIlII/NEW",
 	Callback = function()
