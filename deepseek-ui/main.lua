@@ -15562,9 +15562,6 @@ local DS_FONTSCALE=0.92
 local DS_FACES={}
 local DS_VER="v7_"
 local DS_Flash=nil
-local DS_TickerHolder=nil
-local DS_TickerText=nil
-local DS_TickerList={}
 local function DS_Pick(t)
 return t[math.random(#t)]
 end
@@ -15737,128 +15734,6 @@ t[#t+1]=ColorSequenceKeypoint.new(i/6,Color3.fromHSV((i%6)/6,0.70,1))
 end
 return ColorSequence.new(t)
 end
-local DS_TickerInner=nil
-local DS_TickerLabels={}
-local DS_TickerTween=nil
-local DS_TickerGen=0
-local function DS_TickerColor(i,n)
-local t
-if n<=1 then
-t=0
-else
-t=i/(n-1)
-end
-local top=Color3.fromRGB(255,255,255)
-local bot=Color3.fromRGB(78,132,255)
-return top:Lerp(bot,t*0.9)
-end
-local function DS_TickerBuild()
-if not DS_TickerHolder then
-return
-end
-DS_TickerGen=DS_TickerGen+1
-local gen=DS_TickerGen
-if DS_TickerTween then
-pcall(function()
-DS_TickerTween:Cancel()
-end)
-DS_TickerTween=nil
-end
-if not DS_TickerInner or not DS_TickerInner.Parent then
-DS_TickerInner=DS_Node("Frame",DS_TickerHolder,{
-Name="DeepSeekTickerInner",
-Size=UDim2.new(1,0,0,0),
-Position=UDim2.new(0,0,0,0),
-BackgroundTransparency=1,
-BorderSizePixel=0,
-AutomaticSize=Enum.AutomaticSize.Y,
-ZIndex=701,
-})
-DS_Node("UIListLayout",DS_TickerInner,{
-Padding=UDim.new(0,4),
-SortOrder=Enum.SortOrder.LayoutOrder,
-HorizontalAlignment=Enum.HorizontalAlignment.Right,
-})
-end
-for _,c in next,DS_TickerInner:GetChildren()do
-if c:IsA"TextLabel"then
-c:Destroy()
-end
-end
-DS_TickerLabels={}
-local list={}
-if #DS_TickerList>0 then
-for _,v in next,DS_TickerList do
-table.insert(list,v)
-end
-else
-table.insert(list,"暂无开启功能")
-end
-local total=#list*2
-for i=1,total do
-local name=list[((i-1)%#list)+1]
-local lbl=DS_Node("TextLabel",DS_TickerInner,{
-Name="T"..i,
-Size=UDim2.new(1,0,0,18),
-BackgroundTransparency=1,
-BorderSizePixel=0,
-Text=name,
-TextColor3=DS_TickerColor((i-1)%#list,#list),
-TextXAlignment=Enum.TextXAlignment.Right,
-TextSize=12,
-TextStrokeTransparency=1,
-FontFace=DS_Face"GothamMedium"or DS_Face"SourceSansSemibold"or nil,
-LayoutOrder=i,
-ZIndex=702,
-})
-DS_Node("UIStroke",lbl,{
-Color=DS_TickerColor((i-1)%#list,#list),
-Thickness=2,
-Transparency=0.42,
-ApplyStrokeMode=Enum.ApplyStrokeMode.Contextual,
-})
-table.insert(DS_TickerLabels,lbl)
-end
-task.defer(function()
-if gen~=DS_TickerGen or not DS_TickerInner or not DS_TickerInner.Parent then
-return
-end
-DS_TickerHolder.Size=UDim2.new(DS_TickerHolder.Size.X.Scale,0,DS_TickerHolder.Size.Y.Scale,0)
-end)
-end
-local function DS_TickerRefresh()
-DS_TickerBuild()
-end
-local function DS_TickerSet(list)
-DS_TickerList={}
-for _,v in next,list or{}do
-table.insert(DS_TickerList,tostring(v))
-end
-DS_TickerRefresh()
-end
-local function DS_TickerAdd(name)
-name=tostring(name)
-for _,v in next,DS_TickerList do
-if v==name then
-return
-end
-end
-table.insert(DS_TickerList,name)
-DS_TickerRefresh()
-end
-local function DS_TickerRemove(name)
-name=tostring(name)
-for i=#DS_TickerList,1,-1 do
-if DS_TickerList[i]==name then
-table.remove(DS_TickerList,i)
-end
-end
-DS_TickerRefresh()
-end
-local function DS_TickerClear()
-DS_TickerList={}
-DS_TickerRefresh()
-end
 local function DS_TabEdge(btn)
 local e=btn:FindFirstChild"DeepSeekTabEdge"
 if e then
@@ -15966,42 +15841,74 @@ return m*k
 end
 local DS_JUMPS={}
 local DS_JumpPanel=nil
-local function DS_JumpTarget(obj)
-local t
+local DS_JumpBlocker=nil
+local function DS_FindGui(obj,depth,seen)
+if depth>4 then
+return nil
+end
+if typeof(obj)=="Instance"then
+if obj:IsA"GuiObject"then
+return obj
+end
+return nil
+end
 if type(obj)~="table"then
 return nil
 end
-pcall(function()
-if obj.UIElements then
-t=obj.UIElements.Main or obj.UIElements.Container or obj.UIElements.Frame
+if seen[obj]then
+return nil
 end
-end)
-if not t then
-pcall(function()
-t=obj.Frame
-end)
+seen[obj]=true
+local order={"Main","Frame","Container","ContainerFrame","Element","UIElements","Object","Button"}
+for _,k in next,order do
+local v=obj[k]
+if v~=nil then
+local r=DS_FindGui(v,depth+1,seen)
+if r then
+return r
 end
-if not t then
-pcall(function()
-t=obj.Container
-end)
 end
-if not t then
-pcall(function()
-t=obj.UIElements.Main.Frame
-end)
 end
-if t and t:IsA"GuiObject"then
-return t
+for _,v in next,obj do
+if type(v)=="table"or typeof(v)=="Instance"then
+local r=DS_FindGui(v,depth+1,seen)
+if r then
+return r
+end
+end
+end
+return nil
+end
+local function DS_TabOf(t)
+local G=DS_WIN and DS_WIN.TabModule
+if not G or not G.Containers then
+return nil
+end
+local node=t
+while node do
+for k,c in next,G.Containers do
+if c==node then
+return k
+end
+end
+node=node.Parent
 end
 return nil
 end
 local function DS_JumpTo(obj)
-local t=DS_JumpTarget(obj)
+local t=DS_FindGui(obj,0,{})
 if not t then
-return
+return false
 end
 local pal=DS_PAL or{accent=Color3.fromHex"#4D6BFE"}
+task.spawn(function()
+local key=DS_TabOf(t)
+if key then
+pcall(function()
+DS_WIN:SelectTab(key)
+end)
+task.wait(0.07)
+end
 local sf=t:FindFirstAncestorOfClass"ScrollingFrame"
 if sf then
 local ok,y=pcall(function()
@@ -16009,7 +15916,7 @@ return t.AbsolutePosition.Y-sf.AbsolutePosition.Y+sf.CanvasPosition.Y
 end)
 if ok then
 local goal=math.max(0,y-t.AbsoluteSize.Y/2+sf.AbsoluteSize.Y/2)
-DS_Tween(sf,0.48,{CanvasPosition=Vector2.new(sf.CanvasPosition.X,goal)},Enum.EasingStyle.Quint,Enum.EasingDirection.Out)
+DS_Tween(sf,0.5,{CanvasPosition=Vector2.new(sf.CanvasPosition.X,goal)},Enum.EasingStyle.Quint,Enum.EasingDirection.Out)
 end
 end
 local us=t:FindFirstChild"DeepSeekJumpPop"
@@ -16040,10 +15947,12 @@ end
 local st=hl:FindFirstChildOfClass"UIStroke"
 if st then
 DS_Tween(st,0.16,{Transparency=0.02,Thickness=3})
-task.delay(0.85,function()
-DS_Tween(st,0.55,{Transparency=1,Thickness=1},Enum.EasingStyle.Quad,Enum.EasingDirection.Out)
+task.delay(0.9,function()
+DS_Tween(st,0.6,{Transparency=1,Thickness=1},Enum.EasingStyle.Quad,Enum.EasingDirection.Out)
 end)
 end
+end)
+return true
 end
 local function DS_RegisterJump(name,obj)
 if not name or not obj then
@@ -16051,79 +15960,113 @@ return
 end
 table.insert(DS_JUMPS,{name=tostring(name),obj=obj})
 end
-local function DS_BuildJumpPanel()
-if not DS_ROOT then
-return
+local function DS_JumpNames()
+local t={}
+for _,v in next,DS_JUMPS do
+table.insert(t,v.name)
 end
+return t
+end
+local function DS_JumpToName(name)
+for _,v in next,DS_JUMPS do
+if v.name==tostring(name)then
+return DS_JumpTo(v.obj)
+end
+end
+return false
+end
+local function DS_CloseJump()
 if DS_JumpPanel then
 DS_JumpPanel:Destroy()
 DS_JumpPanel=nil
 end
+if DS_JumpBlocker then
+DS_JumpBlocker:Destroy()
+DS_JumpBlocker=nil
+end
+end
+local function DS_BuildJumpPanel()
+if not DS_ROOT then
+return
+end
+DS_CloseJump()
 local pal=DS_PAL or{accent=Color3.fromHex"#4D6BFE"}
-local holder=DS_Node("Frame",DS_ROOT,{
+local list=DS_JumpNames()
+local rowh=26
+local headH=34
+local n=math.max(#list,1)
+local viewH=math.min(rowh*n+8,340)
+local panelH=headH+viewH
+DS_JumpBlocker=DS_Node("TextButton",DS_ROOT,{
+Name="DeepSeekJumpBlocker",
+Size=UDim2.fromScale(1,1),
+BackgroundTransparency=1,
+BorderSizePixel=0,
+Text="",
+AutoButtonColor=false,
+ZIndex=898,
+})
+DS_JumpBlocker.Activated:Connect(function()
+DS_CloseJump()
+end)
+local panel=DS_Node("Frame",DS_ROOT,{
 Name="DeepSeekJump",
-AnchorPoint=Vector2.new(0.5,0.5),
-Position=UDim2.new(0.5,0,0.5,0),
-Size=UDim2.new(0.66,0,0.72,0),
-BackgroundColor3=Color3.fromHex"#060A12",
-BackgroundTransparency=0.06,
+AnchorPoint=Vector2.new(0,0),
+Position=UDim2.new(0,14,0,46),
+Size=UDim2.new(0,236,0,headH),
+BackgroundColor3=Color3.fromHex"#070C15",
+BackgroundTransparency=0.03,
 BorderSizePixel=0,
 ClipsDescendants=true,
 ZIndex=900,
 })
-DS_JumpPanel=holder
-DS_Node("UIStroke",holder,{Color=pal.accent,Thickness=1,Transparency=0.45,ApplyStrokeMode=Enum.ApplyStrokeMode.Border})
-DS_Node("Frame",holder,{
-Size=UDim2.new(1,0,0,2),
-BackgroundColor3=pal.accent,
-BackgroundTransparency=0.15,
-BorderSizePixel=0,
-ZIndex=902,
+DS_JumpPanel=panel
+DS_Node("UIStroke",panel,{
+Color=pal.accent,
+Thickness=1,
+Transparency=0.55,
+ApplyStrokeMode=Enum.ApplyStrokeMode.Border,
 })
-local title=DS_Node("TextLabel",holder,{
+local head=DS_Node("TextLabel",panel,{
 BackgroundTransparency=1,
 BorderSizePixel=0,
-Size=UDim2.new(1,-24,0,30),
-Position=UDim2.new(0,12,0,8),
-Text="跳转到功能",
-TextColor3=Color3.new(1,1,1),
-TextSize=15,
+Size=UDim2.new(1,-20,0,headH),
+Position=UDim2.new(0,12,0,0),
+Text="功能定位",
+TextColor3=pal.soft,
+TextSize=12,
 TextXAlignment=Enum.TextXAlignment.Left,
 ZIndex=903,
 })
-DS_Node("UIGradient",title,{Color=DS_Rainbow()})
-local close=DS_Node("TextButton",holder,{
-Size=UDim2.fromOffset(26,26),
-Position=UDim2.new(1,-36,0,10),
+DS_Node("Frame",panel,{
+Size=UDim2.new(1,0,0,1),
+Position=UDim2.new(0,0,0,headH-1),
 BackgroundColor3=pal.accent,
-BackgroundTransparency=0.85,
+BackgroundTransparency=0.72,
 BorderSizePixel=0,
-Text="×",
-TextColor3=Color3.new(1,1,1),
-TextSize=18,
-AutoButtonColor=false,
-ZIndex=903,
-})
-local sc=DS_Node("ScrollingFrame",holder,{
-Size=UDim2.new(1,-16,1,-56),
-Position=UDim2.new(0,8,0,46),
-BackgroundTransparency=1,
-BorderSizePixel=0,
-ScrollBarThickness=3,
-ScrollBarImageColor3=pal.accent,
-CanvasSize=UDim2.new(0,0,0,0),
-AutomaticCanvasSize=Enum.AutomaticSize.Y,
 ZIndex=902,
 })
-DS_Node("UIListLayout",sc,{Padding=UDim.new(0,4),SortOrder=Enum.SortOrder.LayoutOrder})
+local sc=DS_Node("ScrollingFrame",panel,{
+Size=UDim2.new(1,0,0,viewH),
+Position=UDim2.new(0,0,0,headH),
+BackgroundTransparency=1,
+BorderSizePixel=0,
+ScrollBarThickness=2,
+ScrollBarImageColor3=pal.accent,
+ScrollBarImageTransparency=0.4,
+CanvasSize=UDim2.new(0,0,0,0),
+AutomaticCanvasSize=Enum.AutomaticSize.Y,
+ZIndex=901,
+})
+DS_Node("UIListLayout",sc,{Padding=UDim.new(0,0),SortOrder=Enum.SortOrder.LayoutOrder})
 local i=0
 for _,item in ipairs(DS_JUMPS)do
 i=i+1
 local row=DS_Node("TextButton",sc,{
 Name="JumpRow"..i,
-Size=UDim2.new(1,-4,0,30),
+Size=UDim2.new(1,-4,0,rowh),
 BackgroundColor3=pal.accent,
-BackgroundTransparency=0.93,
+BackgroundTransparency=1,
 BorderSizePixel=0,
 Text="",
 AutoButtonColor=false,
@@ -16131,108 +16074,58 @@ LayoutOrder=i,
 ZIndex=903,
 })
 local bar=DS_Node("Frame",row,{
-Size=UDim2.new(0,3,1,-8),
+Size=UDim2.new(0,2,1,-10),
 Position=UDim2.new(0,0,0.5,0),
 AnchorPoint=Vector2.new(0,0.5),
 BackgroundColor3=pal.accent,
-BackgroundTransparency=0,
+BackgroundTransparency=0.2,
 BorderSizePixel=0,
-ZIndex=904,
-})
-local idx=DS_Node("TextLabel",row,{
-BackgroundTransparency=1,
-BorderSizePixel=0,
-Size=UDim2.fromOffset(26,30),
-Position=UDim2.fromOffset(8,0),
-Text=string.format("%02d",i),
-TextColor3=pal.soft,
-TextSize=12,
-TextXAlignment=Enum.TextXAlignment.Left,
 ZIndex=904,
 })
 local nm=DS_Node("TextLabel",row,{
 BackgroundTransparency=1,
 BorderSizePixel=0,
-Size=UDim2.new(1,-44,1,0),
-Position=UDim2.fromOffset(36,0),
+Size=UDim2.new(1,-20,1,0),
+Position=UDim2.new(0,12,0,0),
 Text=item.name,
-TextColor3=Color3.new(1,1,1),
+TextColor3=Color3.fromRGB(226,233,246),
 TextSize=13,
 TextXAlignment=Enum.TextXAlignment.Left,
 TextTruncate=Enum.TextTruncate.AtEnd,
 ZIndex=904,
 })
 row.MouseEnter:Connect(function()
-DS_Tween(row,0.16,{BackgroundTransparency=0.80})
-DS_Tween(bar,0.16,{Size=UDim2.new(0,5,1,-8)})
+DS_Tween(row,0.14,{BackgroundTransparency=0.86})
+DS_Tween(nm,0.14,{TextColor3=Color3.new(1,1,1)})
+DS_Tween(bar,0.14,{Size=UDim2.new(0,4,1,-10)})
 end)
 row.MouseLeave:Connect(function()
-DS_Tween(row,0.18,{BackgroundTransparency=0.93})
-DS_Tween(bar,0.18,{Size=UDim2.new(0,3,1,-8)})
+DS_Tween(row,0.16,{BackgroundTransparency=1})
+DS_Tween(nm,0.16,{TextColor3=Color3.fromRGB(226,233,246)})
+DS_Tween(bar,0.16,{Size=UDim2.new(0,2,1,-10)})
 end)
 local target=item.obj
 row.Activated:Connect(function()
-pcall(function()
-holder.Visible=false
-end)
-task.delay(0.06,function()
+DS_CloseJump()
+task.delay(0.04,function()
 pcall(function()
 DS_JumpTo(target)
 end)
 end)
 end)
-row.Position=UDim2.new(-0.12,0,0,0)
-task.delay(i*0.022,function()
+row.Visible=false
+task.delay(0.012*i,function()
 if row.Parent then
-DS_Tween(row,0.34,{Position=UDim2.new(0,0,0,0)},Enum.EasingStyle.Quint,Enum.EasingDirection.Out)
+row.Visible=true
+row.BackgroundTransparency=0.72
+DS_Tween(row,0.20,{BackgroundTransparency=1})
 end
 end)
 end
-close.Activated:Connect(function()
-pcall(function()
-holder.Visible=false
-end)
-end)
-holder.Size=UDim2.new(0.66,0,0.001,0)
-DS_Tween(holder,0.32,{Size=UDim2.new(0.66,0,0.72,0)},Enum.EasingStyle.Quint,Enum.EasingDirection.Out)
+DS_Tween(panel,0.22,{Size=UDim2.new(0,236,0,panelH)},Enum.EasingStyle.Quint,Enum.EasingDirection.Out)
 end
 local function DS_OpenJump()
 DS_BuildJumpPanel()
-end
-
-local function DS_ScreenRoot(root,h,al)
-local c
-pcall(function()
-c=root:FindFirstAncestorOfClass"ScreenGui"
-end)
-if c then
-return c
-end
-pcall(function()
-if h.Parent and h.Parent:IsA"ScreenGui"then
-c=h.Parent
-end
-end)
-if c then
-return c
-end
-pcall(function()
-if al and al.Parent and al.Parent:IsA"ScreenGui"then
-c=al.Parent
-end
-end)
-if c then
-return c
-end
-pcall(function()
-if al and al.Parent then
-c=al.Parent
-end
-end)
-if c then
-return c
-end
-return root.Parent or root
 end
 local function DS_Apply(h,w)
 local root=h and h.UIElements and h.UIElements.Main
@@ -16243,78 +16136,6 @@ DS_ROOT=root.Parent or root
 DS_WIN=h
 local pal=DS_Palette(w.Theme and w.Theme.Name or DS_THEME)
 DS_PAL=pal
-DS_Stage("ticker",function()
-local sg=DS_ScreenRoot(root,h,al)
-local vp=DS_Viewport()
-DS_TickerHolder=DS_Node("Frame",sg,{
-Name="DeepSeekTicker",
-AnchorPoint=Vector2.new(1,0),
-Position=UDim2.new(1,-18,0.115,0),
-Size=UDim2.new(0.30,0,0.50,0),
-BackgroundTransparency=1,
-BorderSizePixel=0,
-ClipsDescendants=true,
-ZIndex=700,
-})
-DS_TickerBuild()
-task.spawn(function()
-while DS_TickerHolder and DS_TickerHolder.Parent do
-local gen=DS_TickerGen
-local half=DS_TickerInner and DS_TickerInner.AbsoluteSize.Y/2 or 0
-if half>4 then
-DS_TickerInner.Position=UDim2.new(0,0,0,0)
-local d=math.clamp(half/26,2.0,26.0)
-DS_TickerTween=DS_Tween(DS_TickerInner,d,{Position=UDim2.new(0,0,0,-half)},Enum.EasingStyle.Linear)
-task.wait(d+0.04)
-else
-task.wait(0.35)
-end
-if gen~=DS_TickerGen then
-task.wait(0.05)
-end
-end
-end)
-task.spawn(function()
-while DS_TickerHolder and DS_TickerHolder.Parent do
-local ok=pcall(function()
-local hy=DS_TickerHolder.AbsoluteSize.Y
-if hy<=0 then
-return
-end
-local base=DS_TickerHolder.AbsolutePosition.Y
-for _,lbl in next,DS_TickerLabels do
-if lbl.Parent then
-local t=math.clamp((lbl.AbsolutePosition.Y-base)/hy,0,1)
-local c=Color3.fromRGB(255,255,255):Lerp(Color3.fromRGB(78,132,255),t*0.92)
-lbl.TextColor3=c
-local st=lbl:FindFirstChildOfClass"UIStroke"
-if st then
-st.Color=c
-st.Transparency=0.30+t*0.45
-end
-end
-end
-end)
-task.wait(0.09)
-end
-end)
-task.spawn(function()
-while DS_TickerHolder and DS_TickerHolder.Parent do
-pcall(function()
-local vp2=DS_Viewport()
-local fs=math.clamp(vp2.Y*0.0165,10,22)
-for _,lbl in next,DS_TickerLabels do
-if lbl.Parent then
-lbl.TextSize=math.floor(fs)
-lbl.Size=UDim2.new(1,0,0,math.floor(fs*1.55))
-end
-end
-end)
-task.wait(0.6)
-end
-end)
-end)
-
 local bg=root:FindFirstChild"Background"
 local bgImg
 local glowStroke
@@ -16675,8 +16496,9 @@ Name="DeepSeekMiniFish",
 BackgroundTransparency=1,
 BorderSizePixel=0,
 ScaleType=Enum.ScaleType.Fit,
-Size=UDim2.fromScale(1,1),
-Position=UDim2.fromOffset(0,0),
+Size=UDim2.fromScale(0.93,0.93),
+AnchorPoint=Vector2.new(0.5,0.5),
+Position=UDim2.new(0.5,0,0.5,0),
 ZIndex=1,
 Image=openId,
 })
@@ -16694,16 +16516,16 @@ local miniLabel=DS_Node("TextLabel",mini,{
 Name="DeepSeekMiniLabel",
 BackgroundTransparency=1,
 BorderSizePixel=0,
-Size=UDim2.new(0.72,0,0.115,0),
+Size=UDim2.new(0.82,0,0.175,0),
 AnchorPoint=Vector2.new(0.5,0.5),
-Position=UDim2.new(0.5,0,0.615,0),
+Position=UDim2.new(0.5,0,0.605,0),
 Text=tostring(h.Title or"DeepSeek"),
 TextColor3=Color3.fromHex"#16233F",
 TextScaled=true,
 TextStrokeTransparency=1,
 ZIndex=3,
 })
-DS_Node("UITextSizeConstraint",miniLabel,{MaxTextSize=72})
+DS_Node("UITextSizeConstraint",miniLabel,{MaxTextSize=110})
 local miniBtn=DS_Node("TextButton",mini,{
 Name="DeepSeekMiniButton",
 Size=UDim2.fromScale(1,1),
@@ -16886,9 +16708,10 @@ DS_FontGet=function()
 return DS_FONT,DS_FONTSCALE
 end
 DS_OnTab=DS_OnTab
-DS_Ticker={Set=DS_TickerSet,Add=DS_TickerAdd,Remove=DS_TickerRemove,Clear=DS_TickerClear}
 DS_OpenJump=DS_OpenJump
 DS_RegisterJump=DS_RegisterJump
+DS_JumpNames=DS_JumpNames
+DS_JumpToName=DS_JumpToName
 DS_Errors=DS_ERR
 DS_SetMiniScale=function(k)
 DS_MINI_K=math.clamp(tonumber(k)or 0.14,0.04,0.5)
@@ -16946,9 +16769,10 @@ _G.DS_FontList=DS_FONTS
 _G.DS_FontGet=DS_FontGet
 _G.DS_FaceOf=DS_Face
 _G.DS_OnTab=DS_OnTab
-_G.DS_Ticker=DS_Ticker
 _G.DS_OpenJump=DS_OpenJump
 _G.DS_RegisterJump=DS_RegisterJump
+_G.DS_JumpNames=DS_JumpNames
+_G.DS_JumpToName=DS_JumpToName
 _G.DS_Errors=DS_ERR
 _G.DS_Debug=DS_Debug
 _G.DS_SetMiniScale=DS_SetMiniScale
