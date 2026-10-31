@@ -8538,7 +8538,7 @@ ay.UIElements.TabItem=ak.NewRoundFrame(
 aq.MenuCorner-aq.MenuPadding,
 "Squircle",
 {
-Size=UDim2.new(1,0,0,36),
+Size=UDim2.new(1,0,0,30),
 AutomaticSize=ay.Desc and"Y",
 ImageTransparency=1,
 Parent=ap.UIElements.Menu.Frame.ScrollingFrame,
@@ -15958,8 +15958,8 @@ end
 local st=hl:FindFirstChildOfClass"UIStroke"
 if st then
 DS_Tween(st,0.16,{Transparency=0.02,Thickness=3})
-task.delay(0.9,function()
-DS_Tween(st,0.6,{Transparency=1,Thickness=1},Enum.EasingStyle.Quad,Enum.EasingDirection.Out)
+task.delay(1.9,function()
+DS_Tween(st,0.9,{Transparency=1,Thickness=1},Enum.EasingStyle.Quad,Enum.EasingDirection.Out)
 end)
 end
 end)
@@ -16208,7 +16208,7 @@ TextTransparency=0.72,
 ZIndex=701,
 })
 pcall(function()
-glow.FontFace=DS_Face"GothamBold"
+glow.FontFace=DS_Face"Arcade"
 end)
 DS_Node("UIStroke",glow,{Color=Color3.fromRGB(40,130,255),Thickness=0.8,Transparency=0.65})
 local label=DS_Node("TextLabel",holder,{
@@ -16222,15 +16222,15 @@ TextColor3=Color3.new(1,1,1),
 ZIndex=702,
 })
 pcall(function()
-label.FontFace=DS_Face"GothamBold"
+label.FontFace=DS_Face"Arcade"
 end)
 local grad=DS_Node("UIGradient",label,{
 Color=ColorSequence.new({
-ColorSequenceKeypoint.new(0,Color3.fromRGB(40,110,220)),
+ColorSequenceKeypoint.new(0,Color3.fromRGB(28,86,190)),
 ColorSequenceKeypoint.new(0.35,Color3.fromRGB(100,175,255)),
 ColorSequenceKeypoint.new(0.5,Color3.fromRGB(255,255,255)),
 ColorSequenceKeypoint.new(0.65,Color3.fromRGB(100,175,255)),
-ColorSequenceKeypoint.new(1,Color3.fromRGB(40,110,220)),
+ColorSequenceKeypoint.new(1,Color3.fromRGB(28,86,190)),
 }),
 Offset=Vector2.new(-1,0),
 })
@@ -16340,6 +16340,111 @@ if c then
 return c
 end
 return(root and root.Parent)or root
+end
+local DS_ByeBusy=false
+local function DS_Goodbye()
+if not DS_ROOT or DS_ByeBusy then
+return
+end
+DS_ByeBusy=true
+local ok=pcall(function()
+local sg=DS_ScreenRoot(DS_ROOT,DS_WIN,nil)
+if not sg then
+return
+end
+local pal=DS_PAL or{accent=Color3.fromHex"#4D6BFE",soft=Color3.fromHex"#7C97FF"}
+local box=DS_Node("Frame",sg,{
+Name="DeepSeekBye",
+AnchorPoint=Vector2.new(0.5,0.5),
+Position=UDim2.new(0.5,0,0.46,0),
+Size=UDim2.fromOffset(380,210),
+BackgroundTransparency=1,
+BorderSizePixel=0,
+ZIndex=950,
+})
+local slots={{-96,-6,-9,0.00},{-6,-26,4,0.07},{88,-2,10,0.14}}
+for i,sl in next,slots do
+local id=DS_Asset(DS_Pick(DS_PET))
+if id then
+local img=DS_Node("ImageLabel",box,{
+Size=UDim2.fromOffset(0,0),
+AnchorPoint=Vector2.new(0.5,0.5),
+Position=UDim2.new(0.5,sl[1],0.5,sl[2]),
+BackgroundTransparency=1,
+BorderSizePixel=0,
+ScaleType=Enum.ScaleType.Fit,
+Image=id,
+ImageTransparency=1,
+Rotation=sl[3],
+ZIndex=951+i,
+})
+task.delay(sl[4],function()
+if not img.Parent then
+return
+end
+DS_Tween(img,0.36,{Size=UDim2.fromOffset(128,128),ImageTransparency=0},Enum.EasingStyle.Back,Enum.EasingDirection.Out)
+end)
+task.delay(sl[4]+0.1,function()
+if not img.Parent then
+return
+end
+DS_Tween(img,1.6,{Position=UDim2.new(0.5,sl[1]*0.82,0.5,sl[2]-4)},Enum.EasingStyle.Sine,Enum.EasingDirection.InOut)
+end)
+end
+end
+local txt=DS_Node("TextLabel",box,{
+BackgroundTransparency=1,
+BorderSizePixel=0,
+Size=UDim2.new(1,0,0,30),
+AnchorPoint=Vector2.new(0.5,0.5),
+Position=UDim2.new(0.5,0,1,26),
+Text="再见 祝您天天开心",
+TextColor3=Color3.new(1,1,1),
+TextSize=22,
+TextTransparency=1,
+TextStrokeTransparency=1,
+ZIndex=960,
+})
+pcall(function()
+txt.FontFace=DS_Face"Arcade"
+end)
+DS_Node("UIGradient",txt,{
+Color=ColorSequence.new({
+ColorSequenceKeypoint.new(0,Color3.fromRGB(90,150,255)),
+ColorSequenceKeypoint.new(0.5,Color3.fromRGB(255,255,255)),
+ColorSequenceKeypoint.new(1,Color3.fromRGB(90,150,255)),
+}),
+})
+DS_Node("UIStroke",txt,{Color=pal.accent,Thickness=1.6,Transparency=0.45})
+task.delay(0.24,function()
+if not txt.Parent then
+return
+end
+txt.Position=UDim2.new(0.5,0,1,44)
+DS_Tween(txt,0.42,{TextTransparency=0,Position=UDim2.new(0.5,0,1,26)},Enum.EasingStyle.Quint,Enum.EasingDirection.Out)
+end)
+task.delay(1.75,function()
+if not box.Parent then
+return
+end
+for _,c in next,box:GetChildren()do
+if c:IsA"TextLabel"then
+DS_Tween(c,0.45,{TextTransparency=1})
+elseif c:IsA"ImageLabel"then
+DS_Tween(c,0.45,{ImageTransparency=1})
+end
+end
+task.delay(0.5,function()
+if box.Parent then
+box:Destroy()
+end
+DS_ByeBusy=false
+end)
+end)
+end)
+if not ok then
+DS_ByeBusy=false
+end
 end
 local function DS_Apply(h,w)
 local root=h and h.UIElements and h.UIElements.Main
@@ -16490,6 +16595,23 @@ BackgroundColor3=pal.accent,
 BackgroundTransparency=1,
 BorderSizePixel=0,
 ZIndex=452,
+})
+local intro=DS_Node("Frame",root,{
+Name="DeepSeekIntro",
+AnchorPoint=Vector2.new(0.5,0),
+Position=UDim2.new(0.5,0,0,0),
+Size=UDim2.new(0,0,0,2),
+BackgroundColor3=pal.accent,
+BackgroundTransparency=0,
+BorderSizePixel=0,
+ZIndex=461,
+})
+DS_Node("UIGradient",intro,{
+Transparency=NumberSequence.new{
+NumberSequenceKeypoint.new(0,0.85),
+NumberSequenceKeypoint.new(0.5,0),
+NumberSequenceKeypoint.new(1,0.85),
+},
 })
 local N=20
 for i=0,N-1 do
@@ -16732,6 +16854,37 @@ end
 local openId=DS_Asset"open.png"
 local dragId=DS_Asset"open_drag.png"
 local ob=h.OpenButtonMain
+DS_Stage("bye",function()
+local orig=h.Close
+h.Close=function(self,a)
+if DS_ByeBusy then
+return
+end
+DS_Goodbye()
+task.delay(0.26,function()
+pcall(function()
+orig(self,a)
+end)
+end)
+end
+local origT=h.Toggle
+h.Toggle=function(self,a)
+if self.IsOpen and self.IsOpen~=false then
+if DS_ByeBusy then
+return
+end
+DS_Goodbye()
+task.delay(0.26,function()
+pcall(function()
+origT(self,a)
+end)
+end)
+return
+end
+return origT(self,a)
+end
+end)
+
 DS_Stage("mini",function()
 if ob and ob.Button then
 local an=ob.Button
@@ -16776,7 +16929,7 @@ Name="DeepSeekMiniFish",
 BackgroundTransparency=1,
 BorderSizePixel=0,
 ScaleType=Enum.ScaleType.Fit,
-Size=UDim2.fromScale(0.93,0.93),
+Size=UDim2.fromScale(0.97,0.97),
 AnchorPoint=Vector2.new(0.5,0.5),
 Position=UDim2.new(0.5,0,0.5,0),
 ZIndex=1,
@@ -16796,7 +16949,7 @@ local miniLabel=DS_Node("TextLabel",mini,{
 Name="DeepSeekMiniLabel",
 BackgroundTransparency=1,
 BorderSizePixel=0,
-Size=UDim2.new(0.82,0,0.175,0),
+Size=UDim2.new(0.88,0,0.20,0),
 AnchorPoint=Vector2.new(0.5,0.5),
 Position=UDim2.new(0.5,0,0.605,0),
 Text=tostring(h.Title or"DeepSeek"),
@@ -16805,7 +16958,7 @@ TextScaled=true,
 TextStrokeTransparency=1,
 ZIndex=3,
 })
-DS_Node("UITextSizeConstraint",miniLabel,{MaxTextSize=110})
+DS_Node("UITextSizeConstraint",miniLabel,{MaxTextSize=140})
 local miniBtn=DS_Node("TextButton",mini,{
 Name="DeepSeekMiniButton",
 Size=UDim2.fromScale(1,1),
@@ -16937,8 +17090,8 @@ if not sc then
 return
 end
 local target=sc.Scale
-sc.Scale=target*0.86
-DS_Tween(sc,0.52,{Scale=target},Enum.EasingStyle.Back,Enum.EasingDirection.Out)
+sc.Scale=target*0.80
+DS_Tween(sc,0.62,{Scale=target},Enum.EasingStyle.Back,Enum.EasingDirection.Out)
 end)
 task.spawn(function()
 task.wait(0.04)
@@ -16996,6 +17149,17 @@ end)
 end)
 task.spawn(function()
 task.wait(0.02)
+pcall(function()
+DS_Tween(intro,0.46,{Size=UDim2.new(1,0,0,2)},Enum.EasingStyle.Quint,Enum.EasingDirection.Out)
+task.delay(0.5,function()
+DS_Tween(intro,0.34,{BackgroundTransparency=1},Enum.EasingStyle.Quad,Enum.EasingDirection.Out)
+task.delay(0.4,function()
+if intro.Parent then
+intro:Destroy()
+end
+end)
+end)
+end)
 if not DS_Flash then
 return
 end
