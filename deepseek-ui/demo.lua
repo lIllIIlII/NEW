@@ -34,6 +34,9 @@ local function Call(obj, name, props)
 		warn("[DeepSeekUI] " .. tostring(name) .. " 出错: " .. tostring(res))
 		return nil
 	end
+	if res and props and props.Title and _G.DS_RegisterJump then
+		_G.DS_RegisterJump(props.Title, res)
+	end
 	return res
 end
 
@@ -51,7 +54,13 @@ local function tick(name, on)
 end
 
 Window:CreateTopbarButton("关于", "info", function()
-	notify("DeepSeek UI", "WindUI 1.6.65 · 圆角 · 37 款字体 · 随机鲸鱼娘")
+	notify("DeepSeek UI", "WindUI 1.6.65 · 不规则轮廓 · 37 款字体 · 随机鲸鱼娘")
+end, 24, nil, Color3.fromHex("#4D6BFE"))
+
+Window:CreateTopbarButton("跳转", "search", function()
+	if _G.DS_OpenJump then
+		_G.DS_OpenJump()
+	end
 end, 24, nil, Color3.fromHex("#4D6BFE"))
 
 pcall(function()
@@ -65,6 +74,15 @@ local Look = Window:Tab({ Title = "外观", Icon = "lucide:palette" })
 local Info = Window:Tab({ Title = "关于", Icon = "lucide:whale" })
 
 Call(Home, "Section", { Title = "总览" })
+Call(Home, "Button", {
+	Title = "功能跳转",
+	Desc = "弹出功能索引，点一下直接飞过去",
+	Callback = function()
+		if _G.DS_OpenJump then
+			_G.DS_OpenJump()
+		end
+	end,
+})
 Call(Home, "Paragraph", {
 	Title = "DeepSeek 主题界面",
 	Desc = "深海蓝配色、随机鲸鱼娘壁纸、左侧探头的小家伙、顶栏趴着的看板娘、右下角可以点的贴纸。拖动窗口时边框会亮起来。",
