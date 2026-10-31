@@ -850,16 +850,8 @@ end
 
 function r.UpdateFont(u)
 r.Font=u
-local f=nil
-if _G and _G.DS_FontGet and _G.DS_FaceOf then
-f=_G.DS_FaceOf((_G.DS_FontGet()))
-end
 for v,x in next,r.FontObjects do
-if f then
-x.FontFace=f
-else
 x.FontFace=Font.new(u,x.FontFace.Weight,x.FontFace.Style)
-end
 end
 end
 
@@ -15681,9 +15673,6 @@ if o.TextScaled then
 return
 end
 DS_Set(o,"TextSize",math.max(6,math.floor(b*DS_FONTSCALE+0.5)))
-if f then
-DS_Set(o,"FontFace",f)
-end
 end
 end)
 end
@@ -16342,6 +16331,8 @@ end
 return(root and root.Parent)or root
 end
 local DS_ByeBusy=false
+local DS_FullClose=false
+local DS_MinBusy=false
 local function DS_Goodbye()
 if not DS_ROOT or DS_ByeBusy then
 return
@@ -16922,12 +16913,50 @@ local ob=h.OpenButtonMain
 DS_Stage("bye",function()
 DS_Bye=DS_Goodbye
 DS_Close=function()
+DS_FullClose=true
 DS_Goodbye()
 task.delay(0.26,function()
 pcall(function()
 h:Close()
 end)
 end)
+end
+local origClose=h.Close
+h.Close=function(self,a)
+if DS_FullClose then
+return origClose(self,a)
+end
+if DS_MinBusy then
+return
+end
+DS_MinBusy=true
+pcall(function()
+local sc=root:FindFirstChildOfClass"UIScale"
+if not sc then
+return
+end
+local t=sc.Scale
+DS_Tween(sc,0.22,{Scale=t*0.88},Enum.EasingStyle.Quad,Enum.EasingDirection.In)
+task.delay(0.24,function()
+pcall(function()
+sc.Scale=t
+end)
+end)
+end)
+pcall(function()
+local m=DS_ScreenRoot(root,h,al):FindFirstChild"DeepSeekMini"
+if m then
+m.Rotation=0
+DS_Tween(m,0.3,{Rotation=6},Enum.EasingStyle.Back,Enum.EasingDirection.Out)
+task.delay(0.3,function()
+DS_Tween(m,0.35,{Rotation=0},Enum.EasingStyle.Quad,Enum.EasingDirection.Out)
+end)
+end
+end)
+task.delay(0.1,function()
+DS_MinBusy=false
+end)
+return origClose(self,a)
 end
 if _G then
 _G.DS_Bye=DS_Bye
