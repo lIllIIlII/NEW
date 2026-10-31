@@ -46,6 +46,15 @@ local function notify(title, content)
 	WindUI:Notify({ Title = title, Content = content, Duration = 4 })
 end
 
+local function tick(name, on)
+	if not _G.DS_Ticker then return end
+	if on then
+		_G.DS_Ticker.Add(name)
+	else
+		_G.DS_Ticker.Remove(name)
+	end
+end
+
 Window:CreateTopbarButton("关于", "info", function()
 	notify("DeepSeek UI", "WindUI 1.6.65 · 不规则轮廓 · 37 款字体 · 随机鲸鱼娘")
 end, 24, nil, Color3.fromHex("#4D6BFE"))
@@ -108,6 +117,7 @@ Call(Home, "Toggle", {
 	Value = true,
 	Callback = function(state)
 		print("[自动运行]", state)
+		tick("显示FOV", state)
 	end,
 })
 Call(Home, "Slider", {
@@ -176,6 +186,7 @@ Call(Controls, "Toggle", {
 	Value = false,
 	Callback = function(v)
 		print("[透视]", v)
+		tick("透视方框", v)
 	end,
 })
 Call(Controls, "Toggle", {
@@ -184,6 +195,7 @@ Call(Controls, "Toggle", {
 	Value = true,
 	Callback = function(v)
 		print("[队伍检测]", v)
+		tick("队伍检测", v)
 	end,
 })
 Call(Controls, "Toggle", {
@@ -192,6 +204,7 @@ Call(Controls, "Toggle", {
 	Value = false,
 	Callback = function(v)
 		print("[静默瞄准]", v)
+		tick("静默瞄准", v)
 	end,
 })
 Call(Controls, "Input", {
@@ -388,6 +401,9 @@ Window:OnClose(function() print("[DeepSeekUI] 窗口已关闭") end)
 Window:SelectTab(Home)
 
 task.delay(0.6, function()
+	if _G.DS_Ticker then
+		_G.DS_Ticker.Set({ "显示FOV", "队伍检测", "透视方框", "自动运行", "打击特效", "光环动画" })
+	end
 	notify("DeepSeek UI", "加载完成。搜索栏在标签栏上方。")
 end)
 
