@@ -15661,6 +15661,9 @@ end
 local f=DS_Face(DS_FONT)or DS_Face"Code"
 DS_Walk(r,function(o)
 if o:IsA"TextLabel"or o:IsA"TextButton"or o:IsA"TextBox"then
+if o:FindFirstAncestor"DeepSeekTicker"then
+return
+end
 local b=o:GetAttribute"DS_Base"
 if not b then
 b=o.TextSize
@@ -15734,28 +15737,97 @@ t[#t+1]=ColorSequenceKeypoint.new(i/6,Color3.fromHSV((i%6)/6,0.70,1))
 end
 return ColorSequence.new(t)
 end
-local function DS_TickerRefresh()
-if not DS_TickerText or not DS_TickerHolder then
-return
-end
-local s
-if #DS_TickerList>0 then
-s=table.concat(DS_TickerList,"   ·   ")
+local DS_TickerInner=nil
+local DS_TickerLabels={}
+local DS_TickerTween=nil
+local DS_TickerGen=0
+local function DS_TickerColor(i,n)
+local t
+if n<=1 then
+t=0
 else
-s="暂无开启功能"
+t=i/(n-1)
 end
-DS_TickerText.Text=s
-task.defer(function()
-if not DS_TickerText.Parent then
+local top=Color3.fromRGB(255,255,255)
+local bot=Color3.fromRGB(78,132,255)
+return top:Lerp(bot,t*0.9)
+end
+local function DS_TickerBuild()
+if not DS_TickerHolder then
 return
 end
-local w=DS_TickerText.AbsoluteSize.X
-local cap=math.min(w,DS_TickerHolder.Parent.AbsoluteSize.X*0.52)
-DS_Tween(DS_TickerHolder,0.34,{Size=UDim2.new(0,cap+18,0,DS_TickerHolder.Size.Y.Offset)},Enum.EasingStyle.Quint,Enum.EasingDirection.Out)
-DS_TickerText.TextTransparency=1
-DS_TickerText.Position=UDim2.new(0,20,0.5,0)
-DS_Tween(DS_TickerText,0.36,{TextTransparency=0,Position=UDim2.new(0,0,0.5,0)},Enum.EasingStyle.Quint,Enum.EasingDirection.Out)
+DS_TickerGen=DS_TickerGen+1
+local gen=DS_TickerGen
+if DS_TickerTween then
+pcall(function()
+DS_TickerTween:Cancel()
 end)
+DS_TickerTween=nil
+end
+if not DS_TickerInner or not DS_TickerInner.Parent then
+DS_TickerInner=DS_Node("Frame",DS_TickerHolder,{
+Name="DeepSeekTickerInner",
+Size=UDim2.new(1,0,0,0),
+Position=UDim2.new(0,0,0,0),
+BackgroundTransparency=1,
+BorderSizePixel=0,
+AutomaticSize=Enum.AutomaticSize.Y,
+ZIndex=701,
+})
+DS_Node("UIListLayout",DS_TickerInner,{
+Padding=UDim.new(0,4),
+SortOrder=Enum.SortOrder.LayoutOrder,
+HorizontalAlignment=Enum.HorizontalAlignment.Right,
+})
+end
+for _,c in next,DS_TickerInner:GetChildren()do
+if c:IsA"TextLabel"then
+c:Destroy()
+end
+end
+DS_TickerLabels={}
+local list={}
+if #DS_TickerList>0 then
+for _,v in next,DS_TickerList do
+table.insert(list,v)
+end
+else
+table.insert(list,"暂无开启功能")
+end
+local total=#list*2
+for i=1,total do
+local name=list[((i-1)%#list)+1]
+local lbl=DS_Node("TextLabel",DS_TickerInner,{
+Name="T"..i,
+Size=UDim2.new(1,0,0,18),
+BackgroundTransparency=1,
+BorderSizePixel=0,
+Text=name,
+TextColor3=DS_TickerColor((i-1)%#list,#list),
+TextXAlignment=Enum.TextXAlignment.Right,
+TextSize=12,
+TextStrokeTransparency=1,
+FontFace=DS_Face"GothamMedium"or DS_Face"SourceSansSemibold"or nil,
+LayoutOrder=i,
+ZIndex=702,
+})
+DS_Node("UIStroke",lbl,{
+Color=DS_TickerColor((i-1)%#list,#list),
+Thickness=2,
+Transparency=0.42,
+ApplyStrokeMode=Enum.ApplyStrokeMode.Contextual,
+})
+table.insert(DS_TickerLabels,lbl)
+end
+task.defer(function()
+if gen~=DS_TickerGen or not DS_TickerInner or not DS_TickerInner.Parent then
+return
+end
+DS_TickerHolder.Size=UDim2.new(DS_TickerHolder.Size.X.Scale,0,DS_TickerHolder.Size.Y.Scale,0)
+end)
+end
+local function DS_TickerRefresh()
+DS_TickerBuild()
 end
 local function DS_TickerSet(list)
 DS_TickerList={}
@@ -15876,6 +15948,7 @@ v=Vector2.new(1280,720)
 end
 return v
 end
+local DS_MINI_K=0.14
 local function DS_DeviceScale()
 local v=DS_Viewport()
 local m=math.min(v.X,v.Y)
@@ -15883,11 +15956,11 @@ local touch=DS_UIS.TouchEnabled
 local kb=DS_UIS.KeyboardEnabled
 local k
 if touch and not kb then
-k=(m<700)and 0.115 or 0.100
+k=(m<700)and(DS_MINI_K+0.06)or DS_MINI_K
 elseif touch and kb then
-k=0.095
+k=DS_MINI_K-0.005
 else
-k=0.090
+k=DS_MINI_K-0.025
 end
 return m*k
 end
@@ -16172,73 +16245,74 @@ local pal=DS_Palette(w.Theme and w.Theme.Name or DS_THEME)
 DS_PAL=pal
 DS_Stage("ticker",function()
 local sg=DS_ScreenRoot(root,h,al)
+local vp=DS_Viewport()
 DS_TickerHolder=DS_Node("Frame",sg,{
 Name="DeepSeekTicker",
 AnchorPoint=Vector2.new(1,0),
-Position=UDim2.new(1,-16,0,118),
-Size=UDim2.fromOffset(210,34),
+Position=UDim2.new(1,-18,0.115,0),
+Size=UDim2.new(0.30,0,0.50,0),
 BackgroundTransparency=1,
 BorderSizePixel=0,
 ClipsDescendants=true,
 ZIndex=700,
 })
-DS_TickerText=DS_Node("TextLabel",DS_TickerHolder,{
-Name="DeepSeekTickerText",
-BackgroundTransparency=1,
-BorderSizePixel=0,
-AutomaticSize=Enum.AutomaticSize.XY,
-AnchorPoint=Vector2.new(0,0.5),
-Position=UDim2.new(0,0,0.5,0),
-Text="",
-TextColor3=Color3.new(1,1,1),
-TextSize=16,
-TextStrokeTransparency=1,
-ZIndex=701,
-})
-DS_Node("UIGradient",DS_TickerText,{Name="DeepSeekTickerGrad",Color=DS_Rainbow()})
-local tickStroke=DS_Node("UIStroke",DS_TickerText,{
-Color=Color3.new(1,1,1),
-Thickness=2,
-Transparency=0.5,
-ApplyStrokeMode=Enum.ApplyStrokeMode.Contextual,
-})
-DS_Node("UIGradient",tickStroke,{Name="DeepSeekTickerGlow",Color=DS_Rainbow()})
+DS_TickerBuild()
 task.spawn(function()
-local r=0
-while DS_TickerText and DS_TickerText.Parent do
-r=(r+4)%360
-local g=DS_TickerText:FindFirstChild"DeepSeekTickerGrad"
-if g then
-g.Rotation=r
+while DS_TickerHolder and DS_TickerHolder.Parent do
+local gen=DS_TickerGen
+local half=DS_TickerInner and DS_TickerInner.AbsoluteSize.Y/2 or 0
+if half>4 then
+DS_TickerInner.Position=UDim2.new(0,0,0,0)
+local d=math.clamp(half/26,2.0,26.0)
+DS_TickerTween=DS_Tween(DS_TickerInner,d,{Position=UDim2.new(0,0,0,-half)},Enum.EasingStyle.Linear)
+task.wait(d+0.04)
+else
+task.wait(0.35)
 end
-if tickStroke.Parent then
-local g2=tickStroke:FindFirstChild"DeepSeekTickerGlow"
-if g2 then
-g2.Rotation=r
-end
-end
+if gen~=DS_TickerGen then
 task.wait(0.05)
+end
 end
 end)
 task.spawn(function()
 while DS_TickerHolder and DS_TickerHolder.Parent do
-local w=DS_TickerText.AbsoluteSize.X
-local hw=DS_TickerHolder.AbsoluteSize.X
-if w>hw+6 then
-local dist=w-hw
-local d=math.clamp(dist/55,1.2,3.4)
-DS_Tween(DS_TickerText,d,{Position=UDim2.new(0,-dist,0.5,0)},Enum.EasingStyle.Linear)
-task.wait(d+0.9)
-if DS_TickerText.Parent then
-DS_TickerText.Position=UDim2.new(0,0,0.5,0)
+local ok=pcall(function()
+local hy=DS_TickerHolder.AbsoluteSize.Y
+if hy<=0 then
+return
 end
-task.wait(0.7)
-else
-task.wait(0.4)
+local base=DS_TickerHolder.AbsolutePosition.Y
+for _,lbl in next,DS_TickerLabels do
+if lbl.Parent then
+local t=math.clamp((lbl.AbsolutePosition.Y-base)/hy,0,1)
+local c=Color3.fromRGB(255,255,255):Lerp(Color3.fromRGB(78,132,255),t*0.92)
+lbl.TextColor3=c
+local st=lbl:FindFirstChildOfClass"UIStroke"
+if st then
+st.Color=c
+st.Transparency=0.30+t*0.45
+end
 end
 end
 end)
-DS_TickerRefresh()
+task.wait(0.09)
+end
+end)
+task.spawn(function()
+while DS_TickerHolder and DS_TickerHolder.Parent do
+pcall(function()
+local vp2=DS_Viewport()
+local fs=math.clamp(vp2.Y*0.0165,10,22)
+for _,lbl in next,DS_TickerLabels do
+if lbl.Parent then
+lbl.TextSize=math.floor(fs)
+lbl.Size=UDim2.new(1,0,0,math.floor(fs*1.55))
+end
+end
+end)
+task.wait(0.6)
+end
+end)
 end)
 
 local bg=root:FindFirstChild"Background"
@@ -16796,6 +16870,12 @@ task.wait(0.16)
 stick.Position=UDim2.new(1,140,1,-8)
 DS_Tween(stick,0.5,{Position=UDim2.new(1,-8,1,-8)},Enum.EasingStyle.Back,Enum.EasingDirection.Out)
 end)
+task.delay(1.2,function()
+pcall(DS_ReScale)
+end)
+task.delay(3.0,function()
+pcall(DS_ReScale)
+end)
 task.delay(1.4,DS_ApplyFont)
 end
 DS_SetFont=DS_SetFont
@@ -16810,6 +16890,44 @@ DS_Ticker={Set=DS_TickerSet,Add=DS_TickerAdd,Remove=DS_TickerRemove,Clear=DS_Tic
 DS_OpenJump=DS_OpenJump
 DS_RegisterJump=DS_RegisterJump
 DS_Errors=DS_ERR
+DS_SetMiniScale=function(k)
+DS_MINI_K=math.clamp(tonumber(k)or 0.14,0.04,0.5)
+pcall(function()
+local m=DS_ROOT and DS_ROOT:FindFirstChild"DeepSeekMini"
+if m and DS_WIN then
+local v=DS_Viewport()
+local a=v
+local px=DS_DeviceScale()
+local sw=math.clamp(px/a.X,0.015,0.5)
+m.Size=UDim2.new(sw,0,sw*a.X/(1.354*a.Y),0)
+end
+end)
+end
+DS_ReScale=function()
+local h=DS_WIN
+if not h then
+return
+end
+pcall(function()
+if h.IsFullscreen or not h.AutoScale then
+return
+end
+local F=workspace.CurrentCamera.ViewportSize
+if not F or F.X<=0 then
+return
+end
+local G=Vector2.new(h.Size.X.Offset,h.Size.Y.Offset)
+if G.X<=0 or G.Y<=0 then
+return
+end
+local N=math.min((F.X-80)/G.X,(F.Y-80)/G.Y)
+local Q=math.clamp(N,0.3,1.0)
+local R=h:GetUIScale()or 1
+if math.abs(Q-R)>0.05 then
+h:SetUIScale(Q)
+end
+end)
+end
 DS_Debug=function()
 local v=DS_Viewport()
 local o={}
@@ -16833,6 +16951,8 @@ _G.DS_OpenJump=DS_OpenJump
 _G.DS_RegisterJump=DS_RegisterJump
 _G.DS_Errors=DS_ERR
 _G.DS_Debug=DS_Debug
+_G.DS_SetMiniScale=DS_SetMiniScale
+_G.DS_ReScale=DS_ReScale
 end
 aa.Themes=a.load'v'(aa,as)
 
