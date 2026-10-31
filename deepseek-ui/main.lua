@@ -15543,6 +15543,7 @@ local DS_ROOT=nil
 local DS_FONT="Arcade"
 local DS_FONTSCALE=0.92
 local DS_FACES={}
+local DS_VER="v5_"
 local function DS_Pick(t)
 return t[math.random(#t)]
 end
@@ -15557,8 +15558,15 @@ if not r then
 return nil
 end
 local o,a=pcall(r,{Url=u,Method="GET"})
-if o and type(a)=="table"and a.Body then
+if o and type(a)=="table"and a.Body and #a.Body>0 then
 return a.Body
+end
+return nil
+end
+local function DS_Try(p)
+local o,a=pcall(getcustomasset,p)
+if o and type(a)=="string"then
+return a
 end
 return nil
 end
@@ -15569,12 +15577,14 @@ end
 if not(writefile and getcustomasset)then
 return nil
 end
-local p="DeepSeekUI/v4_"..n
-local ok=false
+local p="DeepSeekUI/"..DS_VER..n
 if isfile and isfile(p)then
-ok=true
+local got=DS_Try(p)
+if got then
+DS_CACHE[n]=got
+return got
 end
-if not ok then
+end
 if isfolder and not isfolder"DeepSeekUI"then
 pcall(makefolder,"DeepSeekUI")
 end
@@ -15585,17 +15595,21 @@ if b then
 break
 end
 end
-if not b then
-return nil
+if b and pcall(writefile,p,b)then
+local got=DS_Try(p)
+if got then
+DS_CACHE[n]=got
+return got
 end
-if not pcall(writefile,p,b)then
-return nil
+end
+for _,old in next,{"DeepSeekUI/v4_"..n,"DeepSeekUI/v3_"..n,"DeepSeekUI/"..n}do
+if isfile and isfile(old)then
+local got=DS_Try(old)
+if got then
+DS_CACHE[n]=got
+return got
 end
 end
-local o,a=pcall(getcustomasset,p)
-if o and type(a)=="string"then
-DS_CACHE[n]=a
-return a
 end
 return nil
 end
@@ -15656,20 +15670,24 @@ local function DS_Palette(t)
 if t=="Light"then
 return{
 accent=Color3.fromHex"#4D6BFE",
-glass=0.52,
-banner=0.74,
-stroke=0.70,
-fade=0.34,
-glow=0.10,
+soft=Color3.fromHex"#8FA8FF",
+glass=0.42,
+banner=0.66,
+stroke=0.66,
+fade=0.30,
+glow=0.06,
+hair=0.90,
 }
 end
 return{
 accent=Color3.fromHex"#5B7BFF",
-glass=0.38,
-banner=0.52,
-stroke=0.62,
-fade=0.42,
-glow=0.05,
+soft=Color3.fromHex"#7C97FF",
+glass=0.30,
+banner=0.46,
+stroke=0.58,
+fade=0.38,
+glow=0.02,
+hair=0.93,
 }
 end
 local function DS_Node(c,p,k)
@@ -15696,17 +15714,10 @@ end
 DS_ROOT=root.Parent or root
 local rad=tonumber(h.Radius)or 16
 local pal=DS_Palette(w.Theme and w.Theme.Name or DS_THEME)
-local stroke
 local bg=root:FindFirstChild"Background"
 local bgImg
+local glowStroke
 if bg then
-stroke=DS_Node("UIStroke",bg,{
-Color=pal.accent,
-Thickness=1,
-Transparency=pal.stroke,
-ApplyStrokeMode=Enum.ApplyStrokeMode.Border,
-Name="DeepSeekOutline",
-})
 local id=DS_Asset(DS_Pick(DS_BG))
 if id then
 bgImg=DS_Node("ImageLabel",bg,{
@@ -15714,23 +15725,56 @@ Name="DeepSeekBackground",
 BackgroundTransparency=1,
 BorderSizePixel=0,
 ScaleType=Enum.ScaleType.Crop,
-Size=UDim2.fromScale(1,1),
-Position=UDim2.fromOffset(0,0),
-ZIndex=2,
+Size=UDim2.new(1,28,1,28),
+Position=UDim2.fromOffset(-14,-14),
+ZIndex=-20,
 ImageTransparency=pal.glass,
 Image=id,
 })
-DS_Node("UICorner",bgImg,{CornerRadius=UDim.new(0,rad)})
+DS_Node("UICorner",bgImg,{CornerRadius=UDim.new(0,rad+14)})
 DS_Node("UIGradient",bgImg,{
 Rotation=90,
 Transparency=NumberSequence.new{
 NumberSequenceKeypoint.new(0,pal.glass),
-NumberSequenceKeypoint.new(0.52,math.min(0.99,pal.glass+0.06)),
+NumberSequenceKeypoint.new(0.50,math.min(0.99,pal.glass+0.05)),
 NumberSequenceKeypoint.new(1,math.min(0.99,pal.glass+pal.fade)),
 },
 })
 end
 end
+local glow=DS_Node("Frame",root,{
+Name="DeepSeekGlow",
+AnchorPoint=Vector2.new(0.5,0.5),
+Position=UDim2.new(0.5,0,0.5,0),
+Size=UDim2.fromScale(1,1),
+BackgroundTransparency=1,
+BorderSizePixel=0,
+ZIndex=445,
+})
+DS_Node("UICorner",glow,{CornerRadius=UDim.new(0,rad)})
+glowStroke=DS_Node("UIStroke",glow,{
+Color=pal.accent,
+Thickness=1,
+Transparency=0.62,
+ApplyStrokeMode=Enum.ApplyStrokeMode.Border,
+Name="DeepSeekGlowStroke",
+})
+local hair=DS_Node("Frame",root,{
+Name="DeepSeekHair",
+AnchorPoint=Vector2.new(0.5,0.5),
+Position=UDim2.new(0.5,0,0.5,0),
+Size=UDim2.fromScale(1,1),
+BackgroundTransparency=1,
+BorderSizePixel=0,
+ZIndex=444,
+})
+DS_Node("UICorner",hair,{CornerRadius=UDim.new(0,math.max(1,rad-2))})
+DS_Node("UIStroke",hair,{
+Color=Color3.new(1,1,1),
+Thickness=1,
+Transparency=pal.hair,
+ApplyStrokeMode=Enum.ApplyStrokeMode.Border,
+})
 local tb=root:FindFirstChild"Topbar"
 if tb then
 local id=DS_Asset(DS_Pick(DS_ART))
@@ -15766,10 +15810,10 @@ ZIndex=420,
 })
 DS_Node("UIGradient",divider,{
 Transparency=NumberSequence.new{
-NumberSequenceKeypoint.new(0,0.92),
-NumberSequenceKeypoint.new(0.28,0.30),
-NumberSequenceKeypoint.new(0.72,0.30),
-NumberSequenceKeypoint.new(1,0.92),
+NumberSequenceKeypoint.new(0,0.94),
+NumberSequenceKeypoint.new(0.22,0.26),
+NumberSequenceKeypoint.new(0.78,0.26),
+NumberSequenceKeypoint.new(1,0.94),
 },
 })
 end
@@ -15798,6 +15842,17 @@ break
 end
 DS_Tween(pet,2.6,{Position=a},Enum.EasingStyle.Sine,Enum.EasingDirection.InOut)
 task.wait(2.6)
+end
+end)
+task.spawn(function()
+while pet.Parent do
+DS_Tween(pet,3.4,{Rotation=1.5},Enum.EasingStyle.Sine,Enum.EasingDirection.InOut)
+task.wait(3.4)
+if not pet.Parent then
+break
+end
+DS_Tween(pet,3.4,{Rotation=-4.5},Enum.EasingStyle.Sine,Enum.EasingDirection.InOut)
+task.wait(3.4)
 end
 end)
 end
@@ -15871,17 +15926,54 @@ end
 DS_Tween(stick,0.3,{Rotation=math.random(-6,6)},Enum.EasingStyle.Sine,Enum.EasingDirection.InOut)
 end
 end)
+local sheenHolder=DS_Node("Frame",root,{
+Name="DeepSeekSheenHolder",
+AnchorPoint=Vector2.new(0.5,0.5),
+Position=UDim2.new(0.5,0,0.5,0),
+Size=UDim2.fromScale(1,1),
+BackgroundTransparency=1,
+BorderSizePixel=0,
+ClipsDescendants=true,
+ZIndex=455,
+})
+DS_Node("UICorner",sheenHolder,{CornerRadius=UDim.new(0,rad)})
+local sheen=DS_Node("Frame",sheenHolder,{
+Name="DeepSeekSheen",
+Size=UDim2.new(0,90,1,240),
+AnchorPoint=Vector2.new(0.5,0.5),
+Position=UDim2.new(-0.4,0,0.5,0),
+Rotation=18,
+BackgroundColor3=Color3.new(1,1,1),
+BackgroundTransparency=0,
+BorderSizePixel=0,
+ZIndex=455,
+})
+DS_Node("UIGradient",sheen,{
+Transparency=NumberSequence.new{
+NumberSequenceKeypoint.new(0,1),
+NumberSequenceKeypoint.new(0.42,0.94),
+NumberSequenceKeypoint.new(0.5,0.90),
+NumberSequenceKeypoint.new(0.58,0.94),
+NumberSequenceKeypoint.new(1,1),
+},
+})
+task.spawn(function()
+task.wait(1.8)
+while sheenHolder.Parent do
+sheen.Position=UDim2.new(-0.4,0,0.5,0)
+DS_Tween(sheen,2.1,{Position=UDim2.new(1.4,0,0.5,0)},Enum.EasingStyle.Sine,Enum.EasingDirection.InOut)
+task.wait(6.4)
+end
+end)
 local glowSeq=0
 local function lightUp()
 glowSeq=glowSeq+1
 local mine=glowSeq
-if stroke then
-DS_Tween(stroke,0.12,{Transparency=pal.glow,Thickness=2.4})
-end
-task.delay(0.38,function()
-if mine==glowSeq and stroke then
-local ti=TweenInfo.new(0.55,Enum.EasingStyle.Quad,Enum.EasingDirection.Out)
-DS_TS:Create(stroke,ti,{Transparency=pal.stroke,Thickness=1}):Play()
+DS_Tween(glowStroke,0.10,{Transparency=pal.glow,Thickness=2.2})
+task.delay(0.36,function()
+if mine==glowSeq then
+local ti=TweenInfo.new(0.6,Enum.EasingStyle.Quad,Enum.EasingDirection.Out)
+DS_TS:Create(glowStroke,ti,{Transparency=0.62,Thickness=1}):Play()
 end
 end)
 end
@@ -15911,102 +16003,133 @@ end)
 end
 end
 end
+local CM=18
+local function bracket(px,py,ax,ay)
+DS_Node("Frame",root,{
+AnchorPoint=Vector2.new(ax,ay),
+Position=UDim2.new(px,0,py,0),
+Size=UDim2.fromOffset(CM,1),
+BackgroundColor3=pal.soft,
+BackgroundTransparency=0.55,
+BorderSizePixel=0,
+ZIndex=430,
+})
+DS_Node("Frame",root,{
+AnchorPoint=Vector2.new(ax,ay),
+Position=UDim2.new(px,0,py,0),
+Size=UDim2.fromOffset(1,CM),
+BackgroundColor3=pal.soft,
+BackgroundTransparency=0.55,
+BorderSizePixel=0,
+ZIndex=430,
+})
+end
+bracket(0,12,0,0)
+bracket(1,12,1,0)
+bracket(0,12,0,1)
+bracket(1,12,1,1)
 local obId=DS_Asset"open.png"
 local ob=h.OpenButtonMain
 if ob and ob.Button then
 local an=ob.Button
 local al=an.Parent
-DS_Set(an,"AutomaticSize",Enum.AutomaticSize.None)
-DS_Set(an,"Size",UDim2.fromOffset(210,158))
-DS_Set(an,"Position",UDim2.fromOffset(0,0))
-DS_Set(an,"AnchorPoint",Vector2.new(0,0))
-DS_Set(an,"BackgroundTransparency",1)
-DS_Set(an,"ClipsDescendants",false)
-DS_Set(an,"Active",true)
-local l=an:FindFirstChildOfClass"UIListLayout"
-if l then
-l.Enabled=false
-end
-local p0=an:FindFirstChildOfClass"UIPadding"
-if p0 then
-DS_Set(p0,"PaddingLeft",UDim.new(0,0))
-DS_Set(p0,"PaddingRight",UDim.new(0,0))
-DS_Set(p0,"PaddingTop",UDim.new(0,0))
-DS_Set(p0,"PaddingBottom",UDim.new(0,0))
-end
-local s0=an:FindFirstChildOfClass"UIStroke"
-if s0 then
-s0.Transparency=1
-end
-local c0=an:FindFirstChildOfClass"UICorner"
-if c0 then
-c0.CornerRadius=UDim.new(0,16)
-end
+an.Visible=false
 if al then
 DS_Set(al,"BackgroundTransparency",1)
 DS_Set(al,"ClipsDescendants",false)
-DS_Set(al,"Size",UDim2.fromOffset(210,158))
-DS_Set(al,"Position",UDim2.new(0.5,0,0,120))
-DS_Set(al,"AnchorPoint",Vector2.new(0.5,0.5))
+DS_Set(al,"Active",false)
 end
+local host=(al and al.Parent)or root.Parent
+local mini=DS_Node("Frame",host,{
+Name="DeepSeekMini",
+AnchorPoint=Vector2.new(0.5,0),
+Position=UDim2.new(0.5,0,0,34),
+Size=UDim2.fromOffset(220,164),
+BackgroundTransparency=1,
+BorderSizePixel=0,
+Visible=false,
+ZIndex=520,
+})
+local fish
 if obId then
-DS_Node("ImageLabel",an,{
-Name="DeepSeekOpenFish",
+fish=DS_Node("ImageLabel",mini,{
+Name="DeepSeekMiniFish",
 BackgroundTransparency=1,
 BorderSizePixel=0,
 ScaleType=Enum.ScaleType.Fit,
 Size=UDim2.fromScale(1,1),
 Position=UDim2.fromOffset(0,0),
-AnchorPoint=Vector2.new(0,0),
 ZIndex=1,
 Image=obId,
 })
+else
+fish=DS_Node("Frame",mini,{
+Name="DeepSeekMiniFallback",
+Size=UDim2.fromScale(1,1),
+BackgroundColor3=pal.accent,
+BackgroundTransparency=0.06,
+BorderSizePixel=0,
+ZIndex=1,
+})
+DS_Node("UICorner",fish,{CornerRadius=UDim.new(0,18)})
 end
-local tb2=an:FindFirstChild"TextButton"
-if tb2 then
-DS_Set(tb2,"AutomaticSize",Enum.AutomaticSize.None)
-DS_Set(tb2,"Size",UDim2.fromScale(1,1))
-DS_Set(tb2,"Position",UDim2.fromOffset(0,0))
-DS_Set(tb2,"AnchorPoint",Vector2.new(0,0))
-DS_Set(tb2,"BackgroundTransparency",1)
-local l2=tb2:FindFirstChildOfClass"UIListLayout"
-if l2 then
-l2.Enabled=false
+local miniLabel=DS_Node("TextLabel",mini,{
+Name="DeepSeekMiniLabel",
+BackgroundTransparency=1,
+BorderSizePixel=0,
+Size=UDim2.fromOffset(0,0),
+AutomaticSize=Enum.AutomaticSize.XY,
+AnchorPoint=Vector2.new(0.5,0.5),
+Position=UDim2.new(0.5,0,0.60,0),
+Text=tostring(h.Title or"DeepSeek"),
+TextColor3=Color3.fromHex"#16233F",
+TextSize=17,
+TextStrokeTransparency=1,
+ZIndex=3,
+})
+local miniBtn=DS_Node("TextButton",mini,{
+Name="DeepSeekMiniButton",
+Size=UDim2.fromScale(1,1),
+BackgroundTransparency=1,
+BorderSizePixel=0,
+Text="",
+AutoButtonColor=false,
+Active=true,
+ZIndex=4,
+})
+local baseFish=fish.Size
+miniBtn.MouseEnter:Connect(function()
+DS_Tween(fish,0.16,{Size=UDim2.fromScale(1.04,1.04)},Enum.EasingStyle.Quad,Enum.EasingDirection.Out)
+DS_Tween(miniLabel,0.16,{TextColor3=Color3.fromHex"#0A1220"})
+end)
+miniBtn.MouseLeave:Connect(function()
+DS_Tween(fish,0.20,{Size=baseFish},Enum.EasingStyle.Quad,Enum.EasingDirection.Out)
+DS_Tween(miniLabel,0.20,{TextColor3=Color3.fromHex"#16233F"})
+end)
+miniBtn.MouseButton1Click:Connect(function()
+DS_Tween(fish,0.08,{Size=UDim2.fromScale(0.96,0.96)},Enum.EasingStyle.Back)
+task.delay(0.08,function()
+DS_Tween(fish,0.30,{Size=baseFish},Enum.EasingStyle.Back,Enum.EasingDirection.Out)
+end)
+task.delay(0.10,function()
+pcall(function()
+h:Open()
+end)
+end)
+end)
+if al then
+local function sync()
+mini.Visible=al.Visible
 end
-local p1=tb2:FindFirstChildOfClass"UIPadding"
-if p1 then
-DS_Set(p1,"PaddingLeft",UDim.new(0,0))
-DS_Set(p1,"PaddingRight",UDim.new(0,0))
-DS_Set(p1,"PaddingTop",UDim.new(0,0))
-DS_Set(p1,"PaddingBottom",UDim.new(0,0))
+pcall(function()
+al:GetPropertyChangedSignal"Visible":Connect(sync)
+end)
+task.spawn(function()
+while mini.Parent do
+sync()
+task.wait(0.2)
 end
-local c1=tb2:FindFirstChildOfClass"UICorner"
-if c1 then
-c1.CornerRadius=UDim.new(0,16)
-end
-for _,d in ipairs(tb2:GetDescendants())do
-if d:IsA"TextLabel"then
-DS_Set(d,"AutomaticSize",Enum.AutomaticSize.XY)
-DS_Set(d,"AnchorPoint",Vector2.new(0.5,0.5))
-DS_Set(d,"Position",UDim2.new(0.5,0,0.63,0))
-DS_Set(d,"TextSize",18)
-DS_Set(d,"TextColor3",Color3.fromHex"#16233F")
-DS_Set(d,"TextTransparency",0)
-DS_Set(d,"TextStrokeTransparency",1)
-DS_Set(d,"ZIndex",6)
-elseif d:IsA"ImageLabel"then
-DS_Set(d,"Size",UDim2.fromOffset(32,32))
-DS_Set(d,"AnchorPoint",Vector2.new(0.5,0.5))
-DS_Set(d,"Position",UDim2.new(0.5,0,0.19,0))
-DS_Set(d,"ImageColor3",Color3.fromHex"#16233F")
-DS_Set(d,"ZIndex",6)
-end
-end
-end
-for _,c in ipairs(an:GetChildren())do
-if c:IsA"Frame"and c~=tb2 then
-c.Visible=false
-end
+end)
 end
 end
 local foot=DS_Node("Frame",root,{
@@ -16022,10 +16145,35 @@ ZIndex=430,
 DS_Node("UIGradient",foot,{
 Transparency=NumberSequence.new{
 NumberSequenceKeypoint.new(0,1),
-NumberSequenceKeypoint.new(0.5,0.45),
+NumberSequenceKeypoint.new(0.5,0.42),
 NumberSequenceKeypoint.new(1,1),
 },
 })
+local function DS_HairPass()
+DS_Walk(root,function(o)
+if o:IsA"Frame"or o:IsA"TextButton"or o:IsA"ImageButton"then
+local c=o:FindFirstChildOfClass"UICorner"
+if c then
+local r=c.CornerRadius
+if r.Scale==0 and r.Offset>12 then
+DS_Set(c,"CornerRadius",UDim.new(0,12))
+end
+if o.BackgroundTransparency<0.5 and not o:FindFirstChildOfClass"UIStroke"and o.Name~="DeepSeekSheen"then
+DS_Node("UIStroke",o,{
+Color=Color3.new(1,1,1),
+Thickness=1,
+Transparency=pal.hair,
+ApplyStrokeMode=Enum.ApplyStrokeMode.Border,
+})
+end
+end
+end
+end)
+end
+task.spawn(DS_HairPass)
+task.delay(2.5,function()
+pcall(DS_HairPass)
+end)
 task.spawn(function()
 local sc=root:FindFirstChildOfClass"UIScale"
 if not sc then
@@ -16042,7 +16190,7 @@ return
 end
 local target=bgImg.ImageTransparency
 bgImg.ImageTransparency=1
-DS_Tween(bgImg,0.5,{ImageTransparency=target},Enum.EasingStyle.Quad,Enum.EasingDirection.Out)
+DS_Tween(bgImg,0.55,{ImageTransparency=target},Enum.EasingStyle.Quad,Enum.EasingDirection.Out)
 end)
 task.spawn(function()
 task.wait(0.08)
@@ -16066,6 +16214,11 @@ task.spawn(function()
 task.wait(0.16)
 stick.Position=UDim2.new(1,140,1,-8)
 DS_Tween(stick,0.5,{Position=UDim2.new(1,-8,1,-8)},Enum.EasingStyle.Back,Enum.EasingDirection.Out)
+end)
+task.spawn(function()
+task.wait(0.05)
+glowStroke.Transparency=1
+DS_Tween(glowStroke,0.55,{Transparency=0.62},Enum.EasingStyle.Quad,Enum.EasingDirection.Out)
 end)
 task.delay(1.4,DS_ApplyFont)
 end
