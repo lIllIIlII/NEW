@@ -8261,6 +8261,12 @@ Size=UDim2.new(1,0,1,0),
 AnchorPoint=Vector2.new(1,0),
 Position=UDim2.new(1,0,0,0),
 },{
+al("UIStroke",{
+Thickness=1,
+Transparency=0.5,
+ApplyStrokeMode="Border",
+Color=Color3.fromHex"#4D6BFE",
+}),
 al("UIPadding",{
 PaddingTop=UDim.new(0,aq.MenuPadding),
 PaddingLeft=UDim.new(0,aq.MenuPadding),
@@ -8923,8 +8929,8 @@ workspace.CurrentCamera
 local am={
 UICorner=10,
 UIPadding=12,
-MenuCorner=15,
-MenuPadding=5,
+MenuCorner=0,
+MenuPadding=6,
 TabPadding=10,
 SearchBarHeight=39,
 TabIcon=18,
@@ -15954,11 +15960,11 @@ end
 end)
 return true
 end
-local function DS_RegisterJump(name,obj)
+local function DS_RegisterJump(name,obj,group)
 if not name or not obj then
 return
 end
-table.insert(DS_JUMPS,{name=tostring(name),obj=obj})
+table.insert(DS_JUMPS,{name=tostring(name),obj=obj,group=group and tostring(group)or""})
 end
 local function DS_JumpNames()
 local t={}
@@ -16006,7 +16012,7 @@ Text="",
 AutoButtonColor=false,
 ZIndex=898,
 })
-DS_JumpBlocker.Activated:Connect(function()
+DS_JumpBlocker.MouseButton1Click:Connect(function()
 DS_CloseJump()
 end)
 local panel=DS_Node("Frame",DS_ROOT,{
@@ -16085,12 +16091,25 @@ ZIndex=904,
 local nm=DS_Node("TextLabel",row,{
 BackgroundTransparency=1,
 BorderSizePixel=0,
-Size=UDim2.new(1,-20,1,0),
+Size=UDim2.new(1,-86,1,0),
 Position=UDim2.new(0,12,0,0),
 Text=item.name,
 TextColor3=Color3.fromRGB(226,233,246),
 TextSize=13,
 TextXAlignment=Enum.TextXAlignment.Left,
+TextTruncate=Enum.TextTruncate.AtEnd,
+ZIndex=904,
+})
+local gp=DS_Node("TextLabel",row,{
+BackgroundTransparency=1,
+BorderSizePixel=0,
+Size=UDim2.fromOffset(66,26),
+Position=UDim2.new(1,-70,0,0),
+Text=item.group or"",
+TextColor3=pal.soft,
+TextTransparency=0.35,
+TextSize=10,
+TextXAlignment=Enum.TextXAlignment.Right,
 TextTruncate=Enum.TextTruncate.AtEnd,
 ZIndex=904,
 })
@@ -16105,14 +16124,16 @@ DS_Tween(nm,0.16,{TextColor3=Color3.fromRGB(226,233,246)})
 DS_Tween(bar,0.16,{Size=UDim2.new(0,2,1,-10)})
 end)
 local target=item.obj
-row.Activated:Connect(function()
+local function pick()
 DS_CloseJump()
-task.delay(0.04,function()
+task.delay(0.05,function()
 pcall(function()
 DS_JumpTo(target)
 end)
 end)
-end)
+end
+row.MouseButton1Click:Connect(pick)
+row.Activated:Connect(pick)
 row.Visible=false
 task.delay(0.012*i,function()
 if row.Parent then
@@ -16126,6 +16147,40 @@ DS_Tween(panel,0.22,{Size=UDim2.new(0,236,0,panelH)},Enum.EasingStyle.Quint,Enum
 end
 local function DS_OpenJump()
 DS_BuildJumpPanel()
+end
+local function DS_ScreenRoot(root,h,al)
+local c
+pcall(function()
+c=root:FindFirstAncestorOfClass"ScreenGui"
+end)
+if c then
+return c
+end
+pcall(function()
+if h and h.Parent and h.Parent:IsA"ScreenGui"then
+c=h.Parent
+end
+end)
+if c then
+return c
+end
+pcall(function()
+if al and al.Parent and al.Parent:IsA"ScreenGui"then
+c=al.Parent
+end
+end)
+if c then
+return c
+end
+pcall(function()
+if al and al.Parent then
+c=al.Parent
+end
+end)
+if c then
+return c
+end
+return(root and root.Parent)or root
 end
 local function DS_Apply(h,w)
 local root=h and h.UIElements and h.UIElements.Main
@@ -16466,7 +16521,7 @@ local host=DS_ScreenRoot(root,h,al)
 local mini=DS_Node("Frame",host,{
 Name="DeepSeekMini",
 AnchorPoint=Vector2.new(0.5,0),
-Position=UDim2.new(0.5,0,0.012,0),
+Position=UDim2.new(0.5,0,0.085,0),
 Size=UDim2.fromScale(0.07,0.1),
 BackgroundTransparency=1,
 BorderSizePixel=0,
@@ -16692,11 +16747,27 @@ task.wait(0.16)
 stick.Position=UDim2.new(1,140,1,-8)
 DS_Tween(stick,0.5,{Position=UDim2.new(1,-8,1,-8)},Enum.EasingStyle.Back,Enum.EasingDirection.Out)
 end)
-task.delay(1.2,function()
+task.spawn(function()
+for _,d in next,{0.35,0.9,1.6,2.6,4.2}do
+task.delay(d,function()
 pcall(DS_ReScale)
 end)
-task.delay(3.0,function()
+end
+local cam=workspace.CurrentCamera
+if cam then
+pcall(function()
+cam:GetPropertyChangedSignal"ViewportSize":Connect(function()
+DS_ReScale()
+end)
+end)
+end
+pcall(function()
+workspace:GetPropertyChangedSignal"CurrentCamera":Connect(function()
+task.delay(0.5,function()
 pcall(DS_ReScale)
+end)
+end)
+end)
 end)
 task.delay(1.4,DS_ApplyFont)
 end
@@ -16708,6 +16779,48 @@ DS_FontGet=function()
 return DS_FONT,DS_FONTSCALE
 end
 DS_OnTab=DS_OnTab
+DS_OpenJump=DS_OpenJump
+DS_RegisterJump=DS_RegisterJump
+DS_JumpNames=DS_JumpNames
+DS_JumpToName=DS_JumpToName
+DS_Errors=DS_ERR
+DS_SetMiniScale=function(k)
+DS_MINI_K=math.clamp(tonumber(k)or 0.14,0.04,0.5)
+pcall(function()
+local m=DS_ROOT and DS_ROOT:FindFirstChild"DeepSeekMini"
+if m and DS_WIN then
+local v=DS_Viewport()
+local a=v
+local px=DS_DeviceScale()
+local sw=math.clamp(px/a.X,0.015,0.5)
+m.Size=UDim2.new(sw,0,sw*a.X/(1.354*a.Y),0)
+end
+end)
+end
+DS_ReScale=function()
+local h=DS_WIN
+if not h then
+return
+end
+pcall(function()
+if h.IsFullscreen or not h.AutoScale then
+return
+end
+local cam=workspace.CurrentCamera
+local F=cam and cam.ViewportSize
+if not F or F.X<200 or F.Y<200 then
+return
+end
+local G=Vector2.new(h.Size.X.Offset,h.Size.Y.Offset)
+if G.X<=0 or G.Y<=0 then
+return
+end
+local Q=math.clamp(math.min((F.X-80)/G.X,(F.Y-80)/G.Y),0.3,1.0)
+if math.abs(Q-(h:GetUIScale()or 1))>0.01 then
+h:SetUIScale(Q)
+end
+end)
+end
 DS_OpenJump=DS_OpenJump
 DS_RegisterJump=DS_RegisterJump
 DS_JumpNames=DS_JumpNames
