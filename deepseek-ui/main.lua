@@ -15513,6 +15513,7 @@ local DS_BG={"bg_01.jpg","bg_02.jpg"}
 local DS_PET={"pet_05.png","pet_04.png","pet_01.png","pet_02.png","pet_03.png"}
 local DS_TOP={"pet_02.png","pet_05.png","pet_01.png"}
 local DS_ART={"art_01.jpg","art_02.jpg","art_03.jpg","art_04.jpg","art_05.jpg","art_06.jpg","art_07.jpg","art_08.jpg","art_09.jpg","art_10.jpg"}
+local DS_STIKER={"stiker_01.png","stiker_02.png","stiker_03.png","stiker_04.png","stiker_05.png","stiker_06.png","stiker_07.png","stiker_08.png","stiker_09.png","stiker_10.png","stiker_11.png","stiker_12.png","stiker_13.png","stiker_14.png","stiker_15.png","stiker_16.png","stiker_17.png"}
 local DS_CACHE={}
 local function DS_Pick(t)
 return t[math.random(#t)]
@@ -15672,26 +15673,63 @@ BackgroundTransparency=1,
 BorderSizePixel=0,
 ScaleType=Enum.ScaleType.Fit,
 Image=pid,
-Size=UDim2.fromOffset(152,152),
+Size=UDim2.fromOffset(214,214),
 AnchorPoint=Vector2.new(0,0.5),
-Position=UDim2.new(0,-52,0.52,8),
+Position=UDim2.new(0,-74,0.54,8),
 Rotation=-3,
-ZIndex=320,
+ZIndex=-60,
 })
 task.spawn(function()
 local T=game:GetService"TweenService"
-local a=UDim2.new(0,-52,0.52,8)
-local b=UDim2.new(0,-52,0.52,0)
+local a=UDim2.new(0,-74,0.54,8)
+local b=UDim2.new(0,-74,0.54,0)
 while pet.Parent do
-T:Create(pet,TweenInfo.new(2.4,Enum.EasingStyle.Sine,Enum.EasingDirection.InOut),{Position=b}):Play()
-task.wait(2.4)
+T:Create(pet,TweenInfo.new(2.6,Enum.EasingStyle.Sine,Enum.EasingDirection.InOut),{Position=b}):Play()
+task.wait(2.6)
 if not pet.Parent then
 break
 end
-T:Create(pet,TweenInfo.new(2.4,Enum.EasingStyle.Sine,Enum.EasingDirection.InOut),{Position=a}):Play()
-task.wait(2.4)
+T:Create(pet,TweenInfo.new(2.6,Enum.EasingStyle.Sine,Enum.EasingDirection.InOut),{Position=a}):Play()
+task.wait(2.6)
 end
 end)
+end
+local stick=DS_Node("ImageLabel",root,{
+Name="DeepSeekSticker",
+BackgroundTransparency=1,
+BorderSizePixel=0,
+ScaleType=Enum.ScaleType.Fit,
+Size=UDim2.fromOffset(96,96),
+AnchorPoint=Vector2.new(1,1),
+Position=UDim2.new(1,-8,1,-8),
+ZIndex=470,
+})
+local function reshuffle()
+local id=DS_Asset(DS_Pick(DS_STIKER))
+if id then
+stick.Image=id
+end
+end
+reshuffle()
+local lastShift=0
+root:GetPropertyChangedSignal"Position":Connect(function()
+local now=tick()
+if now-lastShift>0.4 then
+lastShift=now
+reshuffle()
+end
+end)
+for _,n in ipairs(root:GetDescendants())do
+if n:IsA"GuiButton"then
+local an=n.AnchorPoint
+local po=n.Position
+if an.X>0.98 and an.Y>0.98 and po.X.Scale>0.98 and po.Y.Scale>0.98 then
+pcall(function()
+n.ImageTransparency=1
+n.BackgroundTransparency=1
+end)
+end
+end
 end
 local tid=DS_Asset(DS_Pick(DS_TOP))
 if tid then
