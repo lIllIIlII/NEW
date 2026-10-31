@@ -336,8 +336,8 @@ Call(Look, "Divider")
 Call(Look, "Section", { Title = "窗口操作" })
 Call(Look, "Button", { Title = "回到屏幕中心", Desc = "把窗口吸附到中间", Callback = function() Window:SetToTheCenter() end })
 Call(Look, "Button", {
-	Title = "彻底关闭（告别动画）",
-	Desc = "鲸鱼娘会凑在一起说再见",
+	Title = "彻底关闭（销毁界面）",
+	Desc = "直接销毁整个界面，鱼也不会留下",
 	Callback = function()
 		if _G.DS_Close then
 			_G.DS_Close()
