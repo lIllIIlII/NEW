@@ -850,8 +850,25 @@ end
 
 function r.UpdateFont(u)
 r.Font=u
+local ok,fnt=pcall(function()
+return Font.fromEnum(Enum.Font.Arcade)
+end)
+if not ok or not fnt then
+ok,fnt=pcall(function()
+return Font.fromEnum(Enum.Font.PressStart2P)
+end)
+end
+if not ok or not fnt then
+ok,fnt=pcall(function()
+return Font.fromEnum(Enum.Font.Code)
+end)
+end
 for v,x in next,r.FontObjects do
+if ok and fnt then
+x.FontFace=fnt
+else
 x.FontFace=Font.new(u,x.FontFace.Weight,x.FontFace.Style)
+end
 end
 end
 
@@ -15683,15 +15700,23 @@ NumberSequenceKeypoint.new(1,math.min(0.99,pal.banner+0.30)),
 },
 })
 end
-DS_Node("Frame",tb,{
+local divider=DS_Node("Frame",tb,{
 Name="DeepSeekDivider",
 AnchorPoint=Vector2.new(0,1),
 Position=UDim2.new(0,0,1,0),
 Size=UDim2.new(1,0,0,1),
 BackgroundColor3=pal.accent,
-BackgroundTransparency=0.60,
+BackgroundTransparency=0,
 BorderSizePixel=0,
 ZIndex=420,
+})
+DS_Node("UIGradient",divider,{
+Transparency=NumberSequence.new{
+NumberSequenceKeypoint.new(0,0.92),
+NumberSequenceKeypoint.new(0.28,0.30),
+NumberSequenceKeypoint.new(0.72,0.30),
+NumberSequenceKeypoint.new(1,0.92),
+},
 })
 end
 local pid=DS_Asset(DS_Pick(DS_PET))
@@ -15865,33 +15890,68 @@ local obId=DS_Asset"open.png"
 local ob=h.OpenButtonMain
 if ob and ob.Button and obId then
 local holder=ob.Button
+pcall(function()
+holder.AutomaticSize=Enum.AutomaticSize.None
+holder.Size=UDim2.fromOffset(184,104)
 holder.ClipsDescendants=false
-local fish=DS_Node("ImageLabel",holder,{
+end)
+pcall(function()
+local up=holder.Parent
+while up and not up:IsA"ScreenGui"do
+if up:IsA"ImageLabel"then
+up.ImageTransparency=1
+up.BackgroundTransparency=1
+end
+if up:IsA"Frame"then
+up.BackgroundTransparency=1
+end
+up=up.Parent
+end
+end)
+DS_Node("ImageLabel",holder,{
 Name="DeepSeekOpenFish",
 BackgroundTransparency=1,
 BorderSizePixel=0,
 ScaleType=Enum.ScaleType.Fit,
-Size=UDim2.fromOffset(196,146),
-AnchorPoint=Vector2.new(0.5,0.5),
-Position=UDim2.new(0.5,0,0.5,-14),
-ZIndex=-5,
+Size=UDim2.fromScale(1,1),
+ZIndex=0,
 Image=obId,
 })
 local pad=holder:FindFirstChildOfClass"UIPadding"
 if not pad then
 pad=DS_Node("UIPadding",holder,{})
 end
-pad.PaddingTop=UDim.new(0,22)
+pad.PaddingTop=UDim.new(0,18)
 for _,d in ipairs(holder:GetDescendants())do
 if d:IsA"TextLabel"then
 d.TextColor3=Color3.fromHex"#16233F"
 d.TextTransparency=0
+d.TextStrokeTransparency=1
+d.ZIndex=5
 end
-if d:IsA"ImageLabel"and d~=fish then
+if d:IsA"ImageLabel"and d.Name~="DeepSeekOpenFish"then
 d.ImageColor3=Color3.fromHex"#16233F"
+d.ZIndex=5
 end
 end
 end
+local foot=DS_Node("Frame",root,{
+Name="DeepSeekFoot",
+AnchorPoint=Vector2.new(0.5,1),
+Position=UDim2.new(0.5,0,1,0),
+Size=UDim2.new(1,-40,0,1),
+BackgroundColor3=pal.accent,
+BackgroundTransparency=0,
+BorderSizePixel=0,
+ZIndex=430,
+})
+DS_Node("UIGradient",foot,{
+Transparency=NumberSequence.new{
+NumberSequenceKeypoint.new(0,1),
+NumberSequenceKeypoint.new(0.5,0.45),
+NumberSequenceKeypoint.new(1,1),
+},
+})
 task.spawn(function()
 local s0=root.Size
 root.Size=UDim2.new(s0.X.Scale,s0.X.Offset*0.90,s0.Y.Scale,s0.Y.Offset*0.90)
