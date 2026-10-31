@@ -16926,11 +16926,26 @@ local ob=h.OpenButtonMain
 DS_Stage("bye",function()
 DS_Bye=DS_Goodbye
 DS_Close=function()
+if DS_FullClose then
+return
+end
 DS_FullClose=true
 DS_Goodbye()
-task.delay(0.26,function()
+task.delay(0.55,function()
 pcall(function()
 h:Close()
+end)
+end)
+task.delay(2.70,function()
+pcall(function()
+if h.Destroy then
+h:Destroy()
+else
+local sg=DS_ScreenRoot(root,h,al)
+if sg then
+sg:Destroy()
+end
+end
 end)
 end)
 end
