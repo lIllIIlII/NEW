@@ -41,6 +41,15 @@ local function notify(title, content)
 	WindUI:Notify({ Title = title, Content = content, Duration = 4 })
 end
 
+local function tick(name, on)
+	if not _G.DS_Ticker then return end
+	if on then
+		_G.DS_Ticker.Add(name)
+	else
+		_G.DS_Ticker.Remove(name)
+	end
+end
+
 Window:CreateTopbarButton("关于", "info", function()
 	notify("DeepSeek UI", "WindUI 1.6.65 · 圆角 · 37 款字体 · 随机鲸鱼娘")
 end, 24, nil, Color3.fromHex("#4D6BFE"))
@@ -86,7 +95,10 @@ Call(Home, "Toggle", {
 	Title = "自动运行",
 	Desc = "注入后立刻执行",
 	Value = true,
-	Callback = function(state) print("[自动运行]", state) end,
+	Callback = function(state)
+		print("[自动运行]", state)
+		tick("自动运行", state)
+	end,
 })
 Call(Home, "Slider", {
 	Title = "移动速度",
@@ -151,19 +163,28 @@ Call(Controls, "Toggle", {
 	Title = "透视方框",
 	Desc = "在所有玩家身上画方框",
 	Value = false,
-	Callback = function(v) print("[透视]", v) end,
+	Callback = function(v)
+		print("[透视]", v)
+		tick("透视方框", v)
+	end,
 })
 Call(Controls, "Toggle", {
 	Title = "队伍检测",
 	Desc = "忽略自己的队友",
 	Value = true,
-	Callback = function(v) print("[队伍检测]", v) end,
+	Callback = function(v)
+		print("[队伍检测]", v)
+		tick("队伍检测", v)
+	end,
 })
 Call(Controls, "Toggle", {
 	Title = "静默瞄准",
 	Desc = "改变子弹飞行方向",
 	Value = false,
-	Callback = function(v) print("[静默瞄准]", v) end,
+	Callback = function(v)
+		print("[静默瞄准]", v)
+		tick("静默瞄准", v)
+	end,
 })
 Call(Controls, "Input", {
 	Title = "自定义前缀",
@@ -233,7 +254,10 @@ Call(Look, "Toggle", {
 	Title = "全屏模式",
 	Desc = "铺满整个屏幕",
 	Value = false,
-	Callback = function(v) Window:ToggleFullscreen(v) end,
+	Callback = function(v)
+		Window:ToggleFullscreen(v)
+		tick("全屏", v)
+	end,
 })
 Call(Look, "Divider")
 Call(Look, "Section", { Title = "字体" })
@@ -325,5 +349,8 @@ Window:OnClose(function() print("[DeepSeekUI] 窗口已关闭") end)
 Window:SelectTab(Home)
 
 task.delay(0.6, function()
+	if _G.DS_Ticker then
+		_G.DS_Ticker.Set({ "自动运行", "队伍检测" })
+	end
 	notify("DeepSeek UI", "加载完成。搜索栏在标签栏上方。")
 end)
