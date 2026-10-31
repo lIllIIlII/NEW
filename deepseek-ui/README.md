@@ -1,84 +1,99 @@
 # DeepSeek UI · WindUI 深度改版
 
-基于 WindUI v1.6.65 的 DeepSeek 主题改版，全部直角、搜索栏置顶、蓝白/黑白随机配色、随机 DeepSeek 鲸鱼娘壁纸 + 边缘偷看桌宠 + 趴在窗口上的鲸鱼娘。
+基于 WindUI v1.6.65 的 DeepSeek 主题改版：全部直角、搜索栏在分页栏上方、蓝白/黑白随机配色、随机 DeepSeek 鲸鱼娘壁纸、左边缘偷看的桌宠、趴在窗口上的鲸鱼娘。
 
-## 目录结构
+仓库地址：https://github.com/lIllIIlII/NEW
+
+## 目录
 
 ```
-main.lua          改版后的 WindUI 单文件（直接 loadstring 用）
-assets/           图片资源（17 张壁纸/立绘/透明抠图）
+deepseek-ui/
+├── main.lua        改版后的 WindUI 单文件（库源码）
+├── demo.lua        UI 示例，直接跑这个
+├── assets/         17 张图片（壁纸 / 立绘 / 透明抠图 / 顶栏横幅）
+├── preview_dark.png
+└── preview_light.png
 ```
 
-## 一、先上传到你的 GitHub
+`main.lua` 只是 UI 库，单独跑没有画面，要看效果跑 `demo.lua`。
 
-在电脑上执行（把 `用户名` 换成你的 GitHub 用户名）：
-
-```bash
-# 1. 新建仓库 NEW（网页端建，Public，不要勾 README）
-git clone https://github.com/用户名/NEW.git
-cd NEW
-# 把本目录的 main.lua 和 assets/ 整个拷进来
-git add .
-git commit -m "DeepSeek UI"
-git push
-```
-
-## 二、改 CDN 地址
-
-用编辑器打开 `main.lua`，搜索 `[GITHUB_USER]`，全部替换成你的 GitHub 用户名（共 2 处，同一个字符串）。
+## 直接使用
 
 ```lua
-local DS_CDN={
-"https://raw.githubusercontent.com/你的用户名/NEW/main/assets/",
-"https://cdn.jsdelivr.net/gh/你的用户名/NEW@main/assets/",
-}
+local BASE = "https://raw.githubusercontent.com/lIllIIlII/NEW/main/deepseek-ui/"
+loadstring(game:HttpGet(BASE .. "demo.lua"))()
 ```
 
-第一条是 GitHub 直连，第二条是 jsDelivr 国内加速，脚本会按顺序回退，哪条能通用哪条。
-
-## 三、使用
+只要库：
 
 ```lua
-loadstring(game:HttpGet("https://raw.githubusercontent.com/你的用户名/NEW/main/assets/../main.lua"))()
+local WindUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/lIllIIlII/NEW/main/deepseek-ui/main.lua"))()
 ```
 
-也可以直接 `loadstring(readfile("main.lua"))()`。
+国内网络慢就把 `raw.githubusercontent.com/lIllIIlII/NEW/main` 换成 `cdn.jsdelivr.net/gh/lIllIIlII/NEW@main`，脚本内部图片加载也是按这个顺序自动回退的。
 
-创建窗口：
+## 创建窗口
 
 ```lua
-local WindUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/你的用户名/NEW/main.lua"))()
 local Window = WindUI:CreateWindow({
-    Title="DeepSeek",
-    Theme=nil,           -- 留空 = 每次启动随机 蓝黑夜 / 白昼
-    HideSearchBar=false,
+    Title = "DeepSeek",
+    Icon = "lucide:sparkles",
+    Author = "DeepSeek AI",
+    Folder = "DeepSeekUI",
+    Size = UDim2.fromOffset(660, 470),
+    Theme = nil,
+    HideSearchBar = false,
+    User = { Enabled = true, Anonymous = false },
 })
 ```
 
-`Theme="Dark"` 强制蓝黑夜，`Theme="Light"` 强制白昼。
+`Theme = "Dark"` 强制蓝黑夜，`Theme = "Light"` 强制蓝白昼，留空则每次启动随机。
 
-## 素材清单
+## 元素写法
 
-`bg_01.jpg` 背景 · 彩色鲸鱼娘近景（随机）
-`bg_02.jpg` 背景 · 黑白 DeepSeek 线稿（随机）
-`pet_01.png` 桌宠 · 鲸鱼娘头部抠图
-`pet_02.png` 桌宠 · Q 版鲸鱼娘全身抠图
-`pet_03.png` 桌宠 · 像素风鲸鱼娘抠图
-`pet_04.png` 桌宠 · DeepSeek 鲸鱼少女设定图抠图
-`pet_05.png` 桌宠 · 女仆装 DeepSeek 鲸鱼娘立绘抠图（主用）
-`art_01..07.jpg` 顶栏横幅 · 你提供的 7 张原图
-`art_08.jpg` 顶栏横幅 · DeepSeek 鲸鱼少女设定
-`art_09.jpg` 顶栏横幅 · 官方蓝白 DeepSeek 娘
-`art_10.jpg` 顶栏横幅 · 青花瓷旗袍 DeepSeek 娘
+```lua
+local Tab = Window:Tab({ Title = "Home", Icon = "lucide:house" })
+
+Tab:Section({ Title = "Overview" })
+Tab:Paragraph({ Title = "标题", Desc = "说明" })
+Tab:Button({ Title = "按钮", Desc = "说明", Callback = function() end })
+Tab:Toggle({ Title = "开关", Value = true, Callback = function(state) end })
+Tab:Slider({ Title = "滑条", Value = { Min = 0, Max = 100, Default = 45 }, Callback = function(v) end })
+Tab:Dropdown({ Title = "下拉", Values = { "A", "B" }, Value = "A", Callback = function(v) end })
+Tab:Input({ Title = "输入", Placeholder = "...", Value = "", Callback = function(v) end })
+Tab:Keybind({ Title = "按键", Value = "K", Callback = function(v) end })
+Tab:Colorpicker({ Title = "颜色", Default = Color3.fromHex("#4D6BFE"), Callback = function(c) end })
+Tab:Divider()
+```
+
+窗口方法：`Window:SelectTab`、`Window:SetTitle`、`Window:SetAuthor`、`Window:SetSize`、`Window:SetUIScale`、`Window:ToggleFullscreen`、`Window:SetToTheCenter`、`Window:LockAll`、`Window:UnlockAll`、`Window:Open`、`Window:Close`、`Window:Toggle`、`Window:Destroy`、`Window:OnOpen`、`Window:OnClose`、`Window:OnDestroy`、`Window:CreateTopbarButton`。
+
+库方法：`WindUI:Notify`、`WindUI:SetTheme`、`WindUI:GetThemes`、`WindUI:AddTheme`、`WindUI:SetLanguage`、`WindUI:ToggleAcrylic`、`WindUI:Dialog`。
+
+## 素材
+
+| 文件 | 用途 |
+|---|---|
+| `bg_01.jpg` | 背景 · 彩色鲸鱼娘近景（随机） |
+| `bg_02.jpg` | 背景 · 黑白 DeepSeek 线稿（随机） |
+| `pet_01.png` | 桌宠 · 鲸鱼娘头部抠图 |
+| `pet_02.png` | 桌宠 · Q 版鲸鱼娘全身抠图 |
+| `pet_03.png` | 桌宠 · 像素风鲸鱼娘抠图 |
+| `pet_04.png` | 桌宠 · DeepSeek 鲸鱼少女设定图抠图 |
+| `pet_05.png` | 桌宠 · 女仆装 DeepSeek 鲸鱼娘立绘抠图（主用） |
+| `art_01~07.jpg` | 顶栏横幅 · 原始 7 张 |
+| `art_08.jpg` | 顶栏横幅 · DeepSeek 鲸鱼少女设定 |
+| `art_09.jpg` | 顶栏横幅 · 官方蓝白 DeepSeek 娘 |
+| `art_10.jpg` | 顶栏横幅 · 青花瓷旗袍 DeepSeek 娘 |
 
 ## 改了什么
 
-1. 全部圆角强制归零：`SetRadius` 里 `SliceScale=0`，`New` 里所有 `UICorner` 半径置 0，窗口、按钮、输入框、开关、滚动条一律直角。
-2. 搜索栏下沉处理改为常驻显示并固定在分页栏上方（`HideSearchBar=false`），页签列表自动下移 45px 让位。
-3. 配色整套换成 DeepSeek 蓝白：主色 `#4D6BFE`，暗色 `#070B13` / `#0C1220`，亮色 `#FFFFFF` / `#F3F7FF`，两套主题每次启动随机。
-4. 窗口背景接随机 DeepSeek 壁纸（`ScaleType=Crop` + 纵向渐变遮罩，暗色透明 0.14、亮色 0.40），不压字。
-5. 窗口左边缘外挂一张透明抠图鲸鱼娘，只露 100px 进窗口，带 2.4s 呼吸浮动，就是"在 UI 边缘偷看"。
-6. 窗口顶边正中趴一只 Q 版鲸鱼娘，锚点 `(0.5,1)`、下沉 26px，看起来是趴在窗口横梁上。
-7. 顶栏加随机鲸鱼娘横幅（左右渐变淡出）+ 1px DeepSeek 蓝分割线，窗口描 1px 蓝色边。
-8. 图片加载全部走 `writefile` + `getcustomasset`，落地 `DeepSeekUI/` 目录，第二次启动直接读本地缓存不再下载。
-9. 全文件零新增注释。
+1. 全部直角：`SetRadius` 里 `SliceScale = 0` 抹掉所有 NineSlice 圆角，`New` 里所有 `UICorner` 半径强制 `UDim.new(0, 0)`，窗口、按钮、输入框、开关、滚动条、下拉全部方角。
+2. 搜索栏放到分页栏上方：`HideSearchBar = false` 常驻，页签列表自动下移 45px 让位。
+3. DeepSeek 配色：暗色 `#070B13` / `#0C1220`，亮色 `#FFFFFF` / `#F3F7FF`，主色统一 `#4D6BFE`，启动时 `math.random(2)` 随机挑一套。
+4. 随机背景：`ScaleType = Crop` 加纵向渐变遮罩（暗色 0.38 到 0.76，亮色 0.52 到 0.86），壁纸有氛围又不压字。
+5. 边缘偷看桌宠：窗口左边缘外挂透明抠图，只露 100px 进窗口，负 3 度倾斜，2.4 秒呼吸浮动。
+6. 趴在 UI 上：顶边中央，锚点 `(0.5, 1)`，下沉 22px，看起来是坐在窗口横梁上。
+7. 顶栏横幅：随机鲸鱼娘横向渐变淡出加 1px DeepSeek 蓝分割线，窗口描 1px 蓝边。
+8. 加载优化：图片落地 `DeepSeekUI/` 目录，第二次启动直接读本地缓存，不再重复下载。
+9. 零注释：库文件和示例都没多写一行注释。
