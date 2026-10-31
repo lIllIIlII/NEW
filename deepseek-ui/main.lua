@@ -14673,7 +14673,17 @@ return G.New(J,av.WindUI.UIScale)
 end
 
 function aw.SelectTab(H,J)
+if type(J)=="table"then
+for a,b in next,G.Tabs do
+if b==J then
+J=a
+break
+end
+end
+end
+if G.Tabs[J]then
 G:SelectTab(J)
+end
 end
 
 function aw.Section(H,J)
@@ -15720,13 +15730,14 @@ reshuffle()
 end
 end)
 for _,n in ipairs(root:GetDescendants())do
-if n:IsA"GuiButton"then
+if n:IsA"GuiButton"and not n:FindFirstAncestor"Topbar"then
 local an=n.AnchorPoint
 local po=n.Position
-if an.X>0.98 and an.Y>0.98 and po.X.Scale>0.98 and po.Y.Scale>0.98 then
+if(an.X>0.9 or po.X.Scale>0.9)and(an.Y>0.9 or po.Y.Scale>0.9)then
 pcall(function()
 n.ImageTransparency=1
 n.BackgroundTransparency=1
+n.BackgroundColor3=Color3.new(1,1,1)
 end)
 end
 end
