@@ -15572,6 +15572,7 @@ local DS_TickerRoot=nil
 local DS_TickerRows={}
 local DS_TickerList={}
 local DS_TickerRowH=28
+local DS_TickerLine=nil
 local function DS_Pick(t)
 return t[math.random(#t)]
 end
@@ -16156,8 +16157,8 @@ local function DS_TickerMetrics()
 local vp=DS_Viewport()
 local m=math.min(vp.X,vp.Y)
 local s=math.clamp(m/592,0.7,2.2)
-local rowH=math.max(14,math.floor(28*s))
-local pad=math.max(1,math.floor(2*s))
+local rowH=math.max(12,math.floor(22*s))
+local pad=math.max(0,math.floor(1*s))
 local w=math.clamp(math.floor(0.42*m),140,math.floor(vp.X*0.55))
 local hgt=math.max(120,math.floor(vp.Y*0.78))
 local x=math.max(6,math.floor(vp.X*0.03))
@@ -16172,6 +16173,10 @@ local w,hgt,rowH,pad,x,y=DS_TickerMetrics()
 DS_TickerRowH=rowH
 DS_TickerRoot.Size=UDim2.fromOffset(w,hgt)
 DS_TickerRoot.Position=UDim2.new(1,-x,0,y)
+if DS_TickerLine and DS_TickerLine.Parent then
+DS_TickerLine.Position=UDim2.new(1,-(x-9),0,y)
+DS_TickerLine.Size=UDim2.fromOffset(1,hgt)
+end
 local lay=DS_TickerRoot:FindFirstChildOfClass"UIListLayout"
 if lay then
 lay.Padding=UDim.new(0,pad)
@@ -16213,7 +16218,7 @@ Size=UDim2.fromScale(1,1),
 Text=name,
 TextScaled=true,
 TextXAlignment=Enum.TextXAlignment.Right,
-TextColor3=Color3.fromRGB(90,170,255),
+TextColor3=Color3.new(1,1,1),
 ZIndex=702,
 })
 pcall(function()
@@ -16229,7 +16234,7 @@ ColorSequenceKeypoint.new(1,Color3.fromRGB(40,110,220)),
 }),
 Offset=Vector2.new(-1,0),
 })
-DS_Node("UIStroke",label,{Color=Color3.fromRGB(45,130,255),Thickness=0.45,Transparency=0.48})
+DS_Node("UIStroke",label,{Color=Color3.fromRGB(45,130,255),Thickness=0.45,Transparency=0.52})
 return{holder=holder,glow=glow,label=label,grad=grad}
 end
 local function DS_TickerSync()
@@ -16363,6 +16368,29 @@ HorizontalAlignment=Enum.HorizontalAlignment.Right,
 VerticalAlignment=Enum.VerticalAlignment.Top,
 Padding=UDim.new(0,2),
 })
+DS_Node("UIPadding",DS_TickerRoot,{
+PaddingRight=UDim.new(0,16),
+})
+DS_TickerLine=DS_Node("Frame",sg,{
+Name="DeepSeekTickerLine",
+AnchorPoint=Vector2.new(1,0),
+Position=UDim2.new(1,-10,0,10),
+Size=UDim2.fromOffset(1,300),
+BackgroundColor3=pal.accent,
+BackgroundTransparency=0,
+BorderSizePixel=0,
+ZIndex=699,
+})
+DS_Node("UIGradient",DS_TickerLine,{
+Rotation=90,
+Transparency=NumberSequence.new{
+NumberSequenceKeypoint.new(0,1),
+NumberSequenceKeypoint.new(0.18,0.55),
+NumberSequenceKeypoint.new(0.5,0.12),
+NumberSequenceKeypoint.new(0.82,0.55),
+NumberSequenceKeypoint.new(1,1),
+},
+})
 DS_TickerApplySize()
 DS_TickerSync()
 task.spawn(function()
@@ -16374,10 +16402,10 @@ end
 end
 for _,r in next,DS_TickerRows do
 if r.grad and r.grad.Parent then
-DS_Tween(r.grad,3,{Offset=Vector2.new(1,0)},Enum.EasingStyle.Sine,Enum.EasingDirection.InOut)
+DS_Tween(r.grad,1.8,{Offset=Vector2.new(1,0)},Enum.EasingStyle.Sine,Enum.EasingDirection.InOut)
 end
 end
-task.wait(3.1)
+task.wait(1.95)
 end
 end)
 task.spawn(function()
@@ -16909,8 +16937,8 @@ if not sc then
 return
 end
 local target=sc.Scale
-sc.Scale=target*0.92
-DS_Tween(sc,0.34,{Scale=target},Enum.EasingStyle.Quint,Enum.EasingDirection.Out)
+sc.Scale=target*0.86
+DS_Tween(sc,0.52,{Scale=target},Enum.EasingStyle.Back,Enum.EasingDirection.Out)
 end)
 task.spawn(function()
 task.wait(0.04)
@@ -16945,7 +16973,7 @@ stick.Position=UDim2.new(1,140,1,-8)
 DS_Tween(stick,0.5,{Position=UDim2.new(1,-8,1,-8)},Enum.EasingStyle.Back,Enum.EasingDirection.Out)
 end)
 task.spawn(function()
-for _,d in next,{0.35,0.9,1.6,2.6,4.2}do
+for _,d in next,{1.6,2.4,3.4,4.8}do
 task.delay(d,function()
 pcall(DS_ReScale)
 end)
@@ -16964,6 +16992,32 @@ task.delay(0.5,function()
 pcall(DS_ReScale)
 end)
 end)
+end)
+end)
+task.spawn(function()
+task.wait(0.02)
+if not DS_Flash then
+return
+end
+DS_Flash.BackgroundTransparency=0.55
+DS_Tween(DS_Flash,0.22,{BackgroundTransparency=0.88},Enum.EasingStyle.Quad,Enum.EasingDirection.Out)
+task.wait(0.22)
+DS_Tween(DS_Flash,0.55,{BackgroundTransparency=1},Enum.EasingStyle.Quad,Enum.EasingDirection.Out)
+end)
+task.spawn(function()
+task.wait(0.05)
+pcall(function()
+foot.Size=UDim2.new(0,0,0,1)
+DS_Tween(foot,0.55,{Size=UDim2.new(1,-40,0,1)},Enum.EasingStyle.Quint,Enum.EasingDirection.Out)
+end)
+pcall(function()
+if DS_TickerLine then
+DS_TickerLine.BackgroundTransparency=1
+DS_Tween(DS_TickerLine,0.6,{BackgroundTransparency=0},Enum.EasingStyle.Quad,Enum.EasingDirection.Out)
+end
+end)
+pcall(function()
+hair.BackgroundTransparency=1
 end)
 end)
 task.delay(1.4,DS_ApplyFont)
