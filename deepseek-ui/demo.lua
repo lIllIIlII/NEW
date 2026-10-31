@@ -353,6 +353,17 @@ Call(Look, "Button", {
 Call(Look, "Divider")
 Call(Look, "Section", { Title = "窗口操作" })
 Call(Look, "Button", { Title = "回到屏幕中心", Desc = "把窗口吸附到中间", Callback = function() Window:SetToTheCenter() end })
+Call(Look, "Button", {
+	Title = "彻底关闭（告别动画）",
+	Desc = "鲸鱼娘会凑在一起说再见",
+	Callback = function()
+		if _G.DS_Close then
+			_G.DS_Close()
+		else
+			Window:Close()
+		end
+	end,
+})
 Call(Look, "Button", { Title = "锁定全部", Desc = "冻结所有元素", Callback = function() Window:LockAll() end })
 Call(Look, "Button", { Title = "解锁全部", Desc = "释放所有元素", Callback = function() Window:UnlockAll() end })
 Call(Look, "Input", { Title = "窗口标题", Desc = "改掉左上角的字", Placeholder = "DeepSeek", Value = "DeepSeek", Callback = function(v) Window:SetTitle(v) end })
