@@ -16330,166 +16330,8 @@ return c
 end
 return(root and root.Parent)or root
 end
-local DS_ByeBusy=false
 local DS_FullClose=false
-local DS_MinBusy=false
-local function DS_Goodbye()
-if not DS_ROOT or DS_ByeBusy then
-return
-end
-DS_ByeBusy=true
-pcall(function()
-local sg=DS_ScreenRoot(DS_ROOT,DS_WIN,nil)
-if not sg then
-DS_ByeBusy=false
-return
-end
-local pal=DS_PAL or{accent=Color3.fromHex"#4D6BFE",soft=Color3.fromHex"#7C97FF"}
-local scrim=DS_Node("Frame",sg,{
-Name="DeepSeekByeScrim",
-Size=UDim2.fromScale(1,1),
-BackgroundColor3=Color3.fromHex"#04070D",
-BackgroundTransparency=1,
-BorderSizePixel=0,
-ZIndex=948,
-})
-DS_Tween(scrim,0.30,{BackgroundTransparency=0.34},Enum.EasingStyle.Quad,Enum.EasingDirection.Out)
-local box=DS_Node("Frame",sg,{
-Name="DeepSeekBye",
-AnchorPoint=Vector2.new(0.5,0.5),
-Position=UDim2.new(0.5,0,0.44,0),
-Size=UDim2.fromOffset(420,300),
-BackgroundTransparency=1,
-BorderSizePixel=0,
-ZIndex=950,
-})
-local line=DS_Node("Frame",box,{
-AnchorPoint=Vector2.new(0.5,0),
-Position=UDim2.new(0.5,0,0.70,0),
-Size=UDim2.new(0,0,0,1),
-BackgroundColor3=pal.accent,
-BackgroundTransparency=0,
-BorderSizePixel=0,
-ZIndex=952,
-})
-DS_Node("UIGradient",line,{
-Transparency=NumberSequence.new{
-NumberSequenceKeypoint.new(0,1),
-NumberSequenceKeypoint.new(0.5,0.05),
-NumberSequenceKeypoint.new(1,1),
-},
-})
-local slots={{-106,-2,-13,0.00,116},{-2,-20,6,0.07,136},{98,-2,15,0.14,112}}
-for i,sl in next,slots do
-local id=DS_Asset(DS_Pick(DS_PET))
-if id then
-local img=DS_Node("ImageLabel",box,{
-Size=UDim2.fromOffset(0,0),
-AnchorPoint=Vector2.new(0.5,0.5),
-Position=UDim2.new(0.5,sl[1],0.42,sl[2]+46),
-BackgroundTransparency=1,
-BorderSizePixel=0,
-ScaleType=Enum.ScaleType.Fit,
-Image=id,
-ImageTransparency=1,
-Rotation=sl[3],
-ZIndex=953+i,
-})
-task.delay(sl[4],function()
-if not img.Parent then
-return
-end
-DS_Tween(img,0.40,{
-Size=UDim2.fromOffset(sl[5],sl[5]),
-ImageTransparency=0,
-Position=UDim2.new(0.5,sl[1],0.42,sl[2]),
-},Enum.EasingStyle.Back,Enum.EasingDirection.Out)
-end)
-task.delay(sl[4]+0.42,function()
-if not img.Parent then
-return
-end
-DS_Tween(img,1.5,{
-Position=UDim2.new(0.5,sl[1]*0.74,0.42,sl[2]-3),
-Rotation=sl[3]*0.25,
-},Enum.EasingStyle.Sine,Enum.EasingDirection.InOut)
-end)
-end
-end
-task.delay(0.18,function()
-if not line.Parent then
-return
-end
-DS_Tween(line,0.46,{Size=UDim2.new(0,250,0,1)},Enum.EasingStyle.Quint,Enum.EasingDirection.Out)
-end)
-local txt=DS_Node("TextLabel",box,{
-BackgroundTransparency=1,
-BorderSizePixel=0,
-Size=UDim2.new(1,0,0,34),
-AnchorPoint=Vector2.new(0.5,0.5),
-Position=UDim2.new(0.5,0,0.82,22),
-Text="再见 祝您天天开心",
-TextColor3=Color3.new(1,1,1),
-TextSize=23,
-TextTransparency=1,
-TextStrokeTransparency=1,
-ZIndex=960,
-})
-pcall(function()
-txt.FontFace=DS_Face"Arcade"
-end)
-DS_Node("UIGradient",txt,{
-Color=ColorSequence.new({
-ColorSequenceKeypoint.new(0,Color3.fromRGB(96,156,255)),
-ColorSequenceKeypoint.new(0.5,Color3.fromRGB(255,255,255)),
-ColorSequenceKeypoint.new(1,Color3.fromRGB(96,156,255)),
-}),
-})
-local ts=DS_Node("UIStroke",txt,{Color=pal.accent,Thickness=1.6,Transparency=0.55})
-task.delay(0.26,function()
-if not txt.Parent then
-return
-end
-DS_Tween(txt,0.46,{TextTransparency=0,Position=UDim2.new(0.5,0,0.82,0)},Enum.EasingStyle.Quint,Enum.EasingDirection.Out)
-task.delay(0.46,function()
-if not ts.Parent then
-return
-end
-DS_Tween(ts,0.7,{Transparency=0.15},Enum.EasingStyle.Sine,Enum.EasingDirection.InOut)
-task.delay(0.7,function()
-if ts.Parent then
-DS_Tween(ts,0.7,{Transparency=0.55},Enum.EasingStyle.Sine,Enum.EasingDirection.InOut)
-end
-end)
-end)
-end)
-task.delay(1.95,function()
-if not box.Parent then
-DS_ByeBusy=false
-return
-end
-for _,c in next,box:GetChildren()do
-if c:IsA"TextLabel"then
-DS_Tween(c,0.45,{TextTransparency=1})
-elseif c:IsA"ImageLabel"then
-DS_Tween(c,0.45,{ImageTransparency=1})
-elseif c:IsA"Frame"then
-DS_Tween(c,0.45,{BackgroundTransparency=1})
-end
-end
-DS_Tween(scrim,0.5,{BackgroundTransparency=1},Enum.EasingStyle.Quad,Enum.EasingDirection.Out)
-task.delay(0.55,function()
-if box.Parent then
-box:Destroy()
-end
-if scrim.Parent then
-scrim:Destroy()
-end
-DS_ByeBusy=false
-end)
-end)
-end)
-end
+
 local function DS_Apply(h,w)
 local root=h and h.UIElements and h.UIElements.Main
 if not root then
@@ -16656,23 +16498,6 @@ BackgroundColor3=pal.accent,
 BackgroundTransparency=1,
 BorderSizePixel=0,
 ZIndex=452,
-})
-local intro=DS_Node("Frame",root,{
-Name="DeepSeekIntro",
-AnchorPoint=Vector2.new(0.5,0),
-Position=UDim2.new(0.5,0,0,0),
-Size=UDim2.new(0,0,0,2),
-BackgroundColor3=pal.accent,
-BackgroundTransparency=0,
-BorderSizePixel=0,
-ZIndex=461,
-})
-DS_Node("UIGradient",intro,{
-Transparency=NumberSequence.new{
-NumberSequenceKeypoint.new(0,0.85),
-NumberSequenceKeypoint.new(0.5,0),
-NumberSequenceKeypoint.new(1,0.85),
-},
 })
 local N=20
 for i=0,N-1 do
@@ -16874,14 +16699,6 @@ DS_Tween(sheen,2.1,{Position=UDim2.new(1.4,0,0.5,0)},Enum.EasingStyle.Sine,Enum.
 task.wait(6.4)
 end
 end)
-local function DS_WaitVisible()
-for _=1,120 do
-if root.Visible then
-return
-end
-task.wait(0.03)
-end
-end
 local glowSeq=0
 local function lightUp()
 glowSeq=glowSeq+1
@@ -16924,19 +16741,14 @@ local openId=DS_Asset"open.png"
 local dragId=DS_Asset"open_drag.png"
 local ob=h.OpenButtonMain
 DS_Stage("bye",function()
-DS_Bye=DS_Goodbye
+DS_Bye=function()
+end
 DS_Close=function()
 if DS_FullClose then
 return
 end
 DS_FullClose=true
-DS_Goodbye()
-task.delay(0.55,function()
-pcall(function()
-h:Close()
-end)
-end)
-task.delay(2.70,function()
+task.delay(0.08,function()
 pcall(function()
 if h.Destroy then
 h:Destroy()
@@ -16949,49 +16761,9 @@ end
 end)
 end)
 end
-local origClose=h.Close
-h.Close=function(self,a)
-if DS_FullClose then
-return origClose(self,a)
+if _G then
+_G._G.DS_Close=DS_Close
 end
-if DS_MinBusy then
-return
-end
-DS_MinBusy=true
-pcall(function()
-local sc=root:FindFirstChildOfClass"UIScale"
-if sc then
-local t=sc.Scale
-DS_Tween(sc,0.24,{Scale=t*0.84},Enum.EasingStyle.Quad,Enum.EasingDirection.In)
-task.delay(0.26,function()
-pcall(function()
-sc.Scale=t
-end)
-end)
-end
-end)
-pcall(function()
-local sg=DS_ScreenRoot(root,h,al)
-local m=sg and sg:FindFirstChild"DeepSeekMini"
-if m then
-DS_Tween(m,0.26,{Rotation=8},Enum.EasingStyle.Back,Enum.EasingDirection.Out)
-task.delay(0.26,function()
-DS_Tween(m,0.40,{Rotation=0},Enum.EasingStyle.Quad,Enum.EasingDirection.Out)
-end)
-end
-end)
-task.delay(0.26,function()
-DS_MinBusy=false
-pcall(function()
-origClose(self,a)
-end)
-end)
-end
-pcall(function()
-h:CreateTopbarButton("关闭","x",function()
-DS_Close()
-end,24,nil,Color3.fromHex"#FF6B6B")
-end)
 end)
 
 DS_Stage("mini",function()
@@ -17241,52 +17013,6 @@ task.delay(2.5,function()
 pcall(DS_HairPass)
 end)
 task.spawn(function()
-DS_WaitVisible()
-local sc=root:FindFirstChildOfClass"UIScale"
-if not sc then
-return
-end
-local target=sc.Scale
-sc.Scale=target*0.80
-DS_Tween(sc,0.62,{Scale=target},Enum.EasingStyle.Back,Enum.EasingDirection.Out)
-end)
-task.spawn(function()
-DS_WaitVisible()
-task.wait(0.04)
-if not bgImg then
-return
-end
-local target=bgImg.ImageTransparency
-bgImg.ImageTransparency=1
-DS_Tween(bgImg,0.55,{ImageTransparency=target},Enum.EasingStyle.Quad,Enum.EasingDirection.Out)
-end)
-task.spawn(function()
-DS_WaitVisible()
-task.wait(0.08)
-local sitter=root:FindFirstChild"DeepSeekSitter"
-if sitter then
-local p0=sitter.Position
-sitter.Position=UDim2.new(p0.X.Scale,0,-0.06,0)
-DS_Tween(sitter,0.5,{Position=p0},Enum.EasingStyle.Back,Enum.EasingDirection.Out)
-end
-end)
-task.spawn(function()
-DS_WaitVisible()
-task.wait(0.12)
-local pet=root:FindFirstChild"DeepSeekPet"
-if pet then
-local p0=pet.Position
-pet.Position=UDim2.new(0,-260,p0.Y.Scale,0)
-DS_Tween(pet,0.55,{Position=p0},Enum.EasingStyle.Quint,Enum.EasingDirection.Out)
-end
-end)
-task.spawn(function()
-DS_WaitVisible()
-task.wait(0.16)
-stick.Position=UDim2.new(1,140,1,-8)
-DS_Tween(stick,0.5,{Position=UDim2.new(1,-8,1,-8)},Enum.EasingStyle.Back,Enum.EasingDirection.Out)
-end)
-task.spawn(function()
 for _,d in next,{1.6,2.4,3.4,4.8}do
 task.delay(d,function()
 pcall(DS_ReScale)
@@ -17306,45 +17032,6 @@ task.delay(0.5,function()
 pcall(DS_ReScale)
 end)
 end)
-end)
-end)
-task.spawn(function()
-DS_WaitVisible()
-task.wait(0.02)
-pcall(function()
-DS_Tween(intro,0.46,{Size=UDim2.new(1,0,0,2)},Enum.EasingStyle.Quint,Enum.EasingDirection.Out)
-task.delay(0.5,function()
-DS_Tween(intro,0.34,{BackgroundTransparency=1},Enum.EasingStyle.Quad,Enum.EasingDirection.Out)
-task.delay(0.4,function()
-if intro.Parent then
-intro:Destroy()
-end
-end)
-end)
-end)
-if not DS_Flash then
-return
-end
-DS_Flash.BackgroundTransparency=0.55
-DS_Tween(DS_Flash,0.22,{BackgroundTransparency=0.88},Enum.EasingStyle.Quad,Enum.EasingDirection.Out)
-task.wait(0.22)
-DS_Tween(DS_Flash,0.55,{BackgroundTransparency=1},Enum.EasingStyle.Quad,Enum.EasingDirection.Out)
-end)
-task.spawn(function()
-DS_WaitVisible()
-task.wait(0.05)
-pcall(function()
-foot.Size=UDim2.new(0,0,0,1)
-DS_Tween(foot,0.55,{Size=UDim2.new(1,-40,0,1)},Enum.EasingStyle.Quint,Enum.EasingDirection.Out)
-end)
-pcall(function()
-if DS_TickerLine then
-DS_TickerLine.BackgroundTransparency=1
-DS_Tween(DS_TickerLine,0.6,{BackgroundTransparency=0},Enum.EasingStyle.Quad,Enum.EasingDirection.Out)
-end
-end)
-pcall(function()
-hair.BackgroundTransparency=1
 end)
 end)
 task.delay(1.4,DS_ApplyFont)
