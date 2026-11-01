@@ -15746,7 +15746,6 @@ _G.DS_ICON_TABLE=t
 end
 end
 end
-DS_LoadIcons()
 local function DS_Face(name)
 if DS_FACES[name]~=nil then
 return DS_FACES[name]
@@ -16632,6 +16631,15 @@ DS_WIN=h
 local pal=DS_Palette(w.Theme and w.Theme.Name or DS_THEME)
 DS_PAL=pal
 DS_Stage("icons",function()
+task.spawn(function()
+task.wait(0.2)
+for _=1,5 do
+if #DS_ICON_TABLE>0 then
+break
+end
+pcall(DS_LoadIcons)
+task.wait(0.6)
+end
 local tbl=DS_ICON_TABLE
 local pk=nil
 local mod=w and w.Icons
@@ -16673,6 +16681,7 @@ if lk then
 pk.Spritesheets.lockup=lk
 pk.Icons.lockup={Image="lockup",ImageRectSize=Vector2.new(0,0),ImageRectPosition=Vector2.new(0,0)}
 end
+end)
 end)
 
 DS_Stage("scale",function()
