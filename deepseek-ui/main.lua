@@ -389,7 +389,7 @@ end
 function d.Icon(f,g,h)
 h=h~=false
 if type(f)=="string"and(string.find(f,"rbxasset://",1,true)or string.find(f,"rbxassetid://",1,true))then
-return h and{f,{ImageRectSize=Vector2.new(0,0),ImageRectPosition=Vector2.new(0,0)}}or f
+return f
 end
 local i,j=parseIconString(f)
 
