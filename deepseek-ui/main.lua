@@ -398,6 +398,10 @@ local m=j
 
 local R=_G and _G.DS_Icons
 if R and i and R[i] and R[i].Icons and R[i].Icons[m]and R[i].Spritesheets then
+local ID=R[i].Spritesheets[tostring(R[i].Icons[m].Image)]
+if type(ID)=="string"and string.find(ID,"rbxassetid://",1,true)then
+return ID
+end
 return{R[i].Spritesheets[tostring(R[i].Icons[m].Image)],R[i].Icons[m]}
 end
 
