@@ -1,7 +1,7 @@
 -- main.lua lives in the executor workspace (Delta/Workspace).
 -- Absolute paths are not readable there: the executor resolves names
 -- relative to its workspace folder, so we try several spellings.
-local DS_DEMO_VERSION = "63"
+local DS_DEMO_VERSION = "64"
 print("[DeepSeekUI] demo build " .. DS_DEMO_VERSION)
 
 local CANDIDATES = {
@@ -324,9 +324,22 @@ Group = "Appearance"
 Call(Look, "Dropdown", {
 	Title = "Font",
 	Description = "UI typeface (CJK-capable options included)",
-	Values = _G.DS_FontNames and _G.DS_FontNames() or { "Source Sans" },
+	Values = (function()
+		local ok, list = pcall(function()
+			return _G.DS_FontNames and _G.DS_FontNames()
+		end)
+		if ok and type(list) == "table" and #list > 0 then
+			return list
+		end
+		return { "Source Sans", "Gotham", "Noto Sans", "Roboto", "Montserrat" }
+	end)(),
 	Callback = function(opt)
-		local names = _G.DS_FontNames and _G.DS_FontNames() or {}
+		local ok, names = pcall(function()
+			return (_G.DS_FontNames and _G.DS_FontNames()) or {}
+		end)
+		if not ok or type(names) ~= "table" then
+			names = { "Source Sans", "Gotham", "Noto Sans", "Roboto", "Montserrat" }
+		end
 		for i, n in ipairs(names) do
 			if n == opt then
 				_G.DS_SetFontIndex(i)
