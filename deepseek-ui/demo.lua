@@ -65,9 +65,40 @@ Window:CreateTopbarButton("跳转", "search", function()
 	end
 end, 24, nil, Color3.fromHex("#4D6BFE"))
 
+local function setTagIcon()
+	local id = nil
+	if _G.DS_Asset then
+		id = _G.DS_Asset("ds-logo-blue.png")
+	end
+	if not id and _G.DS_Img then
+		id = _G.DS_Img("https://raw.githubusercontent.com/lIllIIlII/NEW/main/deepseek-ui/assets/ds-logo-blue.png")
+	end
+	if not id then
+		warn("[DeepSeekUI] tag icon: asset nil")
+		return
+	end
+	pcall(function()
+		local tb = Window.Window.UIElements.Main.Main.Topbar
+		local center = tb:FindFirstChild("Center") or tb
+		local holder = center:FindFirstChild("Holder") or center
+		for _, d in next, holder:GetDescendants() do
+			if d:IsA("ImageLabel") then
+				d.Image = id
+				d.ImageColor3 = Color3.new(1, 1, 1)
+				d.ScaleType = Enum.ScaleType.Fit
+				d.Size = UDim2.fromOffset(16, 16)
+				return
+			end
+		end
+		warn("[DeepSeekUI] tag icon: no ImageLabel found")
+	end)
+end
+
 pcall(function()
-	Window:Tag({ Title = "DEEPSEEK" })
+	Window:Tag({ Title = "DEEPSEEK", Icon = "lucide:whale" })
 end)
+task.delay(0.6, setTagIcon)
+task.delay(1.8, setTagIcon)
 
 local Home = Window:Tab({ Title = "首页", Icon = "lucide:house" })
 local Controls = Window:Tab({ Title = "控件", Icon = "lucide:sliders-horizontal" })
