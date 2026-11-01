@@ -67,12 +67,13 @@ end)
 
 task.delay(0.6, function()
 	pcall(function()
-		local ui = Window.Window.UIElements.Main.Main
-		local tb = ui.Topbar
+		local tb = Window.Window.UIElements.Main.Main.Topbar
 		local lf = tb:FindFirstChild("Left")
 		if lf then
 			for _, d in next, lf:GetDescendants() do
 				if d:IsA("ImageLabel") then
+					d.ImageRectSize = Vector2.new(0, 0)
+					d.ImageRectOffset = Vector2.new(0, 0)
 					d.ScaleType = Enum.ScaleType.Fit
 					d.ImageColor3 = Color3.new(1, 1, 1)
 					break
@@ -84,6 +85,8 @@ task.delay(0.6, function()
 		if holder then
 			for _, d in next, holder:GetDescendants() do
 				if d:IsA("ImageLabel") then
+					d.ImageRectSize = Vector2.new(0, 0)
+					d.ImageRectOffset = Vector2.new(0, 0)
 					d.ScaleType = Enum.ScaleType.Fit
 					d.ImageColor3 = Color3.new(1, 1, 1)
 					d.Size = UDim2.fromOffset(96, 16)
