@@ -4,7 +4,7 @@ local WindUI = loadstring(game:HttpGet(BASE .. "main.lua"))()
 
 local Window = WindUI:CreateWindow({
 	Title = "DeepSeek",
-	Icon = "ds:logo",
+	Icon = "ds:house",
 	Author = "DeepSeek AI",
 	Folder = "DeepSeekUI",
 	Size = UDim2.fromOffset(680, 480),
@@ -55,26 +55,9 @@ local function tick(name, on)
 	end
 end
 
--- Tag: icon only, no text. The lockup image is registered as icon "ds:lockup".
+-- Tag: icon only, no text.
 pcall(function()
-	local tag = Window:Tag({ Title = "", Icon = "ds:lockup" })
-	task.delay(0.5, function()
-		pcall(function()
-			local tb = Window.Window.UIElements.Main.Main.Topbar
-			local center = tb:FindFirstChild("Center")
-			local holder = center and (center:FindFirstChild("Holder") or center)
-			if not holder then return end
-			for _, d in next, holder:GetDescendants() do
-				if d:IsA("ImageLabel") and d.Size.X.Offset < 40 then
-					d.Size = UDim2.fromOffset(96, 15)
-					d.ScaleType = Enum.ScaleType.Fit
-					d.ImageRectOffset = Vector2.new(0, 0)
-					d.ImageRectSize = Vector2.new(0, 0)
-					d.ImageColor3 = Color3.new(1, 1, 1)
-				end
-			end
-		end)
-	end)
+	Window:Tag({ Title = "", Icon = "ds:sparkles" })
 end)
 
 local Home = Window:Tab({ Title = "Home", Icon = "ds:house" })
