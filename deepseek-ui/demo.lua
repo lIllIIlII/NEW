@@ -65,8 +65,8 @@ Window:CreateTopbarButton("跳转", "search", function()
 	end
 end, 24, nil, Color3.fromHex("#4D6BFE"))
 
-local DS_LOGO = _G.DS_Asset and _G.DS_Asset("ds-logo-blue.png")
-local DS_LOCK = _G.DS_Asset and _G.DS_Asset("ds-lockup-black.png")
+local DS_LOGO = WindUI.Asset and WindUI.Asset("ds-logo-blue.png")
+local DS_LOCK = WindUI.Asset and WindUI.Asset("ds-lockup-black.png")
 
 task.delay(0.45, function()
 	pcall(function()
