@@ -5,11 +5,61 @@
 /____/\__/\__/ .__/___/\__/\__/_/\_\
             /_/
 
+@@@@*:.                                                                                      ..=%@@@
+@%=                                                                                              :%@
+%.                                                                                                .#
+.                                                                                                  .
+
+
+
+
+
+
+
+
+                                                                 .=:
+                                            .:-==++++=.         .++=.
+                            .:=++++++++++++++++++++=.           -++++:                 .
+                        .-+++++++++++++++++++++++++-.           =++++++=-.           :=+=
+                      -+++++++++++++++++++++++++++++=.          =+++++++++-  .-=++++++++:
+                    :++++++++++++++++++++++++++++++++++-.       :++++++++++=+++++++++++=
+                   =+++++++++++++++++++++++++++++++++++++=.      :+++++++++++++++++++++:
+                 .=++++++++++++++++++++++++++++++++++++++++=.     :=+++++++++++++++++=.
+                .=+++++++++++++++++++++++++++++++++++++++++++=.     :++++++++++++++=.
+                -++++++++++++++++++++++++++++++++++++++++++++++-.     =++++++++=-.
+               :++++=:....:--=++++++++++++++++++++++++++++++++++++:. :+++++++
+               =++++.           .:-+++++++++++++++++++:::-+++++++++++++++++++
+               +++++.               .-+++++++++++++++-..   :=+++++++++++++++-
+              .+++++-                  .-+++++++++++++:-+:   :++++++++++++++.
+               +++++=.                    -+++++++++++=++.    .=+++++++++++-
+               -+++++:                     .=++++++++++++=     .+++++++++++:
+               .+++++=.                      :+++++++++++++-:::=++++++++++-
+                -+++++=                        -+++++++++++++++++++++++++=
+                .+++++++.                       :+++++++++++++++++++++++=
+                 :+++++++.                       .+++++++++++++++++++++-
+                  :+++++++-            ..          =++++++++++++++++++:
+                   .++++++++-          ++++=.       :+++++++++++++++-
+                    .-++++++++-.       :++++++-.      -+++++++++++=.
+                      .++++++++++:      -++++++++:     .=++++++++++++=.
+                        .=+++++++++++++++++++++++++=:.    -++++++++++++++:
+                           -+**+++++++++++++++++++++++++*+*+-.=+++++++++-
+                             .-+*++++*+++++++++++++++*+++=.
+                                 .-+*+*+**+*++******+=:
+                                        ....:....
+
+
+
+
+
+.                                                                                                  .
+#.                                                                                                 *
+@%-                                                                                              .*@
+@@@@+:.                                                                                       .-#@@@
+
     DeepSeek UI  |  WindUI 1.6.65 改版  |  2026
 
-    License: MIT
+    All rights reserved.
 ]]
-
 type ConfigType__DARKLUA_TYPE_a={
 Object:Instance,
 Camera:Instance?,
@@ -16389,169 +16439,6 @@ end
 end
 return true
 end
-local DS_ART_WORD=[[   ___               ____        __
-  / _ \___ ___ ___  / __/__ ___ / /__
- / // / -_) -_) _ \_\ \/ -_) -_)  '_/
-/____/\__/\__/ .__/___/\__/\__/_/\_\
-            /_/]]
-local DS_ART_WHALE=[[@@@@*:.                                                                                      ..=%@@@
-@%=                                                                                              :%@
-%.                                                                                                .#
-.                                                                                                  .
-
-
-
-
-
-
-
-
-                                                                 .=:
-                                            .:-==++++=.         .++=.
-                            .:=++++++++++++++++++++=.           -++++:                 .
-                        .-+++++++++++++++++++++++++-.           =++++++=-.           :=+=
-                      -+++++++++++++++++++++++++++++=.          =+++++++++-  .-=++++++++:
-                    :++++++++++++++++++++++++++++++++++-.       :++++++++++=+++++++++++=
-                   =+++++++++++++++++++++++++++++++++++++=.      :+++++++++++++++++++++:
-                 .=++++++++++++++++++++++++++++++++++++++++=.     :=+++++++++++++++++=.
-                .=+++++++++++++++++++++++++++++++++++++++++++=.     :++++++++++++++=.
-                -++++++++++++++++++++++++++++++++++++++++++++++-.     =++++++++=-.
-               :++++=:....:--=++++++++++++++++++++++++++++++++++++:. :+++++++
-               =++++.           .:-+++++++++++++++++++:::-+++++++++++++++++++
-               +++++.               .-+++++++++++++++-..   :=+++++++++++++++-
-              .+++++-                  .-+++++++++++++:-+:   :++++++++++++++.
-               +++++=.                    -+++++++++++=++.    .=+++++++++++-
-               -+++++:                     .=++++++++++++=     .+++++++++++:
-               .+++++=.                      :+++++++++++++-:::=++++++++++-
-                -+++++=                        -+++++++++++++++++++++++++=
-                .+++++++.                       :+++++++++++++++++++++++=
-                 :+++++++.                       .+++++++++++++++++++++-
-                  :+++++++-            ..          =++++++++++++++++++:
-                   .++++++++-          ++++=.       :+++++++++++++++-
-                    .-++++++++-.       :++++++-.      -+++++++++++=.
-                      .++++++++++:      -++++++++:     .=++++++++++++=.
-                        .=+++++++++++++++++++++++++=:.    -++++++++++++++:
-                           -+**+++++++++++++++++++++++++*+*+-.=+++++++++-
-                             .-+*++++*+++++++++++++++*+++=.
-                                 .-+*+*+**+*++******+=:
-                                        ....:....
-
-
-
-
-
-.                                                                                                  .
-#.                                                                                                 *
-@%-                                                                                              .*@
-@@@@+:.                                                                                       .-#@@@]]
-local DS_LOGO={"ds-lockup-blue.png","ds-lockup-black.png","ds-logo-blue.png","ds-logo-black.png"}
-local function DS_Ascii(kind)
-if not DS_ROOT then
-return
-end
-local pal=DS_PAL or{accent=Color3.fromHex"#4D6BFE"}
-local txt=DS_ART_WORD
-if kind=="whale"then
-txt=DS_ART_WHALE
-end
-local cols=1
-local rows=1
-for l in string.gmatch(txt,"[^\n]+")do
-if #l>cols then
-cols=#l
-end
-end
-for _ in string.gmatch(txt,"\n")do
-rows=rows+1
-end
-local root=DS_ROOT
-local overlay=DS_Node("TextButton",root,{
-Name="DeepSeekAscii",
-Size=UDim2.fromScale(1,1),
-BackgroundColor3=Color3.fromHex"#04070D",
-BackgroundTransparency=0.10,
-BorderSizePixel=0,
-Text="",
-AutoButtonColor=false,
-ZIndex=980,
-})
-local a=root.AbsoluteSize
-if a.X<=0 or a.Y<=0 then
-a=DS_Viewport()
-end
-local bw=a.X*0.88
-local bh=a.Y*0.84
-local ts=math.floor(math.min(bw/(cols*0.62),bh/(rows*1.20)))
-ts=math.clamp(ts,4,44)
-local lbl=DS_Node("TextLabel",overlay,{
-Name="DeepSeekAsciiText",
-BackgroundTransparency=1,
-BorderSizePixel=0,
-Size=UDim2.fromOffset(math.floor(cols*ts*0.62)+8,math.floor(rows*ts*1.20)+8),
-AnchorPoint=Vector2.new(0.5,0.5),
-Position=UDim2.new(0.5,0,0.5,0),
-Text=txt,
-TextColor3=pal.accent,
-TextSize=ts,
-TextXAlignment=Enum.TextXAlignment.Left,
-TextYAlignment=Enum.TextYAlignment.Top,
-TextWrapped=false,
-ZIndex=981,
-})
-pcall(function()
-lbl.FontFace=DS_Face"Code"
-end)
-overlay.Activated:Connect(function()
-overlay:Destroy()
-end)
-task.delay(14,function()
-if overlay.Parent then
-overlay:Destroy()
-end
-end)
-end
-local DS_NET={}
-local function DS_Hash(t)
-local h=0
-for i=1,#t do
-h=(h*31+string.byte(t,i))%2147483647
-end
-return tostring(h)
-end
-local function DS_Img(url)
-if type(url)~="string"or #url<8 then
-return nil
-end
-if DS_NET[url]then
-return DS_NET[url]
-end
-if not(writefile and getcustomasset)then
-return nil
-end
-if isfolder and not isfolder"DeepSeekUI"then
-pcall(makefolder,"DeepSeekUI")
-end
-local name="DeepSeekUI/net_"..DS_Hash(url)
-if isfile and isfile(name)then
-local got=DS_Try(name)
-if got then
-DS_NET[url]=got
-return got
-end
-end
-local b=DS_Request(url)
-if not b then
-return nil
-end
-if not pcall(writefile,name,b)then
-return nil
-end
-local got=DS_Try(name)
-if got then
-DS_NET[url]=got
-end
-return got
-end
 local function DS_ScreenRoot(root,h,al)
 local c
 pcall(function()
@@ -17040,13 +16927,13 @@ local b=DS_Asset"ds-lockup-blue.png"
 local k=DS_Asset"ds-lockup-black.png"
 if b and k and sg then
 local vp=DS_Viewport()
-local wS=0.10
+local wS=0.145
 local hS=wS*(41/256)*(vp.X/math.max(1,vp.Y))
 local function mk(img,tr)
 return DS_Node("ImageLabel",sg,{
 Name="DeepSeekBrand",
 AnchorPoint=Vector2.new(0,1),
-Position=UDim2.new(0,0.014,1,-0.02),
+Position=UDim2.new(0,0.055,1,-0.055),
 Size=UDim2.new(wS,0,hS,0),
 BackgroundTransparency=1,
 BorderSizePixel=0,
@@ -17073,25 +16960,6 @@ end
 end
 end)
 end
-pcall(function()
-local lg=DS_Asset"ds-logo-blue.png"
-if not lg then
-return
-end
-local mm=root:FindFirstChild"Main"
-local tb=mm and mm:FindFirstChild"Topbar"
-local lf=tb and tb:FindFirstChild"Left"
-if not lf then
-return
-end
-for _,d in next,lf:GetDescendants()do
-if d:IsA"ImageLabel"then
-d.Image=lg
-d.ImageColor3=Color3.new(1,1,1)
-d.ScaleType=Enum.ScaleType.Fit
-end
-end
-end)
 end)
 
 DS_Stage("sound",function()
@@ -17486,7 +17354,6 @@ _G.DS_ReScale=DS_ReScale
 _G.DS_PlaySound=DS_PlaySound
 _G.DS_StopSound=DS_StopSound
 _G.DS_Set=DS_SetPart
-_G.DS_Ascii=DS_Ascii
 _G.DS_Img=DS_Img
 _G.DS_LOGO=DS_LOGO
 _G.DS_State=DS_State
