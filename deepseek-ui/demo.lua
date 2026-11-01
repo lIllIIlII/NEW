@@ -73,12 +73,26 @@ pcall(function()
 	Window:Tag({ Title = "", Icon = ICON_LOCK })
 end)
 
+-- CreateWindow returns the window object itself (not a wrapper), so the
+-- element tree lives at Window.UIElements.Main. Every previous attempt used
+-- Window.Window.UIElements... which is nil, which is why nothing was painted.
+local function getUI()
+	local w = Window
+	if w and w.UIElements then
+		return w.UIElements
+	end
+	if w and w.Window and w.Window.UIElements then
+		return w.Window.UIElements
+	end
+	return nil
+end
+
 local function findTopbar()
-	local ui = Window.Window and Window.Window.UIElements
-	if not ui then return nil end
-	local main = ui.Main
-	if not main then return nil end
-	return main:FindFirstChild("Topbar", true)
+	local ui = getUI()
+	if not ui or not ui.Main then
+		return nil
+	end
+	return ui.Main:FindFirstChild("Topbar", true)
 end
 
 local paintedLogo, paintedLock = false, false
@@ -101,7 +115,7 @@ local function paintIcons(logo, lock)
 				node = node.Parent
 			end
 			local want = inCenter and lock or logo
-			if want and d.Visible ~= false then
+			if want then
 				d.Image = want
 				d.ImageRectSize = Vector2.new(0, 0)
 				d.ImageRectOffset = Vector2.new(0, 0)
@@ -126,22 +140,6 @@ local function paintIcons(logo, lock)
 	end
 end
 
-local function fallbackMark(tb, name, image, size, pos, anchor)
-	if not tb or not image then return end
-	if tb:FindFirstChild(name, true) then return end
-	local img = Instance.new("ImageLabel")
-	img.Name = name
-	img.BackgroundTransparency = 1
-	img.BorderSizePixel = 0
-	img.ScaleType = Enum.ScaleType.Fit
-	img.Image = image
-	img.Size = size
-	img.Position = pos
-	img.AnchorPoint = anchor
-	img.ZIndex = 30
-	img.Parent = tb
-end
-
 task.spawn(function()
 	local logo, lock
 	for i = 1, 40 do
@@ -154,15 +152,6 @@ task.spawn(function()
 		end
 		if paintedLogo and paintedLock then
 			return
-		end
-		if i == 20 then
-			local tb = findTopbar()
-			if not paintedLogo then
-				fallbackMark(tb, "DSLogoFallback", logo, UDim2.fromOffset(22, 22), UDim2.new(0, 14, 0.5, 0), Vector2.new(0, 0.5))
-			end
-			if not paintedLock then
-				fallbackMark(tb, "DSLockFallback", lock, UDim2.fromOffset(104, 17), UDim2.new(0.5, 0, 0.5, 0), Vector2.new(0.5, 0.5))
-			end
 		end
 		task.wait(0.25)
 	end
@@ -477,7 +466,7 @@ Call(About, "Toggle", {
 	Desc = "Print element errors to the console",
 	Value = false,
 	Callback = function(v)
-		if Window.Window then Window.Window.Debug = v end
+		if Window.Debug ~= nil then Window.Debug = v end
 		WindUI.Debug = v
 	end,
 })
