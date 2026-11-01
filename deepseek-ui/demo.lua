@@ -65,6 +65,34 @@ pcall(function()
 	Window:Tag({ Title = "", Icon = "ds:lockup" })
 end)
 
+task.delay(0.6, function()
+	pcall(function()
+		local ui = Window.Window.UIElements.Main.Main
+		local tb = ui.Topbar
+		local lf = tb:FindFirstChild("Left")
+		if lf then
+			for _, d in next, lf:GetDescendants() do
+				if d:IsA("ImageLabel") then
+					d.ScaleType = Enum.ScaleType.Fit
+					d.ImageColor3 = Color3.new(1, 1, 1)
+					break
+				end
+			end
+		end
+		local center = tb:FindFirstChild("Center")
+		local holder = center and (center:FindFirstChild("Holder") or center)
+		if holder then
+			for _, d in next, holder:GetDescendants() do
+				if d:IsA("ImageLabel") then
+					d.ScaleType = Enum.ScaleType.Fit
+					d.ImageColor3 = Color3.new(1, 1, 1)
+					d.Size = UDim2.fromOffset(96, 16)
+				end
+			end
+		end
+	end)
+end)
+
 local Home = Window:Tab({ Title = "Home", Icon = "lucide:house" })
 local Controls = Window:Tab({ Title = "Controls", Icon = "lucide:sliders-horizontal" })
 local Scripts = Window:Tab({ Title = "Scripts", Icon = "lucide:code" })
