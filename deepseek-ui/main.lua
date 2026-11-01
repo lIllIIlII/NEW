@@ -388,6 +388,9 @@ end
 
 function d.Icon(f,g,h)
 h=h~=false
+if type(f)=="string"and(string.find(f,"rbxasset://",1,true)or string.find(f,"rbxassetid://",1,true)or string.find(f,"http",1,true))then
+return h and{f,{ImageRectSize=Vector2.new(0,0),ImageRectPosition=Vector2.new(0,0)}}or f
+end
 local i,j=parseIconString(f)
 
 local l=i or g or d.IconsType
@@ -16915,40 +16918,7 @@ if DS_FullClose then
 return
 end
 DS_FullClose=true
-local wait=0.30
-pcall(function()
-if not DS_TickerRoot or not DS_TickerRoot.Parent then
-return
-end
-local lay=DS_TickerRoot:FindFirstChildOfClass"UIListLayout"
-local pad=2
-if lay then
-pad=lay.Padding.Offset
-lay.Enabled=false
-end
-local w=DS_TickerRoot.AbsoluteSize.X+140
-local i=0
-for _,c in next,DS_TickerRoot:GetChildren()do
-if c:IsA"Frame"and c.Name=="TickerRow"then
-i=i+1
-local y=(i-1)*(DS_TickerRowH+pad)
-c.Position=UDim2.fromOffset(0,y)
-local idx=i
-task.delay(0.05*idx,function()
-if c.Parent then
-DS_Tween(c,0.42,{Position=UDim2.fromOffset(w,y)},Enum.EasingStyle.Quint,Enum.EasingDirection.In)
-end
-end)
-end
-end
-wait=0.05*i+0.5
-end)
-task.delay(wait,function()
-pcall(function()
-h:Close()
-end)
-end)
-task.delay(wait+0.35,function()
+task.delay(0.10,function()
 pcall(function()
 if h.Destroy then
 h:Destroy()
