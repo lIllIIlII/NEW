@@ -388,7 +388,7 @@ end
 
 function d.Icon(f,g,h)
 h=h~=false
-if type(f)=="string"and(string.find(f,"rbxasset://",1,true)or string.find(f,"rbxassetid://",1,true)or string.find(f,"http",1,true))then
+if type(f)=="string"and(string.find(f,"rbxasset://",1,true)or string.find(f,"rbxassetid://",1,true))then
 return h and{f,{ImageRectSize=Vector2.new(0,0),ImageRectPosition=Vector2.new(0,0)}}or f
 end
 local i,j=parseIconString(f)
@@ -15683,6 +15683,9 @@ end
 end
 return nil
 end
+if _G then
+_G.DS_Asset=DS_Asset
+end
 local function DS_Face(name)
 if DS_FACES[name]~=nil then
 return DS_FACES[name]
@@ -16454,6 +16457,9 @@ end
 end
 return true
 end
+if _G then
+_G.DS_Img=DS_Img
+end
 local function DS_ScreenRoot(root,h,al)
 local c
 pcall(function()
@@ -16931,32 +16937,6 @@ end
 end)
 end)
 end
-pcall(function()
-local btn=DS_Node("TextButton",root,{
-Name="DeepSeekCloseBtn",
-AnchorPoint=Vector2.new(0,1),
-Position=UDim2.new(0,12,1,-12),
-Size=UDim2.fromOffset(96,26),
-BackgroundColor3=Color3.fromHex"#FF4D4D",
-BackgroundTransparency=0.82,
-BorderSizePixel=0,
-Text="关闭界面",
-TextColor3=Color3.fromHex"#FFD9D9",
-TextSize=13,
-AutoButtonColor=false,
-ZIndex=640,
-})
-DS_Node("UIStroke",btn,{Color=Color3.fromHex"#FF4D4D",Thickness=1,Transparency=0.45,ApplyStrokeMode=Enum.ApplyStrokeMode.Border})
-btn.MouseEnter:Connect(function()
-DS_Tween(btn,0.14,{BackgroundTransparency=0.62,TextColor3=Color3.new(1,1,1)})
-end)
-btn.MouseLeave:Connect(function()
-DS_Tween(btn,0.16,{BackgroundTransparency=0.82,TextColor3=Color3.fromHex"#FFD9D9"})
-end)
-btn.MouseButton1Click:Connect(function()
-DS_Close()
-end)
-end)
 if _G then
 _G.DS_Close=DS_Close
 end
