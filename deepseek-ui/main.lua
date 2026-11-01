@@ -16393,6 +16393,127 @@ end
 end
 return true
 end
+local DS_ART_WORD=[[   ___               ____        __
+  / _ \___ ___ ___  / __/__ ___ / /__
+ / // / -_) -_) _ \_\ \/ -_) -_)  '_/
+/____/\__/\__/ .__/___/\__/\__/_/\_\
+            /_/]]
+local DS_ART_WHALE=[[@@@@*:.                                                                                      ..=%@@@
+@%=                                                                                              :%@
+%.                                                                                                .#
+.                                                                                                  .
+
+
+
+
+
+
+
+
+                                                                 .=:
+                                            .:-==++++=.         .++=.
+                            .:=++++++++++++++++++++=.           -++++:                 .
+                        .-+++++++++++++++++++++++++-.           =++++++=-.           :=+=
+                      -+++++++++++++++++++++++++++++=.          =+++++++++-  .-=++++++++:
+                    :++++++++++++++++++++++++++++++++++-.       :++++++++++=+++++++++++=
+                   =+++++++++++++++++++++++++++++++++++++=.      :+++++++++++++++++++++:
+                 .=++++++++++++++++++++++++++++++++++++++++=.     :=+++++++++++++++++=.
+                .=+++++++++++++++++++++++++++++++++++++++++++=.     :++++++++++++++=.
+                -++++++++++++++++++++++++++++++++++++++++++++++-.     =++++++++=-.
+               :++++=:....:--=++++++++++++++++++++++++++++++++++++:. :+++++++
+               =++++.           .:-+++++++++++++++++++:::-+++++++++++++++++++
+               +++++.               .-+++++++++++++++-..   :=+++++++++++++++-
+              .+++++-                  .-+++++++++++++:-+:   :++++++++++++++.
+               +++++=.                    -+++++++++++=++.    .=+++++++++++-
+               -+++++:                     .=++++++++++++=     .+++++++++++:
+               .+++++=.                      :+++++++++++++-:::=++++++++++-
+                -+++++=                        -+++++++++++++++++++++++++=
+                .+++++++.                       :+++++++++++++++++++++++=
+                 :+++++++.                       .+++++++++++++++++++++-
+                  :+++++++-            ..          =++++++++++++++++++:
+                   .++++++++-          ++++=.       :+++++++++++++++-
+                    .-++++++++-.       :++++++-.      -+++++++++++=.
+                      .++++++++++:      -++++++++:     .=++++++++++++=.
+                        .=+++++++++++++++++++++++++=:.    -++++++++++++++:
+                           -+**+++++++++++++++++++++++++*+*+-.=+++++++++-
+                             .-+*++++*+++++++++++++++*+++=.
+                                 .-+*+*+**+*++******+=:
+                                        ....:....
+
+
+
+
+
+.                                                                                                  .
+#.                                                                                                 *
+@%-                                                                                              .*@
+@@@@+:.                                                                                       .-#@@@]]
+local DS_LOGO={"ds-lockup-blue.png","ds-lockup-black.png","ds-logo-blue.png","ds-logo-black.png"}
+local function DS_Ascii(kind)
+if not DS_ROOT then
+return
+end
+local pal=DS_PAL or{accent=Color3.fromHex"#4D6BFE"}
+local txt=DS_ART_WORD
+if kind=="whale"then
+txt=DS_ART_WHALE
+end
+local cols=1
+local rows=1
+for l in string.gmatch(txt,"[^\n]+")do
+if #l>cols then
+cols=#l
+end
+end
+for _ in string.gmatch(txt,"\n")do
+rows=rows+1
+end
+local root=DS_ROOT
+local overlay=DS_Node("TextButton",root,{
+Name="DeepSeekAscii",
+Size=UDim2.fromScale(1,1),
+BackgroundColor3=Color3.fromHex"#04070D",
+BackgroundTransparency=0.10,
+BorderSizePixel=0,
+Text="",
+AutoButtonColor=false,
+ZIndex=980,
+})
+local a=root.AbsoluteSize
+if a.X<=0 or a.Y<=0 then
+a=DS_Viewport()
+end
+local bw=a.X*0.88
+local bh=a.Y*0.84
+local ts=math.floor(math.min(bw/(cols*0.62),bh/(rows*1.20)))
+ts=math.clamp(ts,4,44)
+local lbl=DS_Node("TextLabel",overlay,{
+Name="DeepSeekAsciiText",
+BackgroundTransparency=1,
+BorderSizePixel=0,
+Size=UDim2.fromOffset(math.floor(cols*ts*0.62)+8,math.floor(rows*ts*1.20)+8),
+AnchorPoint=Vector2.new(0.5,0.5),
+Position=UDim2.new(0.5,0,0.5,0),
+Text=txt,
+TextColor3=pal.accent,
+TextSize=ts,
+TextXAlignment=Enum.TextXAlignment.Left,
+TextYAlignment=Enum.TextYAlignment.Top,
+TextWrapped=false,
+ZIndex=981,
+})
+pcall(function()
+lbl.FontFace=DS_Face"Code"
+end)
+overlay.Activated:Connect(function()
+overlay:Destroy()
+end)
+task.delay(14,function()
+if overlay.Parent then
+overlay:Destroy()
+end
+end)
+end
 local function DS_ScreenRoot(root,h,al)
 local c
 pcall(function()
@@ -16940,12 +17061,16 @@ ZIndex=1,
 Image=openId,
 })
 else
-fish=DS_Node("Frame",mini,{
+local lg=DS_Asset"ds-logo-blue.png"
+fish=DS_Node("ImageLabel",mini,{
 Name="DeepSeekMiniFallback",
-Size=UDim2.fromScale(1,1),
-BackgroundColor3=pal.accent,
-BackgroundTransparency=0.06,
+Size=UDim2.fromScale(0.6,0.6),
+AnchorPoint=Vector2.new(0.5,0.5),
+Position=UDim2.new(0.5,0,0.5,0),
+BackgroundTransparency=1,
 BorderSizePixel=0,
+ScaleType=Enum.ScaleType.Fit,
+Image=lg or"",
 ZIndex=1,
 })
 end
@@ -17106,6 +17231,23 @@ end
 end)
 end
 end)
+do
+local bid=DS_Asset"ds-lockup-blue.png"
+if bid then
+DS_Node("ImageLabel",root,{
+Name="DeepSeekBrand",
+AnchorPoint=Vector2.new(0,1),
+Position=UDim2.new(0,14,1,-9),
+Size=UDim2.fromOffset(96,15),
+BackgroundTransparency=1,
+BorderSizePixel=0,
+ScaleType=Enum.ScaleType.Fit,
+Image=bid,
+ImageTransparency=0.82,
+ZIndex=431,
+})
+end
+end
 local foot=DS_Node("Frame",root,{
 Name="DeepSeekFoot",
 AnchorPoint=Vector2.new(0.5,1),
@@ -17263,6 +17405,8 @@ _G.DS_ReScale=DS_ReScale
 _G.DS_PlaySound=DS_PlaySound
 _G.DS_StopSound=DS_StopSound
 _G.DS_Set=DS_SetPart
+_G.DS_Ascii=DS_Ascii
+_G.DS_LOGO=DS_LOGO
 _G.DS_State=DS_State
 _G.DS_Debug=DS_Debug
 end
