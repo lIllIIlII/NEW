@@ -15613,108 +15613,88 @@ return a.load'u'.new(aA,aa.ScreenGui.Popups)
 end
 
 local DS_ICON_TABLE={
-["maximize"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/26f6.png",
-["brain"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f9e0.png",
-["crown"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f451.png",
-["info"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/2139.png",
-["eye-off"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f648.png",
-["clock"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/23f0.png",
-["arrow-right"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/27a1.png",
-["chat"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f4ac.png",
-["puzzle"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f9e9.png",
-["flask"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f9ea.png",
-["cross"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/274c.png",
-["wallet"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f4b3.png",
-["plus"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/2795.png",
-["skull"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f480.png",
-["bolt"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/26a1.png",
-["warning"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/26a0.png",
-["server"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f5a5.png",
-["archive"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f5c3.png",
-["badge-check"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/2705.png",
-["check"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/2705.png",
-["tag"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f3f7.png",
-["users"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f465.png",
-["user-round"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f464.png",
-["zap"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/26a1.png",
-["music"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f3b5.png",
-["cart"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f6d2.png",
-["send"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f4e4.png",
-["wifi"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f4f6.png",
-["moon"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f319.png",
-["menu"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/2630.png",
-["bell"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f514.png",
-["palette"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f3a8.png",
-["fire"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f525.png",
-["trash"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f5d1.png",
-["link"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f517.png",
-["hammer"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f528.png",
-["user"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f464.png",
-["cloud"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/2601.png",
-["mail"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/2709.png",
-["star"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/2b50.png",
-["search"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f50d.png",
-["rocket"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f680.png",
-["map"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f5fa.png",
-["receipt"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f9fe.png",
-["key"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f511.png",
-["search-2"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f50e.png",
-["whale"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f433.png",
-["ghost"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f47b.png",
-["book"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f4d6.png",
-["power"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f50c.png",
-["stop"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/23f9.png",
-["chart"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f4c8.png",
-["cpu"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f5b1.png",
-["globe"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f310.png",
-["sun"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/2600.png",
-["sliders-horizontal"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/2699.png",
-["gamepad"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f3ae.png",
-["grid"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f532.png",
-["hash"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/0023.png",
-["list"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f4cb.png",
-["play"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/25b6.png",
-["gear"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/2699.png",
-["save"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f4be.png",
-["layers"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f4da.png",
-["sword"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/2694.png",
-["camera"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f4f7.png",
-["bug"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f41b.png",
-["at"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/0040.png",
-["upload"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/2b06.png",
-["gem"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f48e.png",
-["gift"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f381.png",
-["eye"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f441.png",
-["pause"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/23f8.png",
-["wrench"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f527.png",
-["heart"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/2764.png",
-["activity"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f4c8.png",
-["leaf"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f343.png",
-["log-out"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f6aa.png",
-["inbox"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f4e5.png",
-["waves"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f30a.png",
-["fish"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f41f.png",
-["lock"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f512.png",
-["medal"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f3c5.png",
-["filter"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f5c7.png",
-["pin"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f4cd.png",
-["package"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f4e6.png",
-["flag"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f3f4.png",
-["target"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f3af.png",
-["shield"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f6e1.png",
-["house"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f3e0.png",
-["sparkles"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/2728.png",
-["robot"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f916.png",
-["database"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f5c4.png",
-["drop"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f4a7.png",
-["download"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/2b07.png",
-["code"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f4bb.png",
-["folder"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f4c1.png",
-["minus"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/2796.png",
-["unlock"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f513.png",
-["image"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f5bc.png",
-["terminal"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/2328.png",
-["refresh"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f504.png",
+["house"]="rbxassetid://98755624629571",
+["code"]="rbxassetid://107380207681249",
+["palette"]="rbxassetid://86350350950064",
+["list"]="rbxassetid://113179976918783",
+["search"]="rbxassetid://121018724060431",
+["user"]="rbxassetid://81589895647169",
+["server"]="rbxassetid://92188766517878",
+["terminal"]="rbxassetid://106783148545356",
+["sparkles"]="rbxassetid://138635884129147",
+["waves"]="rbxassetid://96340135183647",
+["fish"]="rbxassetid://124360663785796",
+["settings"]="rbxassetid://80758916183665",
+["sliders-horizontal"]="rbxassetid://85538382643347",
+["info"]="rbxassetid://124560466474914",
+["badge-check"]="rbxassetid://76078495178149",
+["star"]="rbxassetid://136141469398409",
+["heart"]="rbxassetid://116559368303288",
+["check"]="rbxassetid://93898873302694",
+["cross"]="rbxassetid://101833377863588",
+["rocket"]="rbxassetid://87412317685854",
+["shield"]="rbxassetid://110987169760162",
+["bolt"]="rbxassetid://102881251417484",
+["globe"]="rbxassetid://114238209622913",
+["folder"]="rbxassetid://80846616596607",
+["save"]="rbxassetid://126116963775616",
+["trash"]="rbxassetid://106723740584310",
+["key"]="rbxassetid://96510194465420",
+["lock"]="rbxassetid://134724289526879",
+["eye"]="rbxassetid://100033680381365",
+["target"]="rbxassetid://87563802520297",
+["gamepad"]="rbxassetid://121607283959010",
+["sword"]="rbxassetid://124448418211665",
+["crown"]="rbxassetid://127843403295538",
+["gem"]="rbxassetid://112904952151156",
+["music"]="rbxassetid://113343203848535",
+["image"]="rbxassetid://112751259236831",
+["camera"]="rbxassetid://79950339943067",
+["bell"]="rbxassetid://97392696311902",
+["mail"]="rbxassetid://103945161245599",
+["book"]="rbxassetid://125383279695672",
+["play"]="rbxassetid://135609604299893",
+["pause"]="rbxassetid://74873705394436",
+["plus"]="rbxassetid://111774323017047",
+["minus"]="rbxassetid://118026365011536",
+["download"]="rbxassetid://134814648082393",
+["upload"]="rbxassetid://138212042425501",
+["link"]="rbxassetid://131607023382430",
+["tag"]="rbxassetid://129104970103940",
+["puzzle"]="rbxassetid://136837798892463",
+["leaf"]="rbxassetid://119951075637174",
+["moon"]="rbxassetid://83380517901735",
+["sun"]="rbxassetid://110150589884127",
+["cloud"]="rbxassetid://121226497050352",
+["zap"]="rbxassetid://130551565616516",
+["gift"]="rbxassetid://109855212076373",
+["medal"]="rbxassetid://79016002264450",
+["flag"]="rbxassetid://78183383236196",
+["map"]="rbxassetid://95107167260947",
+["pin"]="rbxassetid://120978111007514",
+["wrench"]="rbxassetid://112148279212860",
+["hammer"]="rbxassetid://83545120140895",
+["bug"]="rbxassetid://83626408925438",
+["ghost"]="rbxassetid://113822048130017",
+["skull"]="rbxassetid://137726256442333",
+["brain"]="rbxassetid://92424107303177",
+["arrow-right"]="rbxassetid://113692007244654",
+["activity"]="rbxassetid://94212016861936",
+["clock"]="rbxassetid://121808839832144",
+["thumbs-up"]="rbxassetid://111137070767020",
+["layers"]="rbxassetid://81973586053257",
+["cpu"]="rbxassetid://77549309870247",
+["database"]="rbxassetid://126791525623846",
+["wifi"]="rbxassetid://104669375183960",
+["power"]="rbxassetid://96479131758775",
+["users"]="rbxassetid://115398113982385",
+["package"]="rbxassetid://97261141732706",
+["wallet"]="rbxassetid://132331555762628",
+["receipt"]="rbxassetid://77877895901792",
+["send"]="rbxassetid://127751956873796",
+["inbox"]="rbxassetid://112591360302868",
+["archive"]="rbxassetid://122180020814574",
+["eye-off"]="rbxassetid://135928786788378",
 }
 local DS_THEME=(math.random(2)==1)and"Dark"or"Light"
 local DS_CDN={
@@ -15744,20 +15724,9 @@ local DS_FONT="Arcade"
 local DS_FONTSCALE=1.08
 local DS_FACES={}
 local DS_VER="v7_"
-local DS_DIR="Delta/Workspace/DeepSeekUI"
+local DS_DIR="DeepSeekUI"
 local function DS_EnsureDir()
-if not isfolder then
-return
-end
-local a="Delta"
-if not isfolder(a)then
-pcall(makefolder,a)
-end
-a="Delta/Workspace"
-if not isfolder(a)then
-pcall(makefolder,a)
-end
-if not isfolder(DS_DIR)then
+if isfolder and not isfolder(DS_DIR)then
 pcall(makefolder,DS_DIR)
 end
 end
@@ -15823,7 +15792,7 @@ DS_CACHE[n]=got
 return got
 end
 end
-for _,old in next,{DS_DIR.."/v6_"..n,DS_DIR.."/v5_"..n,"DeepSeekUI/v7_"..n,"DeepSeekUI/v6_"..n,"DeepSeekUI/"..n}do
+for _,old in next,{DS_DIR.."/v6_"..n,DS_DIR.."/v5_"..n,"DeepSeekUI/"..n}do
 if isfile and isfile(old)then
 local got=DS_Try(old)
 if got then
@@ -16750,16 +16719,7 @@ for name,url in next,tbl or{}do
 pk.Spritesheets[name]=url
 pk.Icons[name]={Image=name,ImageRectSize=Vector2.new(0,0),ImageRectPosition=Vector2.new(0,0)}
 end
-local lg=DS_Asset"ds-logo-blue.png"
-local lk=DS_Asset"ds-lockup-blue.png"
-if lg then
-pk.Spritesheets.logo=lg
-pk.Icons.logo={Image="logo",ImageRectSize=Vector2.new(0,0),ImageRectPosition=Vector2.new(0,0)}
-end
-if lk then
-pk.Spritesheets.lockup=lk
-pk.Icons.lockup={Image="lockup",ImageRectSize=Vector2.new(0,0),ImageRectPosition=Vector2.new(0,0)}
-end
+
 end)
 
 DS_Stage("scale",function()
