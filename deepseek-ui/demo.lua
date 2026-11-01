@@ -1,6 +1,6 @@
 local BASE = "https://cdn.jsdelivr.net/gh/lIllIIlII/NEW@main/deepseek-ui/"
 
-local DS_DEMO_VERSION = "44"
+local DS_DEMO_VERSION = "45"
 print("[DeepSeekUI] demo build " .. DS_DEMO_VERSION)
 
 local WindUI = loadstring(game:HttpGet(BASE .. "main.lua"))()
@@ -113,7 +113,7 @@ local function paintIcons(logo, lock)
 			local inLeft = false
 			local node = d
 			while node and node ~= tb do
-				if node == center then
+				if node == center or node.Name == "Holder" then
 					inCenter = true
 				elseif node == left then
 					inLeft = true
@@ -181,6 +181,47 @@ task.spawn(function()
 			return
 		end
 		task.wait(0.25)
+	end
+end)
+
+Window:CreateTopbarButton("Info", "info", function()
+	notify("DeepSeek UI", "WindUI 1.6.65 fork with a DeepSeek skin.")
+end, 24, nil, Color3.fromHex("#4D6BFE"))
+
+Window:CreateTopbarButton("Jump", "search", function()
+	if _G.DS_OpenJump then
+		_G.DS_OpenJump()
+	end
+end, 24, nil, Color3.fromHex("#4D6BFE"))
+
+task.spawn(function()
+	for _ = 1, 15 do
+		pcall(function()
+			local ui = (Window.UIElements) or (Window.Window and Window.Window.UIElements)
+			local tb = ui and ui.Main and ui.Main:FindFirstChild("Topbar", true)
+			local right = tb and tb:FindFirstChild("Right")
+			if right then
+				local list = {}
+				for _, c in next, right:GetChildren() do
+					if c:IsA("GuiObject") then
+						table.insert(list, c)
+					end
+				end
+				table.sort(list, function(a, b)
+					return a.AbsolutePosition.X < b.AbsolutePosition.X
+				end)
+				local idx
+				if #list >= 5 then
+					idx = 4
+				elseif #list == 3 then
+					idx = 2
+				end
+				if idx and list[idx] then
+					list[idx].Visible = false
+				end
+			end
+		end)
+		task.wait(0.3)
 	end
 end)
 
