@@ -3,7 +3,7 @@
 local BUST = tostring(math.floor(tick() * 1000))
 local BASE = "https://raw.githubusercontent.com/lIllIIlII/NEW/main/deepseek-ui/"
 
-local DS_DEMO_VERSION = "52"
+local DS_DEMO_VERSION = "53"
 print("[DeepSeekUI] demo build " .. DS_DEMO_VERSION)
 
 local WindUI = loadstring(game:HttpGet(BASE .. "main.lua?t=" .. BUST))()
@@ -152,7 +152,7 @@ local function paintIcons(logo, lock)
 						local box = d.Parent
 						if box and box:IsA("GuiObject") then
 							box.AutomaticSize = Enum.AutomaticSize.None
-							box.Size = UDim2.fromOffset(118, 30)
+							box.Size = UDim2.fromOffset(164, 34)
 							box.BackgroundTransparency = 1
 							box.ClipsDescendants = false
 							local pad = box:FindFirstChildOfClass("UIPadding")
@@ -163,11 +163,11 @@ local function paintIcons(logo, lock)
 						d.AnchorPoint = Vector2.new(0.5, 0.5)
 						d.Position = UDim2.fromScale(0.5, 0.5)
 						d.ScaleType = Enum.ScaleType.Fit
-						local pw = box and box:IsA("GuiObject") and box.AbsoluteSize.X or 118
+						local pw = box and box:IsA("GuiObject") and box.AbsoluteSize.X or 164
 						if pw <= 0 then
 							pw = 118
 						end
-						d.Size = UDim2.fromOffset(math.min(pw, 118), 18)
+						d.Size = UDim2.fromOffset(math.min(pw, 156), 25)
 						paintedLock = true
 					else
 						paintedLogo = true
