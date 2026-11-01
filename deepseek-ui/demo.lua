@@ -1,6 +1,6 @@
 local BASE = "https://cdn.jsdelivr.net/gh/lIllIIlII/NEW@main/deepseek-ui/"
 
-local DS_DEMO_VERSION = "46"
+local DS_DEMO_VERSION = "47"
 print("[DeepSeekUI] demo build " .. DS_DEMO_VERSION)
 
 local WindUI = loadstring(game:HttpGet(BASE .. "main.lua"))()
@@ -101,66 +101,62 @@ end
 local paintedLogo, paintedLock = false, false
 
 local function paintIcons(logo, lock)
-	local tb = findTopbar()
+	local ui = getUI()
+	local tb = ui and ui.Main and ui.Main:FindFirstChild("Topbar", true)
 	if not tb then
 		return
 	end
-	local center = tb:FindFirstChild("Center")
-	local left = tb:FindFirstChild("Left")
 	for _, d in next, tb:GetDescendants() do
-		if d:IsA("ImageLabel") then
-			local inCenter = false
-			local inLeft = false
+		if d:IsA("ImageLabel") or d:IsA("ImageButton") then
+			local inCenter, inLeft, inRight = false, false, false
 			local node = d
 			while node and node ~= tb do
-				if node == center or node.Name == "Holder" then
+				local n = node.Name
+				if n == "Holder" or n == "Center" then
 					inCenter = true
-				elseif node == left then
+				elseif n == "Left" then
 					inLeft = true
+				elseif n == "Right" then
+					inRight = true
 				end
 				node = node.Parent
 			end
-			local want
-			if inCenter then
-				want = lock
-			elseif inLeft then
-				want = logo
-			end
-			if want then
-				d.Image = want
-				d.ImageRectSize = Vector2.new(0, 0)
-				d.ImageRectOffset = Vector2.new(0, 0)
-				d.ScaleType = Enum.ScaleType.Fit
-				d.ImageColor3 = Color3.new(1, 1, 1)
-				d.ImageTransparency = 0
+			if not inRight then
+				local want
 				if inCenter then
-					local box = d.Parent
-					if box and box:IsA("GuiObject") then
-						box.AutomaticSize = Enum.AutomaticSize.None
-						box.Size = UDim2.fromOffset(118, 30)
-						box.BackgroundTransparency = 1
-						box.ClipsDescendants = false
-						box.AnchorPoint = Vector2.new(0.5, 0.5)
-						box.Position = UDim2.new(0.5, 0, 0.5, 0)
-						local pad = box:FindFirstChildOfClass("UIPadding")
-						if pad then
-							pad:Destroy()
-						end
-						local inner = box.Parent
-						if inner and inner:IsA("GuiObject") then
-							inner.AutomaticSize = Enum.AutomaticSize.None
-							if inner ~= tb then
-								inner.BackgroundTransparency = 1
+					want = lock
+				elseif inLeft then
+					want = logo
+				end
+				if want then
+					d.Image = want
+					d.ImageRectSize = Vector2.new(0, 0)
+					d.ImageRectOffset = Vector2.new(0, 0)
+					d.ScaleType = Enum.ScaleType.Fit
+					d.ImageColor3 = Color3.new(1, 1, 1)
+					d.ImageTransparency = 0
+					if d:IsA("ImageButton") then
+						d.AutoButtonColor = false
+					end
+					if inCenter then
+						local box = d.Parent
+						if box and box:IsA("GuiObject") then
+							box.AutomaticSize = Enum.AutomaticSize.None
+							box.Size = UDim2.fromOffset(118, 30)
+							box.BackgroundTransparency = 1
+							box.ClipsDescendants = false
+							local pad = box:FindFirstChildOfClass("UIPadding")
+							if pad then
+								pad:Destroy()
 							end
 						end
+						d.AnchorPoint = Vector2.new(0.5, 0.5)
+						d.Position = UDim2.new(0.5, 0, 0.5, 0)
+						d.Size = UDim2.fromOffset(110, 17)
+						paintedLock = true
+					else
+						paintedLogo = true
 					end
-					d.AnchorPoint = Vector2.new(0, 0)
-					d.Position = UDim2.fromOffset(0, 0)
-					d.Size = UDim2.fromScale(1, 1)
-					paintedLock = true
-					break
-				else
-					paintedLogo = true
 				end
 			end
 		end
@@ -195,7 +191,7 @@ Window:CreateTopbarButton("Jump", "search", function()
 end, 24, nil, Color3.fromHex("#4D6BFE"))
 
 task.spawn(function()
-	for _ = 1, 15 do
+	for _ = 1, 20 do
 		pcall(function()
 			local ui = (Window.UIElements) or (Window.Window and Window.Window.UIElements)
 			local tb = ui and ui.Main and ui.Main:FindFirstChild("Topbar", true)
@@ -203,27 +199,22 @@ task.spawn(function()
 			if right then
 				local list = {}
 				for _, c in next, right:GetChildren() do
-					if c:IsA("GuiObject") then
+					if c:IsA("GuiObject") and c.Visible then
 						table.insert(list, c)
 					end
 				end
 				table.sort(list, function(a, b)
 					return a.AbsolutePosition.X < b.AbsolutePosition.X
 				end)
-				local idx
-				if #list >= 5 then
-					idx = 4
-				elseif #list == 3 then
-					idx = 2
-				end
-				if idx and list[idx] then
-					list[idx].Visible = false
+				if #list >= 3 then
+					list[#list - 1].Visible = false
 				end
 			end
 		end)
-		task.wait(0.3)
+		task.wait(0.25)
 	end
 end)
+
 
 Window:CreateTopbarButton("Info", "info", function()
 	notify("DeepSeek UI", "WindUI 1.6.65 fork with a DeepSeek skin.")
@@ -234,33 +225,6 @@ Window:CreateTopbarButton("Jump", "search", function()
 		_G.DS_OpenJump()
 	end
 end, 24, nil, Color3.fromHex("#4D6BFE"))
-
-task.spawn(function()
-	for _ = 1, 12 do
-		pcall(function()
-			local ui = (Window.UIElements) or (Window.Window and Window.Window.UIElements)
-			local tb = ui and ui.Main and ui.Main:FindFirstChild("Topbar", true)
-			if tb then
-				for _, c in next, tb:GetDescendants() do
-					if c:IsA("TextButton") or c:IsA("ImageButton") then
-						local n = string.lower(tostring(c.Name))
-						if string.find(n, "full", 1, true) or string.find(n, "maxim", 1, true) then
-							local node = c
-							while node and node ~= tb do
-								if node.Visible ~= nil and node:IsA("GuiObject") then
-									node.Visible = false
-								end
-								node = node.Parent
-							end
-							c.Visible = false
-						end
-					end
-				end
-			end
-		end)
-		task.wait(0.4)
-	end
-end)
 
 local Home = Window:Tab({ Title = "Home", Icon = "lucide:house" })
 local Controls = Window:Tab({ Title = "Controls", Icon = "lucide:sliders-horizontal" })
