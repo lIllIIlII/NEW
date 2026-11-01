@@ -16571,6 +16571,34 @@ DS_ROOT=root.Parent or root
 DS_WIN=h
 local pal=DS_Palette(w.Theme and w.Theme.Name or DS_THEME)
 DS_PAL=pal
+DS_Stage("pack",function()
+local mod=w and w.Icons
+if not mod or not mod.Icons then
+return
+end
+local pk=mod.Icons.ds
+if not pk then
+pk={Icons={},Spritesheets={}}
+mod.Icons.ds=pk
+end
+if not pk.Icons then
+pk.Icons={}
+end
+if not pk.Spritesheets then
+pk.Spritesheets={}
+end
+local function reg(name,id)
+pk.Spritesheets[name]=id
+pk.Icons[name]={
+Image=name,
+ImageRectSize=Vector2.new(420,420),
+ImageRectPosition=Vector2.new(0,0),
+}
+end
+reg("logo","rbxassetid://75699947237241")
+reg("lockup","rbxassetid://97359679500298")
+end)
+
 DS_Stage("scale",function()
 pcall(function()
 local vp=DS_Viewport()
