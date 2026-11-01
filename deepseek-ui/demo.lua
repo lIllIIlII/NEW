@@ -103,24 +103,26 @@ local function paintIcons(logo, lock)
 		return
 	end
 	local center = tb:FindFirstChild("Center")
-	local right = tb:FindFirstChild("Right")
+	local left = tb:FindFirstChild("Left")
 	for _, d in next, tb:GetDescendants() do
 		if d:IsA("ImageLabel") then
 			local inCenter = false
-			local inRight = false
+			local inLeft = false
 			local node = d
 			while node and node ~= tb do
 				if node == center then
 					inCenter = true
-				elseif node == right then
-					inRight = true
+				elseif node == left then
+					inLeft = true
 				end
 				node = node.Parent
 			end
-			if inRight then
-				inCenter = nil
+			local want
+			if inCenter then
+				want = lock
+			elseif inLeft then
+				want = logo
 			end
-			local want = (not inRight) and (inCenter and lock or logo) or nil
 			if want then
 				d.Image = want
 				d.ImageRectSize = Vector2.new(0, 0)
@@ -164,6 +166,16 @@ task.spawn(function()
 		task.wait(0.25)
 	end
 end)
+
+Window:CreateTopbarButton("Info", "info", function()
+	notify("DeepSeek UI", "WindUI 1.6.65 fork with a DeepSeek skin.")
+end, 24, nil, Color3.fromHex("#4D6BFE"))
+
+Window:CreateTopbarButton("Jump", "search", function()
+	if _G.DS_OpenJump then
+		_G.DS_OpenJump()
+	end
+end, 24, nil, Color3.fromHex("#4D6BFE"))
 
 local Home = Window:Tab({ Title = "Home", Icon = "lucide:house" })
 local Controls = Window:Tab({ Title = "Controls", Icon = "lucide:sliders-horizontal" })
