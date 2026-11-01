@@ -396,23 +396,6 @@ local i,j=parseIconString(f)
 local l=i or g or d.IconsType
 local m=j
 
-local R=_G and _G.DS_Icons
-if R and i and R[i] and R[i][m]then
-local V=R[i][m]
-if type(V)=="string"then
-if string.find(V,"rbxassetid://",1,true)then
-return V
-end
-if _G and _G.DS_Img then
-local id=_G.DS_Img(V)
-if id then
-return h and{id,{ImageRectSize=Vector2.new(0,0),ImageRectPosition=Vector2.new(0,0)}}or id
-end
-end
-end
-return h and{V,{ImageRectSize=Vector2.new(0,0),ImageRectPosition=Vector2.new(0,0)}}or V
-end
-
 local p=d.Icons[l]
 
 if p and p.Icons and p.Icons[m]then
@@ -425,21 +408,6 @@ return h and{
 p[m],
 {ImageRectSize=Vector2.new(0,0),ImageRectPosition=Vector2.new(0,0)}
 }or p[m]
-end
-local FR=_G and _G.DS_Icons
-if FR and FR.ds and FR.ds[m]then
-local V=FR.ds[m]
-if type(V)=="string"then
-if string.find(V,"rbxassetid://",1,true)then
-return V
-end
-if _G.DS_Img then
-local id=_G.DS_Img(V)
-if id then
-return h and{id,{ImageRectSize=Vector2.new(0,0),ImageRectPosition=Vector2.new(0,0)}}or id
-end
-end
-end
 end
 return nil
 end
@@ -15612,93 +15580,6 @@ aA.WindUI=aa
 return a.load'u'.new(aA,aa.ScreenGui.Popups)
 end
 
-local DS_ICON_TABLE={
-["house"]="rbxassetid://98755624629571",
-["code"]="rbxassetid://107380207681249",
-["palette"]="rbxassetid://86350350950064",
-["list"]="rbxassetid://113179976918783",
-["search"]="rbxassetid://121018724060431",
-["user"]="rbxassetid://81589895647169",
-["server"]="rbxassetid://92188766517878",
-["terminal"]="rbxassetid://106783148545356",
-["sparkles"]="rbxassetid://138635884129147",
-["waves"]="rbxassetid://96340135183647",
-["fish"]="rbxassetid://124360663785796",
-["settings"]="rbxassetid://80758916183665",
-["sliders-horizontal"]="rbxassetid://85538382643347",
-["info"]="rbxassetid://124560466474914",
-["badge-check"]="rbxassetid://76078495178149",
-["star"]="rbxassetid://136141469398409",
-["heart"]="rbxassetid://116559368303288",
-["check"]="rbxassetid://93898873302694",
-["cross"]="rbxassetid://101833377863588",
-["rocket"]="rbxassetid://87412317685854",
-["shield"]="rbxassetid://110987169760162",
-["bolt"]="rbxassetid://102881251417484",
-["globe"]="rbxassetid://114238209622913",
-["folder"]="rbxassetid://80846616596607",
-["save"]="rbxassetid://126116963775616",
-["trash"]="rbxassetid://106723740584310",
-["key"]="rbxassetid://96510194465420",
-["lock"]="rbxassetid://134724289526879",
-["eye"]="rbxassetid://100033680381365",
-["target"]="rbxassetid://87563802520297",
-["gamepad"]="rbxassetid://121607283959010",
-["sword"]="rbxassetid://124448418211665",
-["crown"]="rbxassetid://127843403295538",
-["gem"]="rbxassetid://112904952151156",
-["music"]="rbxassetid://113343203848535",
-["image"]="rbxassetid://112751259236831",
-["camera"]="rbxassetid://79950339943067",
-["bell"]="rbxassetid://97392696311902",
-["mail"]="rbxassetid://103945161245599",
-["book"]="rbxassetid://125383279695672",
-["play"]="rbxassetid://135609604299893",
-["pause"]="rbxassetid://74873705394436",
-["plus"]="rbxassetid://111774323017047",
-["minus"]="rbxassetid://118026365011536",
-["download"]="rbxassetid://134814648082393",
-["upload"]="rbxassetid://138212042425501",
-["link"]="rbxassetid://131607023382430",
-["tag"]="rbxassetid://129104970103940",
-["puzzle"]="rbxassetid://136837798892463",
-["leaf"]="rbxassetid://119951075637174",
-["moon"]="rbxassetid://83380517901735",
-["sun"]="rbxassetid://110150589884127",
-["cloud"]="rbxassetid://121226497050352",
-["zap"]="rbxassetid://130551565616516",
-["gift"]="rbxassetid://109855212076373",
-["medal"]="rbxassetid://79016002264450",
-["flag"]="rbxassetid://78183383236196",
-["map"]="rbxassetid://95107167260947",
-["pin"]="rbxassetid://120978111007514",
-["wrench"]="rbxassetid://112148279212860",
-["hammer"]="rbxassetid://83545120140895",
-["bug"]="rbxassetid://83626408925438",
-["ghost"]="rbxassetid://113822048130017",
-["skull"]="rbxassetid://137726256442333",
-["brain"]="rbxassetid://92424107303177",
-["arrow-right"]="rbxassetid://113692007244654",
-["activity"]="rbxassetid://94212016861936",
-["clock"]="rbxassetid://121808839832144",
-["thumbs-up"]="rbxassetid://111137070767020",
-["layers"]="rbxassetid://81973586053257",
-["cpu"]="rbxassetid://77549309870247",
-["database"]="rbxassetid://126791525623846",
-["wifi"]="rbxassetid://104669375183960",
-["power"]="rbxassetid://96479131758775",
-["users"]="rbxassetid://115398113982385",
-["package"]="rbxassetid://97261141732706",
-["wallet"]="rbxassetid://132331555762628",
-["receipt"]="rbxassetid://77877895901792",
-["send"]="rbxassetid://127751956873796",
-["inbox"]="rbxassetid://112591360302868",
-["archive"]="rbxassetid://122180020814574",
-["eye-off"]="rbxassetid://135928786788378",
-}
-if _G then
-_G.DS_Icons={ds=DS_ICON_TABLE}
-end
 local DS_THEME=(math.random(2)==1)and"Dark"or"Light"
 local DS_CDN={
 "https://raw.githubusercontent.com/lIllIIlII/NEW/main/deepseek-ui/assets/",
@@ -15726,7 +15607,7 @@ local DS_PAL=nil
 local DS_FONT="Arcade"
 local DS_FONTSCALE=1.08
 local DS_FACES={}
-local DS_VER="v8_"
+local DS_VER="v7_"
 local DS_DIR="DeepSeekUI"
 local function DS_EnsureDir()
 if isfolder and not isfolder(DS_DIR)then
@@ -16690,32 +16571,6 @@ DS_ROOT=root.Parent or root
 DS_WIN=h
 local pal=DS_Palette(w.Theme and w.Theme.Name or DS_THEME)
 DS_PAL=pal
-DS_Stage("icons",function()
-local tbl=DS_ICON_TABLE or{}
-local flat={}
-for name,url in next,tbl do
-flat[name]=url
-end
-local mod=w and w.Icons
-if mod and mod.Icons then
-local pk=mod.Icons.ds
-if not pk then
-pk={Icons={},Spritesheets={}}
-mod.Icons.ds=pk
-end
-if not pk.Icons then
-pk.Icons={}
-end
-if not pk.Spritesheets then
-pk.Spritesheets={}
-end
-for name,url in next,tbl do
-pk.Spritesheets[name]=url
-pk.Icons[name]={Image=name,ImageRectSize=Vector2.new(0,0),ImageRectPosition=Vector2.new(0,0)}
-end
-end
-end)
-
 DS_Stage("scale",function()
 pcall(function()
 local vp=DS_Viewport()
