@@ -3,7 +3,7 @@
 local BUST = tostring(math.floor(tick() * 1000))
 local BASE = "https://raw.githubusercontent.com/lIllIIlII/NEW/main/deepseek-ui/"
 
-local DS_DEMO_VERSION = "50"
+local DS_DEMO_VERSION = "51"
 print("[DeepSeekUI] demo build " .. DS_DEMO_VERSION)
 
 local WindUI = loadstring(game:HttpGet(BASE .. "main.lua?t=" .. BUST))()
@@ -153,9 +153,14 @@ local function paintIcons(logo, lock)
 								pad:Destroy()
 							end
 						end
-						d.AnchorPoint = Vector2.new(0, 0)
-						d.Position = UDim2.fromOffset(0, 0)
-						d.Size = UDim2.fromScale(1, 1)
+						d.AnchorPoint = Vector2.new(0.5, 0.5)
+						d.Position = UDim2.fromScale(0.5, 0.5)
+						d.ScaleType = Enum.ScaleType.Fit
+						local pw = box and box:IsA("GuiObject") and box.AbsoluteSize.X or 118
+						if pw <= 0 then
+							pw = 118
+						end
+						d.Size = UDim2.fromOffset(math.min(pw, 118), 18)
 						paintedLock = true
 					else
 						paintedLogo = true
@@ -168,7 +173,7 @@ end
 
 task.spawn(function()
 	local logo, lock
-	for i = 1, 40 do
+	for i = 1, 600 do
 		if WindUI.Asset then
 			logo = logo or WindUI.Asset("ds-logo-blue.png")
 			lock = lock or WindUI.Asset("ds-lockup-black.png")
@@ -176,9 +181,7 @@ task.spawn(function()
 		if logo or lock then
 			pcall(paintIcons, logo, lock)
 		end
-		if paintedLogo and paintedLock then
-			return
-		end
+
 		task.wait(0.25)
 	end
 end)
