@@ -81,19 +81,34 @@ local function setTagIcon()
 		local tb = Window.Window.UIElements.Main.Main.Topbar
 		local center = tb:FindFirstChild("Center") or tb
 		local holder = center:FindFirstChild("Holder") or center
+		local src = nil
 		for _, d in next, holder:GetDescendants() do
 			if d:IsA("ImageLabel") then
-				d.Image = id
-				d.ImageColor3 = Color3.new(1, 1, 1)
-				d.ScaleType = Enum.ScaleType.Fit
-				d.ImageRectOffset = Vector2.new(0, 0)
-				d.ImageRectSize = Vector2.new(0, 0)
-				d.ImageTransparency = 0
-				d.Size = UDim2.fromOffset(16, 16)
-				return
+				src = d
+				break
 			end
 		end
-		warn("[DeepSeekUI] tag icon: no ImageLabel found")
+		if not src then
+			warn("[DeepSeekUI] tag icon: no ImageLabel")
+			return
+		end
+		local mine = src.Parent:FindFirstChild("DeepSeekTagLogo")
+		if not mine then
+			mine = Instance.new("ImageLabel")
+			mine.Name = "DeepSeekTagLogo"
+			mine.BackgroundTransparency = 1
+			mine.BorderSizePixel = 0
+			mine.ScaleType = Enum.ScaleType.Fit
+			mine.Parent = src.Parent
+		end
+		mine.Image = id
+		mine.ImageColor3 = Color3.new(1, 1, 1)
+		mine.ImageTransparency = 0
+		mine.Size = UDim2.fromOffset(16, 16)
+		mine.Position = src.Position
+		mine.AnchorPoint = src.AnchorPoint
+		mine.ZIndex = (src.ZIndex or 1) + 5
+		src.ImageTransparency = 1
 	end)
 end
 
