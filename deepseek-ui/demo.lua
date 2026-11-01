@@ -1,9 +1,9 @@
 -- Cache busting: every load builds a unique query string so the CDN cannot
 -- hand back a previous revision of main.lua.
 local BUST = tostring(math.floor(tick() * 1000))
-local BASE = "https://cdn.jsdelivr.net/gh/lIllIIlII/NEW@main/deepseek-ui/"
+local BASE = "https://raw.githubusercontent.com/lIllIIlII/NEW/main/deepseek-ui/"
 
-local DS_DEMO_VERSION = "54"
+local DS_DEMO_VERSION = "55"
 print("[DeepSeekUI] demo build " .. DS_DEMO_VERSION)
 
 local WindUI = loadstring(game:HttpGet(BASE .. "main.lua?t=" .. BUST))()
