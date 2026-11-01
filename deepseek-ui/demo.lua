@@ -61,11 +61,14 @@ _G.DS_Window = Window
 
 -- Tag keeps the stock WindUI control; only an icon is used, resolved through
 -- the same icon pack path as lucide (pack "ds" is registered by the library).
+-- Resolve the lockup locally first: passing a getcustomasset path avoids
+-- WindUI's async URL loader, which races with the tag frame and errors out.
+local TAG_LOCK = WindUI.Asset and WindUI.Asset("ds-lockup-blue.png")
 pcall(function()
-	Window:Tag({ Title = "", Icon = "https://raw.githubusercontent.com/lIllIIlII/NEW/main/deepseek-ui/assets/ds-lockup-blue.png" })
+	Window:Tag({ Title = "", Icon = TAG_LOCK or "lucide:sparkles" })
 end)
 
-task.delay(0.6, function()
+local function fixIcons()
 	pcall(function()
 		local tb = Window.Window.UIElements.Main.Main.Topbar
 		local lf = tb:FindFirstChild("Left")
@@ -76,7 +79,6 @@ task.delay(0.6, function()
 					d.ImageRectOffset = Vector2.new(0, 0)
 					d.ScaleType = Enum.ScaleType.Fit
 					d.ImageColor3 = Color3.new(1, 1, 1)
-					break
 				end
 			end
 		end
@@ -94,6 +96,13 @@ task.delay(0.6, function()
 			end
 		end
 	end)
+end
+
+task.spawn(function()
+	for i = 1, 8 do
+		fixIcons()
+		task.wait(0.35)
+	end
 end)
 
 local Home = Window:Tab({ Title = "Home", Icon = "lucide:house" })
