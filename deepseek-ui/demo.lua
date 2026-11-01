@@ -1,6 +1,6 @@
 local BASE = "https://cdn.jsdelivr.net/gh/lIllIIlII/NEW@main/deepseek-ui/"
 
-local DS_DEMO_VERSION = "45"
+local DS_DEMO_VERSION = "46"
 print("[DeepSeekUI] demo build " .. DS_DEMO_VERSION)
 
 local WindUI = loadstring(game:HttpGet(BASE .. "main.lua"))()
@@ -575,14 +575,6 @@ Call(About, "Toggle", {
 		WindUI.Debug = v
 	end,
 })
-
--- Extra tag variants: text only, and text + icon.
-pcall(function()
-	Window:Tag({ Title = "WindUI" })
-end)
-pcall(function()
-	Window:Tag({ Title = "DeepSeek", Icon = "lucide:waves" })
-end)
 
 Window:OnOpen(function() print("[DeepSeekUI] opened") end)
 Window:OnClose(function() print("[DeepSeekUI] closed") end)
