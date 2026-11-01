@@ -66,7 +66,7 @@ Window:CreateTopbarButton("跳转", "search", function()
 end, 24, nil, Color3.fromHex("#4D6BFE"))
 
 pcall(function()
-	Window:Tag({ Title = "v1.6.65", Icon = "lucide:badge-check" })
+	Window:Tag({ Title = "DEEPSEEK", Icon = "lucide:whale" })
 end)
 
 local Home = Window:Tab({ Title = "首页", Icon = "lucide:house" })
@@ -375,6 +375,18 @@ Call(Look, "Keybind", { Title = "显示 / 隐藏", Desc = "用快捷键开关窗
 
 Group = "关于"
 Call(Info, "Section", { Title = "DeepSeek UI" })
+Call(Info, "Paragraph", {
+	Title = "标志",
+	Desc = [[
+      .-\'-.
+    .'  o o  '.
+   /  .-. .-.  \
+  |  ( o )( o )  |
+   \  '-' '-'  /
+    '-._____.-'
+     D E E P S E E K
+]],
+})
 Call(Info, "Paragraph", {
 	Title = "WindUI 1.6.65 改版",
 	Desc = "圆角控件、搜索栏放在标签栏上方、深海蓝配色、随机鲸鱼娘壁纸、左侧探头的桌宠、顶栏看板娘、右下角可点贴纸、37 款内置字体。",
