@@ -15696,6 +15696,9 @@ local DS_ICON_TABLE={
 ["archive"]="rbxassetid://122180020814574",
 ["eye-off"]="rbxassetid://135928786788378",
 }
+if _G then
+_G.DS_Icons={ds=DS_ICON_TABLE}
+end
 local DS_THEME=(math.random(2)==1)and"Dark"or"Light"
 local DS_CDN={
 "https://raw.githubusercontent.com/lIllIIlII/NEW/main/deepseek-ui/assets/",
@@ -16688,26 +16691,17 @@ DS_WIN=h
 local pal=DS_Palette(w.Theme and w.Theme.Name or DS_THEME)
 DS_PAL=pal
 DS_Stage("icons",function()
-local tbl=DS_ICON_TABLE
-local pk=nil
+local tbl=DS_ICON_TABLE or{}
+local flat={}
+for name,url in next,tbl do
+flat[name]=url
+end
 local mod=w and w.Icons
 if mod and mod.Icons then
-pk=mod.Icons.ds
+local pk=mod.Icons.ds
 if not pk then
 pk={Icons={},Spritesheets={}}
 mod.Icons.ds=pk
-end
-end
-if not pk and _G then
-_G.DS_Icons=_G.DS_Icons or{}
-pk=_G.DS_Icons.ds
-if not pk then
-pk={}
-_G.DS_Icons.ds=pk
-end
-end
-if not pk then
-return
 end
 if not pk.Icons then
 pk.Icons={}
@@ -16715,11 +16709,11 @@ end
 if not pk.Spritesheets then
 pk.Spritesheets={}
 end
-for name,url in next,tbl or{}do
+for name,url in next,tbl do
 pk.Spritesheets[name]=url
 pk.Icons[name]={Image=name,ImageRectSize=Vector2.new(0,0),ImageRectPosition=Vector2.new(0,0)}
 end
-
+end
 end)
 
 DS_Stage("scale",function()
