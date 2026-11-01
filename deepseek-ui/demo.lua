@@ -4,7 +4,7 @@ local WindUI = loadstring(game:HttpGet(BASE .. "main.lua"))()
 
 local Window = WindUI:CreateWindow({
 	Title = "DeepSeek",
-	Icon = "ds:logo",
+	Icon = "https://raw.githubusercontent.com/lIllIIlII/NEW/main/deepseek-ui/assets/ds-logo-blue.png",
 	Author = "DeepSeek AI",
 	Folder = "DeepSeekUI",
 	Size = UDim2.fromOffset(680, 480),
@@ -62,7 +62,7 @@ _G.DS_Window = Window
 -- Tag keeps the stock WindUI control; only an icon is used, resolved through
 -- the same icon pack path as lucide (pack "ds" is registered by the library).
 pcall(function()
-	Window:Tag({ Title = "", Icon = "ds:lockup" })
+	Window:Tag({ Title = "", Icon = "https://raw.githubusercontent.com/lIllIIlII/NEW/main/deepseek-ui/assets/ds-lockup-blue.png" })
 end)
 
 task.delay(0.6, function()
