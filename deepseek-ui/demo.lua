@@ -65,8 +65,20 @@ Window:CreateTopbarButton("跳转", "search", function()
 	end
 end, 24, nil, Color3.fromHex("#4D6BFE"))
 
+local tagObj = nil
 pcall(function()
-	Window:Tag({ Title = "DEEPSEEK", Icon = "lucide:whale" })
+	tagObj = Window:Tag({ Title = "DEEPSEEK", Icon = "lucide:whale" })
+end)
+task.delay(0.4, function()
+	if not (tagObj and _G.DS_Img) then return end
+	local id = _G.DS_Img("https://raw.githubusercontent.com/lIllIIlII/NEW/main/deepseek-ui/assets/ds-logo-blue.png")
+	if not id then return end
+	pcall(function()
+		local img = tagObj.UIElements.Icon.ImageLabel
+		img.Image = id
+		img.ImageColor3 = Color3.new(1, 1, 1)
+		img.ScaleType = Enum.ScaleType.Fit
+	end)
 end)
 
 local Home = Window:Tab({ Title = "首页", Icon = "lucide:house" })
@@ -376,19 +388,9 @@ Call(Look, "Keybind", { Title = "显示 / 隐藏", Desc = "用快捷键开关窗
 Group = "关于"
 Call(Info, "Section", { Title = "DeepSeek UI" })
 Call(Info, "Section", { Title = "标志" })
-Call(Info, "Button", {
-	Title = "DeepSeek 字标（ASCII）",
-	Desc = "全屏显示那幅字标图案，点任意处关闭",
-	Callback = function()
-		if _G.DS_Ascii then _G.DS_Ascii("word") end
-	end,
-})
-Call(Info, "Button", {
-	Title = "鲸鱼图案（ASCII）",
-	Desc = "全屏显示那幅大鲸鱼，点任意处关闭",
-	Callback = function()
-		if _G.DS_Ascii then _G.DS_Ascii("whale") end
-	end,
+Call(Info, "Paragraph", {
+	Title = "图片资源",
+	Desc = "ds-lockup-blue / ds-lockup-black / ds-logo-blue / ds-logo-black，四张 256px 透明底图，已随库上传。",
 })
 Call(Info, "Section", { Title = "网络图片" })
 Call(Info, "Paragraph", {
