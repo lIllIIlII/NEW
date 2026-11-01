@@ -3,7 +3,7 @@
 local BUST = tostring(math.floor(tick() * 1000))
 local BASE = "https://raw.githubusercontent.com/lIllIIlII/NEW/main/deepseek-ui/"
 
-local DS_DEMO_VERSION = "48"
+local DS_DEMO_VERSION = "49"
 print("[DeepSeekUI] demo build " .. DS_DEMO_VERSION)
 
 local WindUI = loadstring(game:HttpGet(BASE .. "main.lua?t=" .. BUST))()
@@ -193,16 +193,21 @@ Window:CreateTopbarButton("Jump", "search", function()
 	end
 end, 24, nil, Color3.fromHex("#4D6BFE"))
 
+local hiddenFullscreen = nil
+
 task.spawn(function()
-	for _ = 1, 20 do
+	for _ = 1, 25 do
 		pcall(function()
 			local ui = (Window.UIElements) or (Window.Window and Window.Window.UIElements)
 			local tb = ui and ui.Main and ui.Main:FindFirstChild("Topbar", true)
 			local right = tb and tb:FindFirstChild("Right")
-			if right then
+			if not right then
+				return
+			end
+			if not hiddenFullscreen or not hiddenFullscreen.Parent then
 				local list = {}
 				for _, c in next, right:GetChildren() do
-					if c:IsA("GuiObject") and c.Visible then
+					if c:IsA("GuiObject") then
 						table.insert(list, c)
 					end
 				end
@@ -210,14 +215,16 @@ task.spawn(function()
 					return a.AbsolutePosition.X < b.AbsolutePosition.X
 				end)
 				if #list >= 3 then
-					list[#list - 1].Visible = false
+					hiddenFullscreen = list[#list - 1]
 				end
+			end
+			if hiddenFullscreen and hiddenFullscreen.Parent then
+				hiddenFullscreen.Visible = false
 			end
 		end)
 		task.wait(0.25)
 	end
 end)
-
 
 Window:CreateTopbarButton("Info", "info", function()
 	notify("DeepSeek UI", "WindUI 1.6.65 fork with a DeepSeek skin.")
