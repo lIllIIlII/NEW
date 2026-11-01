@@ -4,7 +4,7 @@ local WindUI = loadstring(game:HttpGet(BASE .. "main.lua"))()
 
 local Window = WindUI:CreateWindow({
 	Title = "DeepSeek",
-	Icon = "rbxassetid://75699947237241",
+	Icon = "ds:logo",
 	Author = "DeepSeek AI",
 	Folder = "DeepSeekUI",
 	Size = UDim2.fromOffset(680, 480),
@@ -59,31 +59,10 @@ end
 _G.DS_WindUI = WindUI
 _G.DS_Window = Window
 
--- Tag is replaced by a plain lockup image: no pill background, no text.
-task.delay(0.45, function()
-	pcall(function()
-		local tb = Window.Window.UIElements.Main.Main.Topbar
-		local center = tb:FindFirstChild("Center")
-		if not center then return end
-		center.Visible = true
-		local holder = center:FindFirstChild("Holder") or center
-		local mark = holder:FindFirstChild("DeepSeekLockup")
-		if not mark then
-			mark = Instance.new("ImageLabel")
-			mark.Name = "DeepSeekLockup"
-			mark.BackgroundTransparency = 1
-			mark.BorderSizePixel = 0
-			mark.ScaleType = Enum.ScaleType.Fit
-			mark.AnchorPoint = Vector2.new(0, 0.5)
-			mark.Position = UDim2.new(0, 0, 0.5, 0)
-			mark.ZIndex = 20
-			mark.Parent = holder
-		end
-		mark.Size = UDim2.fromOffset(92, 15)
-		mark.Image = "rbxassetid://97359679500298"
-		mark.ImageColor3 = Color3.new(1, 1, 1)
-		mark.ImageTransparency = 0
-	end)
+-- Tag keeps the stock WindUI control; only an icon is used, resolved through
+-- the same icon pack path as lucide (pack "ds" is registered by the library).
+pcall(function()
+	Window:Tag({ Title = "", Icon = "ds:lockup" })
 end)
 
 local Home = Window:Tab({ Title = "Home", Icon = "lucide:house" })
