@@ -1,9 +1,12 @@
-local BASE = "https://cdn.jsdelivr.net/gh/lIllIIlII/NEW@main/deepseek-ui/"
+-- Cache busting: every load builds a unique query string so the CDN cannot
+-- hand back a previous revision of main.lua.
+local BUST = tostring(math.floor(tick() * 1000))
+local BASE = "https://raw.githubusercontent.com/lIllIIlII/NEW/main/deepseek-ui/"
 
-local DS_DEMO_VERSION = "47"
+local DS_DEMO_VERSION = "48"
 print("[DeepSeekUI] demo build " .. DS_DEMO_VERSION)
 
-local WindUI = loadstring(game:HttpGet(BASE .. "main.lua"))()
+local WindUI = loadstring(game:HttpGet(BASE .. "main.lua?t=" .. BUST))()
 
 -- The brand artwork is applied after the window exists: WindUI's own icon
 -- loader runs async and can race with the topbar frames, so both slots are
