@@ -15719,6 +15719,7 @@ if _G then
 _G.DS_Asset=DS_Asset
 _G.DS_Icons={}
 end
+local DS_ICON_TABLE={}
 local function DS_LoadIcons()
 local src
 for _,b in next,DS_CDN do
@@ -15738,9 +15739,11 @@ if not ok or not f then
 return
 end
 local ok2,t=pcall(f)
-if ok2 and type(t)=="table"and _G then
-_G.DS_Icons=_G.DS_Icons or{}
-_G.DS_Icons.ds=t
+if ok2 and type(t)=="table"then
+DS_ICON_TABLE=t
+if _G then
+_G.DS_ICON_TABLE=t
+end
 end
 end
 DS_LoadIcons()
@@ -16628,6 +16631,50 @@ DS_ROOT=root.Parent or root
 DS_WIN=h
 local pal=DS_Palette(w.Theme and w.Theme.Name or DS_THEME)
 DS_PAL=pal
+DS_Stage("icons",function()
+local tbl=DS_ICON_TABLE
+local pk=nil
+local mod=w and w.Icons
+if mod and mod.Icons then
+pk=mod.Icons.ds
+if not pk then
+pk={Icons={},Spritesheets={}}
+mod.Icons.ds=pk
+end
+end
+if not pk and _G then
+_G.DS_Icons=_G.DS_Icons or{}
+pk=_G.DS_Icons.ds
+if not pk then
+pk={}
+_G.DS_Icons.ds=pk
+end
+end
+if not pk then
+return
+end
+if not pk.Icons then
+pk.Icons={}
+end
+if not pk.Spritesheets then
+pk.Spritesheets={}
+end
+for name,url in next,tbl or{}do
+pk.Spritesheets[name]=url
+pk.Icons[name]={Image=name,ImageRectSize=Vector2.new(0,0),ImageRectPosition=Vector2.new(0,0)}
+end
+local lg=DS_Asset"ds-logo-blue.png"
+local lk=DS_Asset"ds-lockup-blue.png"
+if lg then
+pk.Spritesheets.logo=lg
+pk.Icons.logo={Image="logo",ImageRectSize=Vector2.new(0,0),ImageRectPosition=Vector2.new(0,0)}
+end
+if lk then
+pk.Spritesheets.lockup=lk
+pk.Icons.lockup={Image="lockup",ImageRectSize=Vector2.new(0,0),ImageRectPosition=Vector2.new(0,0)}
+end
+end)
+
 DS_Stage("scale",function()
 pcall(function()
 local vp=DS_Viewport()
@@ -17192,16 +17239,19 @@ local miniLabel=DS_Node("TextLabel",mini,{
 Name="DeepSeekMiniLabel",
 BackgroundTransparency=1,
 BorderSizePixel=0,
-Size=UDim2.new(0.88,0,0.20,0),
+Size=UDim2.new(0.94,0,0.26,0),
 AnchorPoint=Vector2.new(0.5,0.5),
-Position=UDim2.new(0.5,0,0.605,0),
+Position=UDim2.new(0.5,0,0.60,0),
 Text=tostring(h.Title or"DeepSeek"),
 TextColor3=Color3.fromHex"#16233F",
 TextScaled=true,
 TextStrokeTransparency=1,
 ZIndex=3,
 })
-DS_Node("UITextSizeConstraint",miniLabel,{MaxTextSize=140})
+pcall(function()
+miniLabel.FontFace=DS_Face"Arcade"
+end)
+DS_Node("UITextSizeConstraint",miniLabel,{MaxTextSize=190})
 local miniBtn=DS_Node("TextButton",mini,{
 Name="DeepSeekMiniButton",
 Size=UDim2.fromScale(1,1),
