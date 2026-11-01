@@ -3,7 +3,7 @@
 local BUST = tostring(math.floor(tick() * 1000))
 local BASE = "https://raw.githubusercontent.com/lIllIIlII/NEW/main/deepseek-ui/"
 
-local DS_DEMO_VERSION = "51"
+local DS_DEMO_VERSION = "52"
 print("[DeepSeekUI] demo build " .. DS_DEMO_VERSION)
 
 local WindUI = loadstring(game:HttpGet(BASE .. "main.lua?t=" .. BUST))()
@@ -109,6 +109,7 @@ local function paintIcons(logo, lock)
 	if not tb then
 		return
 	end
+	paintedLogo, paintedLock = false, false
 	for _, d in next, tb:GetDescendants() do
 		if d:IsA("ImageLabel") or d:IsA("ImageButton") then
 			local inCenter, inLeft, inRight = false, false, false
@@ -130,8 +131,14 @@ local function paintIcons(logo, lock)
 					want = lock
 				elseif inLeft then
 					want = logo
+				else
+					want = nil
 				end
-				if want then
+				if inCenter and paintedLock and want then
+					d.Visible = false
+					want = nil
+				end
+				if want and (not inCenter or not paintedLock) then
 					d.Image = want
 					d.ImageRectSize = Vector2.new(0, 0)
 					d.ImageRectOffset = Vector2.new(0, 0)
