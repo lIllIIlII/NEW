@@ -375,17 +375,24 @@ Call(Look, "Keybind", { Title = "显示 / 隐藏", Desc = "用快捷键开关窗
 
 Group = "关于"
 Call(Info, "Section", { Title = "DeepSeek UI" })
+Call(Info, "Section", { Title = "标志" })
+Call(Info, "Button", {
+	Title = "DeepSeek 字标（ASCII）",
+	Desc = "全屏显示那幅字标图案，点任意处关闭",
+	Callback = function()
+		if _G.DS_Ascii then _G.DS_Ascii("word") end
+	end,
+})
+Call(Info, "Button", {
+	Title = "鲸鱼图案（ASCII）",
+	Desc = "全屏显示那幅大鲸鱼，点任意处关闭",
+	Callback = function()
+		if _G.DS_Ascii then _G.DS_Ascii("whale") end
+	end,
+})
 Call(Info, "Paragraph", {
-	Title = "标志",
-	Desc = [[
-      .-''-.
-    .'  o o  '.
-   /  .-. .-.  \
-  |  ( o )( o )  |
-   \  '-' '-'  /
-    '-._____.-'
-     D E E P S E E K
-]],
+	Title = "图片资源",
+	Desc = "ds-lockup-blue / ds-lockup-black / ds-logo-blue / ds-logo-black，四张 256px 透明底图，已随库上传。",
 })
 Call(Info, "Paragraph", {
 	Title = "WindUI 1.6.65 改版",
