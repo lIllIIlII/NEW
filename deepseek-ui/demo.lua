@@ -1,7 +1,7 @@
 -- main.lua lives in the executor workspace (Delta/Workspace).
 -- Absolute paths are not readable there: the executor resolves names
 -- relative to its workspace folder, so we try several spellings.
-local DS_DEMO_VERSION = "60"
+local DS_DEMO_VERSION = "61"
 print("[DeepSeekUI] demo build " .. DS_DEMO_VERSION)
 
 local CANDIDATES = {
