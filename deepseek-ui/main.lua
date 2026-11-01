@@ -16915,7 +16915,40 @@ if DS_FullClose then
 return
 end
 DS_FullClose=true
-task.delay(0.08,function()
+local wait=0.30
+pcall(function()
+if not DS_TickerRoot or not DS_TickerRoot.Parent then
+return
+end
+local lay=DS_TickerRoot:FindFirstChildOfClass"UIListLayout"
+local pad=2
+if lay then
+pad=lay.Padding.Offset
+lay.Enabled=false
+end
+local w=DS_TickerRoot.AbsoluteSize.X+140
+local i=0
+for _,c in next,DS_TickerRoot:GetChildren()do
+if c:IsA"Frame"and c.Name=="TickerRow"then
+i=i+1
+local y=(i-1)*(DS_TickerRowH+pad)
+c.Position=UDim2.fromOffset(0,y)
+local idx=i
+task.delay(0.05*idx,function()
+if c.Parent then
+DS_Tween(c,0.42,{Position=UDim2.fromOffset(w,y)},Enum.EasingStyle.Quint,Enum.EasingDirection.In)
+end
+end)
+end
+end
+wait=0.05*i+0.5
+end)
+task.delay(wait,function()
+pcall(function()
+h:Close()
+end)
+end)
+task.delay(wait+0.35,function()
 pcall(function()
 if h.Destroy then
 h:Destroy()
@@ -16928,8 +16961,110 @@ end
 end)
 end)
 end
+DS_ConfirmClose=function()
+if not DS_ROOT then
+return
+end
+if DS_CloseJump then
+pcall(DS_CloseJump)
+end
+local pal=DS_PAL or{accent=Color3.fromHex"#4D6BFE"}
+local blocker=DS_Node("TextButton",root,{
+Name="DeepSeekCloseBlocker",
+Size=UDim2.fromScale(1,1),
+BackgroundColor3=Color3.fromHex"#04070D",
+BackgroundTransparency=0.38,
+BorderSizePixel=0,
+Text="",
+AutoButtonColor=false,
+ZIndex=960,
+})
+local box=DS_Node("Frame",blocker,{
+Name="DeepSeekConfirm",
+AnchorPoint=Vector2.new(0.5,0.5),
+Position=UDim2.new(0.5,0,0.5,0),
+Size=UDim2.new(0.62,0,0.34,0),
+BackgroundColor3=Color3.fromHex"#070C15",
+BackgroundTransparency=0.02,
+BorderSizePixel=0,
+ClipsDescendants=true,
+ZIndex=961,
+})
+DS_Node("UIStroke",box,{Color=pal.accent,Thickness=1,Transparency=0.4,ApplyStrokeMode=Enum.ApplyStrokeMode.Border})
+DS_Node("TextLabel",box,{
+BackgroundTransparency=1,
+BorderSizePixel=0,
+Size=UDim2.new(1,-24,0,26),
+Position=UDim2.new(0,12,0,10),
+Text="确认关闭界面？",
+TextColor3=Color3.new(1,1,1),
+TextSize=15,
+TextXAlignment=Enum.TextXAlignment.Left,
+ZIndex=962,
+})
+DS_Node("TextLabel",box,{
+BackgroundTransparency=1,
+BorderSizePixel=0,
+Size=UDim2.new(1,-24,0,18),
+Position=UDim2.new(0,12,0,36),
+Text="关闭后需要重新执行脚本",
+TextColor3=pal.soft,
+TextTransparency=0.25,
+TextSize=12,
+TextXAlignment=Enum.TextXAlignment.Left,
+ZIndex=962,
+})
+local row=DS_Node("Frame",box,{
+BackgroundTransparency=1,
+BorderSizePixel=0,
+Size=UDim2.new(1,-24,0,30),
+Position=UDim2.new(0,12,1,-40),
+ZIndex=962,
+})
+local function cbtn(txt,x,anchorX,col,cb)
+local b=DS_Node("TextButton",row,{
+Size=UDim2.fromOffset(96,30),
+Position=UDim2.new(x,0,0.5,0),
+AnchorPoint=Vector2.new(anchorX,0.5),
+BackgroundColor3=col,
+BackgroundTransparency=0.88,
+BorderSizePixel=0,
+Text=txt,
+TextColor3=Color3.new(1,1,1),
+TextSize=13,
+AutoButtonColor=false,
+ZIndex=963,
+})
+b.MouseEnter:Connect(function()
+DS_Tween(b,0.14,{BackgroundTransparency=0.70})
+end)
+b.MouseLeave:Connect(function()
+DS_Tween(b,0.16,{BackgroundTransparency=0.88})
+end)
+b.MouseButton1Click:Connect(cb)
+return b
+end
+cbtn("取消",0,0,pal.accent,function()
+blocker:Destroy()
+end)
+cbtn("确认关闭",1,1,Color3.fromHex"#FF4D4D",function()
+blocker:Destroy()
+DS_Close()
+end)
+blocker.MouseButton1Click:Connect(function()
+blocker:Destroy()
+end)
+box.Size=UDim2.new(0.62,0,0.02,0)
+DS_Tween(box,0.24,{Size=UDim2.new(0.62,0,0.34,0)},Enum.EasingStyle.Quint,Enum.EasingDirection.Out)
+end
+pcall(function()
+h:CreateTopbarButton("关闭","x",function()
+DS_ConfirmClose()
+end,24,nil,Color3.fromHex"#FF6B6B")
+end)
 if _G then
 _G.DS_Close=DS_Close
+_G.DS_ConfirmClose=DS_ConfirmClose
 end
 end)
 
