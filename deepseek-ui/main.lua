@@ -16579,6 +16579,19 @@ end
 DS_ROOT=root.Parent or root
 DS_WIN=h
 local pal=DS_Palette(w.Theme and w.Theme.Name or DS_THEME)
+pcall(function()
+local T=w and w.Themes
+if not(T and T.Light)then
+return
+end
+local L=T.Light
+L.TabBackgroundHoverTransparency=0.25
+L.TabBackgroundActiveTransparency=0.22
+L.PanelBackgroundTransparency=0.35
+L.LabelBackgroundTransparency=0.35
+L.ElementBackgroundTransparency=0.30
+L.ScrollBarImageTransparency=0.45
+end)
 DS_PAL=pal
 DS_Stage("pack",function()
 local pk={Icons={},Spritesheets={}}
