@@ -3,7 +3,7 @@
 local BUST = tostring(math.floor(tick() * 1000))
 local BASE = "https://raw.githubusercontent.com/lIllIIlII/NEW/main/deepseek-ui/"
 
-local DS_DEMO_VERSION = "56"
+local DS_DEMO_VERSION = "57"
 print("[DeepSeekUI] demo build " .. DS_DEMO_VERSION)
 
 local WindUI = loadstring(game:HttpGet(BASE .. "main.lua?t=" .. BUST))()
