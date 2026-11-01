@@ -4,7 +4,7 @@ local WindUI = loadstring(game:HttpGet(BASE .. "main.lua"))()
 
 local Window = WindUI:CreateWindow({
 	Title = "DeepSeek",
-	Icon = "ds:house",
+	Icon = "rbxassetid://78645870311558",
 	Author = "DeepSeek AI",
 	Folder = "DeepSeekUI",
 	Size = UDim2.fromOffset(680, 480),
@@ -57,14 +57,14 @@ end
 
 -- Tag: icon only, no text.
 pcall(function()
-	Window:Tag({ Title = "", Icon = "ds:sparkles" })
+	Window:Tag({ Title = "", Icon = "rbxassetid://99218075863166" })
 end)
 
-local Home = Window:Tab({ Title = "Home", Icon = "ds:house" })
-local Controls = Window:Tab({ Title = "Controls", Icon = "ds:sliders-horizontal" })
-local Scripts = Window:Tab({ Title = "Scripts", Icon = "ds:code" })
-local Look = Window:Tab({ Title = "Appearance", Icon = "ds:palette" })
-local About = Window:Tab({ Title = "About", Icon = "ds:info" })
+local Home = Window:Tab({ Title = "Home", Icon = "lucide:house" })
+local Controls = Window:Tab({ Title = "Controls", Icon = "lucide:sliders-horizontal" })
+local Scripts = Window:Tab({ Title = "Scripts", Icon = "lucide:code" })
+local Look = Window:Tab({ Title = "Appearance", Icon = "lucide:palette" })
+local About = Window:Tab({ Title = "About", Icon = "lucide:info" })
 
 Group = "Home"
 Call(Home, "Section", { Title = "Overview" })
