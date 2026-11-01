@@ -304,6 +304,28 @@ Call(Look, "Button", {
 	end,
 })
 Call(Look, "Divider")
+Call(Look, "Section", { Title = "模块开关" })
+for _, m in ipairs({
+	{ k = "pet", t = "桌宠", d = "窗口左边探头的那只" },
+	{ k = "sitter", t = "顶栏看板娘", d = "趴在顶栏上的那只" },
+	{ k = "sticker", t = "角落贴纸", d = "右下角可以点的贴纸" },
+	{ k = "ticker", t = "功能走马灯", d = "右上角的发光文字列" },
+	{ k = "bg", t = "背景壁纸", d = "窗口里的随机鲸鱼壁纸" },
+	{ k = "sheen", t = "扫光", d = "每几秒掠过窗口的光带" },
+	{ k = "jag", t = "不规则边框", d = "锯齿状的边缘轮廓" },
+	{ k = "glow", t = "拖动亮边", d = "拖动窗口时边框发光" },
+	{ k = "sound", t = "加载音效", d = "界面出现时播放的声音" },
+}) do
+	Call(Look, "Toggle", {
+		Title = m.t,
+		Desc = m.d,
+		Value = true,
+		Callback = function(v)
+			if _G.DS_Set then _G.DS_Set(m.k, v) end
+		end,
+	})
+end
+Call(Look, "Divider")
 Call(Look, "Section", { Title = "功能索引" })
 Call(Look, "Paragraph", {
 	Title = "跳跃式定位",
