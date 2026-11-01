@@ -16451,111 +16451,6 @@ end
 end
 return true
 end
-local function DS_Intro()
-if not DS_ROOT then
-return
-end
-pcall(function()
-local sg=DS_ScreenRoot(DS_ROOT,DS_WIN,nil)
-if not sg then
-return
-end
-local vp=DS_Viewport()
-local pal=DS_PAL or{accent=Color3.fromHex"#4D6BFE"}
-local ov=DS_Node("Frame",sg,{
-Name="DeepSeekIntro",
-Size=UDim2.fromScale(1,1),
-BackgroundColor3=Color3.fromHex"#04070D",
-BackgroundTransparency=1,
-BorderSizePixel=0,
-ZIndex=995,
-})
-DS_Tween(ov,0.28,{BackgroundTransparency=0.10},Enum.EasingStyle.Quad,Enum.EasingDirection.Out)
-local ts=math.clamp(math.floor(math.min(vp.X,vp.Y)*0.115),18,150)
-local wrap=DS_Node("Frame",ov,{
-Name="IntroWrap",
-AnchorPoint=Vector2.new(0,0.5),
-Position=UDim2.new(0.5,0,0.5,0),
-Size=UDim2.fromOffset(0,ts*1.6),
-ClipsDescendants=true,
-BackgroundTransparency=1,
-BorderSizePixel=0,
-ZIndex=996,
-})
-local lbl=DS_Node("TextLabel",wrap,{
-Name="IntroText",
-BackgroundTransparency=1,
-BorderSizePixel=0,
-Size=UDim2.fromOffset(0,ts*1.6),
-AutomaticSize=Enum.AutomaticSize.X,
-Position=UDim2.new(0,0,0.5,0),
-AnchorPoint=Vector2.new(0,0.5),
-Text="DeepSeek",
-TextColor3=Color3.new(1,1,1),
-TextSize=ts,
-TextXAlignment=Enum.TextXAlignment.Left,
-TextYAlignment=Enum.TextYAlignment.Center,
-ZIndex=996,
-})
-pcall(function()
-lbl.FontFace=DS_Face"GothamBold"
-end)
-DS_Node("UIGradient",lbl,{
-Color=ColorSequence.new({
-ColorSequenceKeypoint.new(0,Color3.fromRGB(120,170,255)),
-ColorSequenceKeypoint.new(0.5,Color3.fromRGB(255,255,255)),
-ColorSequenceKeypoint.new(1,Color3.fromRGB(120,170,255)),
-}),
-})
-local pen=DS_Node("Frame",ov,{
-Name="IntroPen",
-AnchorPoint=Vector2.new(0.5,0.5),
-Position=UDim2.new(0.5,0,0.5,0),
-Size=UDim2.fromOffset(3,ts*1.25),
-BackgroundColor3=Color3.new(1,1,1),
-BackgroundTransparency=1,
-BorderSizePixel=0,
-ZIndex=998,
-})
-DS_Node("UIStroke",pen,{Color=pal.accent,Thickness=2,Transparency=0.15})
-local line=DS_Node("Frame",ov,{
-Name="IntroLine",
-AnchorPoint=Vector2.new(0,0),
-Position=UDim2.new(0.5,0,0.5,ts*0.62),
-Size=UDim2.new(0,0,0,1),
-BackgroundColor3=pal.accent,
-BackgroundTransparency=0.35,
-BorderSizePixel=0,
-ZIndex=997,
-})
-task.spawn(function()
-task.wait(0.06)
-local w=lbl.AbsoluteSize.X
-if w<=0 then
-w=ts*6
-end
-wrap.Position=UDim2.new(0.5,-w/2,0.5,0)
-pen.Position=UDim2.new(0.5,-w/2,0.5,0)
-line.Position=UDim2.new(0.5,-w/2,0.5,ts*0.62)
-pen.BackgroundTransparency=0
-DS_Tween(wrap,1.75,{Size=UDim2.fromOffset(w,ts*1.6)},Enum.EasingStyle.Sine,Enum.EasingDirection.InOut)
-DS_Tween(line,1.75,{Size=UDim2.fromOffset(w,1)},Enum.EasingStyle.Sine,Enum.EasingDirection.InOut)
-DS_Tween(pen,1.75,{Position=UDim2.new(0.5,w/2,0.5,0)},Enum.EasingStyle.Sine,Enum.EasingDirection.InOut)
-task.wait(1.85)
-DS_Tween(pen,0.18,{BackgroundTransparency=1},Enum.EasingStyle.Quad,Enum.EasingDirection.Out)
-local g=lbl:FindFirstChildOfClass"UIGradient"
-if g then
-DS_Tween(g,0.35,{Offset=Vector2.new(0.6,0)},Enum.EasingStyle.Quad,Enum.EasingDirection.Out)
-end
-task.wait(0.55)
-DS_Tween(ov,0.5,{BackgroundTransparency=1},Enum.EasingStyle.Quad,Enum.EasingDirection.Out)
-task.wait(0.55)
-if ov.Parent then
-ov:Destroy()
-end
-end)
-end)
-end
 local function DS_ScreenRoot(root,h,al)
 local c
 pcall(function()
@@ -16601,10 +16496,6 @@ DS_ROOT=root.Parent or root
 DS_WIN=h
 local pal=DS_Palette(w.Theme and w.Theme.Name or DS_THEME)
 DS_PAL=pal
-DS_Stage("intro",function()
-DS_Intro()
-end)
-
 DS_Stage("scale",function()
 pcall(function()
 local vp=DS_Viewport()
