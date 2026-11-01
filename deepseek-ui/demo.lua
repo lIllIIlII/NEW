@@ -65,10 +65,30 @@ Window:CreateTopbarButton("跳转", "search", function()
 	end
 end, 24, nil, Color3.fromHex("#4D6BFE"))
 
-local TAG_ICON = "lucide:whale"
-if _G.DS_Icons and _G.DS_Icons.ds and _G.DS_Icons.ds.logo then
-	TAG_ICON = "ds:logo"
+local DS_LOGO = _G.DS_Asset and _G.DS_Asset("ds-logo-blue.png")
+if DS_LOGO then
+	pcall(function()
+		local reg = WindUI.Icons
+		if reg and reg.Icons then
+			reg.Icons.ds = {
+				Icons = {
+					logo = {
+						Image = "dslogo",
+						ImageRectSize = Vector2.new(0, 0),
+						ImageRectPosition = Vector2.new(0, 0),
+					},
+				},
+				Spritesheets = { dslogo = DS_LOGO },
+			}
+		end
+	end)
+	pcall(function()
+		if _G.DS_Icons then
+			_G.DS_Icons.ds = { logo = DS_LOGO }
+		end
+	end)
 end
+local TAG_ICON = DS_LOGO and "ds:logo" or "lucide:fish"
 pcall(function()
 	Window:Tag({ Title = "DEEPSEEK", Icon = TAG_ICON })
 end)
@@ -77,7 +97,7 @@ local Home = Window:Tab({ Title = "首页", Icon = "lucide:house" })
 local Controls = Window:Tab({ Title = "控件", Icon = "lucide:sliders-horizontal" })
 local Scripts = Window:Tab({ Title = "脚本", Icon = "lucide:code" })
 local Look = Window:Tab({ Title = "外观", Icon = "lucide:palette" })
-local Info = Window:Tab({ Title = "关于", Icon = "lucide:whale" })
+local Info = Window:Tab({ Title = "关于", Icon = "lucide:waves" })
 
 Call(Home, "Section", { Title = "总览" })
 Call(Home, "Button", {
