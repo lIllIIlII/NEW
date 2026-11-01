@@ -131,17 +131,31 @@ local function paintIcons(logo, lock)
 				d.ImageColor3 = Color3.new(1, 1, 1)
 				d.ImageTransparency = 0
 				if inCenter then
-					d.Size = UDim2.fromOffset(104, 17)
-					d.AnchorPoint = Vector2.new(0.5, 0.5)
-					d.Position = UDim2.new(0.5, 0, 0.5, 5)
 					local box = d.Parent
 					if box and box:IsA("GuiObject") then
 						box.AutomaticSize = Enum.AutomaticSize.None
-						box.Size = UDim2.fromOffset(120, 32)
+						box.Size = UDim2.fromOffset(118, 30)
 						box.BackgroundTransparency = 1
 						box.ClipsDescendants = false
+						box.AnchorPoint = Vector2.new(0.5, 0.5)
+						box.Position = UDim2.new(0.5, 0, 0.5, 0)
+						local pad = box:FindFirstChildOfClass("UIPadding")
+						if pad then
+							pad:Destroy()
+						end
+						local inner = box.Parent
+						if inner and inner:IsA("GuiObject") then
+							inner.AutomaticSize = Enum.AutomaticSize.None
+							if inner ~= tb then
+								inner.BackgroundTransparency = 1
+							end
+						end
 					end
+					d.AnchorPoint = Vector2.new(0, 0)
+					d.Position = UDim2.fromOffset(0, 0)
+					d.Size = UDim2.fromScale(1, 1)
 					paintedLock = true
+					break
 				else
 					paintedLogo = true
 				end
@@ -176,6 +190,26 @@ Window:CreateTopbarButton("Jump", "search", function()
 		_G.DS_OpenJump()
 	end
 end, 24, nil, Color3.fromHex("#4D6BFE"))
+
+task.delay(0.8, function()
+	pcall(function()
+		local ui = (Window.UIElements) or (Window.Window and Window.Window.UIElements)
+		local tb = ui and ui.Main and ui.Main:FindFirstChild("Topbar", true)
+		if not tb then return end
+		for _, c in next, tb:GetDescendants() do
+			local hit = false
+			if c:IsA("TextButton") or c:IsA("ImageButton") then
+				local n = string.lower(tostring(c.Name))
+				if string.find(n, "full", 1, true) or string.find(n, "maxim", 1, true) then
+					hit = true
+				end
+			end
+			if hit and c.Parent then
+				c.Parent.Visible = false
+			end
+		end
+	end)
+end)
 
 local Home = Window:Tab({ Title = "Home", Icon = "lucide:house" })
 local Controls = Window:Tab({ Title = "Controls", Icon = "lucide:sliders-horizontal" })
@@ -490,6 +524,14 @@ Call(About, "Toggle", {
 		WindUI.Debug = v
 	end,
 })
+
+-- Extra tag variants: text only, and text + icon.
+pcall(function()
+	Window:Tag({ Title = "WindUI" })
+end)
+pcall(function()
+	Window:Tag({ Title = "DeepSeek", Icon = "lucide:waves" })
+end)
 
 Window:OnOpen(function() print("[DeepSeekUI] opened") end)
 Window:OnClose(function() print("[DeepSeekUI] closed") end)
