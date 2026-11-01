@@ -69,23 +69,25 @@ local tagObj = nil
 pcall(function()
 	tagObj = Window:Tag({ Title = "DEEPSEEK", Icon = "lucide:whale" })
 end)
-task.delay(0.4, function()
-	if not (tagObj and _G.DS_Img) then return end
-	local id = _G.DS_Img("https://raw.githubusercontent.com/lIllIIlII/NEW/main/deepseek-ui/assets/ds-logo-blue.png")
+task.delay(0.5, function()
+	local id = _G.DS_Asset and _G.DS_Asset("ds-logo-blue.png")
 	if not id then return end
-	pcall(function()
-		local img = tagObj.UIElements.Icon.ImageLabel
-		img.Image = id
-		img.ImageColor3 = Color3.new(1, 1, 1)
-		img.ScaleType = Enum.ScaleType.Fit
-	end)
+	local function apply()
+		pcall(function()
+			local tb = Window.Window.UIElements.Main.Main.Topbar.Center.Holder
+			for _, d in next, tb:GetDescendants() do
+				if d:IsA("ImageLabel") then
+					d.Image = id
+					d.ImageColor3 = Color3.new(1, 1, 1)
+					d.ScaleType = Enum.ScaleType.Fit
+					return true
+				end
+			end
+		end)
+	end
+	apply()
+	task.delay(1.2, apply)
 end)
-
-local Home = Window:Tab({ Title = "首页", Icon = "lucide:house" })
-local Controls = Window:Tab({ Title = "控件", Icon = "lucide:sliders-horizontal" })
-local Scripts = Window:Tab({ Title = "脚本", Icon = "lucide:code" })
-local Look = Window:Tab({ Title = "外观", Icon = "lucide:palette" })
-local Info = Window:Tab({ Title = "关于", Icon = "lucide:whale" })
 
 Call(Home, "Section", { Title = "总览" })
 Call(Home, "Button", {
