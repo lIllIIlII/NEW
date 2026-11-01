@@ -17411,6 +17411,83 @@ table.insert(DS_Parts.jag,c)
 end
 end
 DS_Stage("inertia",function()
+local cachePet=nil
+local cacheStick=nil
+local buttons={}
+local lagX=0
+local lagY=0
+local lastPos=root.Position
+local t0=tick()
+root:GetPropertyChangedSignal"Position":Connect(function()
+local d=root.Position-lastPos
+lastPos=root.Position
+lagX=lagX-(d.X.Offset+d.X.Scale*260)*3.2
+lagY=lagY-(d.Y.Offset+d.Y.Scale*200)*3.2
+lagX=math.clamp(lagX,-30,30)
+lagY=math.clamp(lagY,-30,30)
+end)
+local function collectButtons()
+buttons={}
+for _,d in next,root:GetDescendants()do
+if (d:IsA"ImageLabel"or d:IsA"ImageButton")and d:FindFirstAncestorOfClass"GuiButton"then
+local ok=d:IsA"ImageLabel"
+if ok and d.Parent and not d.Parent:FindFirstChildOfClass"UIListLayout"then
+table.insert(buttons,{node=d,base=d.Position})
+end
+end
+end
+end
+task.delay(1.5,function()
+pcall(collectButtons)
+end)
+task.delay(4,function()
+pcall(collectButtons)
+end)
+local rs=game:GetService"RunService"
+rs.RenderStepped:Connect(function(dt)
+lagX=lagX*0.86
+lagY=lagY*0.86
+if math.abs(lagX)<0.25 then
+lagX=0
+end
+if math.abs(lagY)<0.25 then
+lagY=0
+end
+for _,b in next,buttons do
+if b.node.Parent then
+b.node.Position=b.base+UDim2.fromOffset(lagX*1.1,lagY*1.1)
+end
+end
+if not cachePet then
+cachePet=root:FindFirstChild"DeepSeekPet"
+end
+if cachePet and cachePet.Parent then
+local bob=math.sin((tick()-t0)*1.6)*5
+cachePet.Position=UDim2.new(0,-152+lagX*1.25,0.54,8+bob+lagY*1.25)
+end
+if not cacheStick then
+cacheStick=root:FindFirstChild"DeepSeekSticker"
+end
+if cacheStick and cacheStick.Parent then
+cacheStick.Position=UDim2.new(1,-8+lagX*1.6,1,-8+lagY*1.6)
+end
+end)
+end)
+
+DS_Parts.pet={root:FindFirstChild"DeepSeekPet"}
+DS_Parts.sitter={root:FindFirstChild"DeepSeekSitter"}
+DS_Parts.sticker={root:FindFirstChild"DeepSeekSticker"}
+DS_Parts.sheen={root:FindFirstChild"DeepSeekSheenHolder"}
+DS_Parts.glow={root:FindFirstChild"DeepSeekGlow"}
+DS_Parts.bg={bg and bg:FindFirstChild"DeepSeekBackground"}
+DS_Parts.ticker={DS_TickerRoot,DS_TickerLine}
+DS_Parts.jag={}
+for _,c in next,root:GetChildren()do
+if c.Name=="DeepSeekJag"then
+table.insert(DS_Parts.jag,c)
+end
+end
+DS_Stage("inertia",function()
 local mainFrame=root:FindFirstChild"Main"
 local cachePet=nil
 local cacheStick=nil
