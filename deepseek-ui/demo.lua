@@ -66,31 +66,80 @@ Window:CreateTopbarButton("跳转", "search", function()
 end, 24, nil, Color3.fromHex("#4D6BFE"))
 
 local DS_LOGO = _G.DS_Asset and _G.DS_Asset("ds-logo-blue.png")
-if DS_LOGO then
+local DS_LOCK = _G.DS_Asset and _G.DS_Asset("ds-lockup-black.png")
+
+task.delay(0.45, function()
 	pcall(function()
-		local reg = WindUI.Icons
-		if reg and reg.Icons then
-			reg.Icons.ds = {
-				Icons = {
-					logo = {
-						Image = "dslogo",
-						ImageRectSize = Vector2.new(0, 0),
-						ImageRectPosition = Vector2.new(0, 0),
-					},
-				},
-				Spritesheets = { dslogo = DS_LOGO },
-			}
+		local top = Window.Window.UIElements.Main.Main.Topbar
+		if DS_LOGO then
+			local lf = top:FindFirstChild("Left")
+			if lf then
+				for _, d in next, lf:GetDescendants() do
+					if d:IsA("ImageLabel") then
+						d.Image = DS_LOGO
+						d.ImageColor3 = Color3.new(1, 1, 1)
+						d.ScaleType = Enum.ScaleType.Fit
+						d.ImageRectOffset = Vector2.new(0, 0)
+						d.ImageRectSize = Vector2.new(0, 0)
+						d.ImageTransparency = 0
+						break
+					end
+				end
+			end
+		end
+		if DS_LOCK then
+			local center = top:FindFirstChild("Center")
+			if center then
+				center.Visible = true
+				local holder = center:FindFirstChild("Holder") or center
+				local mark = holder:FindFirstChild("DeepSeekLockup")
+				if not mark then
+					mark = Instance.new("ImageLabel")
+					mark.Name = "DeepSeekLockup"
+					mark.BackgroundTransparency = 1
+					mark.BorderSizePixel = 0
+					mark.ScaleType = Enum.ScaleType.Fit
+					mark.Size = UDim2.fromOffset(104, 17)
+					mark.AnchorPoint = Vector2.new(0, 0.5)
+					mark.Position = UDim2.new(0, 0, 0.5, 0)
+					mark.ZIndex = 20
+					mark.Parent = holder
+				end
+				mark.Image = DS_LOCK
+				mark.ImageTransparency = 0
+			end
 		end
 	end)
+end)
+
+task.delay(1.0, function()
 	pcall(function()
-		if _G.DS_Icons then
-			_G.DS_Icons.ds = { logo = DS_LOGO }
+		local ui = Window.Window.UIElements
+		local cont = ui.SideBarContainer
+		if not cont then return end
+		local target = nil
+		for _, c in next, cont:GetChildren() do
+			if c:IsA("Frame") and c ~= ui.SideBar then
+				target = c
+			end
 		end
+		if not target or target:FindFirstChild("DSUserGlow") then return end
+		local st = Instance.new("UIStroke")
+		st.Name = "DSUserGlow"
+		st.Color = Color3.fromHex("#4D6BFE")
+		st.Thickness = 1
+		st.Transparency = 0.72
+		st.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+		st.Parent = target
+		local g = Instance.new("UIGradient")
+		g.Name = "DSUserGrad"
+		g.Rotation = 90
+		g.Transparency = NumberSequence.new({
+			NumberSequenceKeypoint.new(0, 0.95),
+			NumberSequenceKeypoint.new(1, 0.55),
+		})
+		g.Parent = st
 	end)
-end
-local TAG_ICON = DS_LOGO and "ds:logo" or "lucide:fish"
-pcall(function()
-	Window:Tag({ Title = "DEEPSEEK", Icon = TAG_ICON })
 end)
 
 local Home = Window:Tab({ Title = "首页", Icon = "lucide:house" })
