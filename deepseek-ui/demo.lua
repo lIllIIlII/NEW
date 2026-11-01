@@ -4,7 +4,7 @@ local WindUI = loadstring(game:HttpGet(BASE .. "main.lua"))()
 
 local Window = WindUI:CreateWindow({
 	Title = "DeepSeek",
-	Icon = "lucide:sparkles",
+	Icon = "ds:waves",
 	Author = "深度求索 AI",
 	Folder = "DeepSeekUI",
 	Size = UDim2.fromOffset(680, 480),
@@ -65,51 +65,8 @@ Window:CreateTopbarButton("跳转", "search", function()
 	end
 end, 24, nil, Color3.fromHex("#4D6BFE"))
 
-local DS_LOGO = WindUI.Asset and WindUI.Asset("ds-logo-blue.png")
-local DS_LOCK = WindUI.Asset and WindUI.Asset("ds-lockup-black.png")
-
-task.delay(0.45, function()
-	pcall(function()
-		local top = Window.Window.UIElements.Main.Main.Topbar
-		if DS_LOGO then
-			local lf = top:FindFirstChild("Left")
-			if lf then
-				for _, d in next, lf:GetDescendants() do
-					if d:IsA("ImageLabel") then
-						d.Image = DS_LOGO
-						d.ImageColor3 = Color3.new(1, 1, 1)
-						d.ScaleType = Enum.ScaleType.Fit
-						d.ImageRectOffset = Vector2.new(0, 0)
-						d.ImageRectSize = Vector2.new(0, 0)
-						d.ImageTransparency = 0
-						break
-					end
-				end
-			end
-		end
-		if DS_LOCK then
-			local center = top:FindFirstChild("Center")
-			if center then
-				center.Visible = true
-				local holder = center:FindFirstChild("Holder") or center
-				local mark = holder:FindFirstChild("DeepSeekLockup")
-				if not mark then
-					mark = Instance.new("ImageLabel")
-					mark.Name = "DeepSeekLockup"
-					mark.BackgroundTransparency = 1
-					mark.BorderSizePixel = 0
-					mark.ScaleType = Enum.ScaleType.Fit
-					mark.Size = UDim2.fromOffset(104, 17)
-					mark.AnchorPoint = Vector2.new(0, 0.5)
-					mark.Position = UDim2.new(0, 0, 0.5, 0)
-					mark.ZIndex = 20
-					mark.Parent = holder
-				end
-				mark.Image = DS_LOCK
-				mark.ImageTransparency = 0
-			end
-		end
-	end)
+pcall(function()
+	Window:Tag({ Title = "DEEPSEEK", Icon = "ds:fish" })
 end)
 
 task.delay(1.0, function()
