@@ -1,7 +1,7 @@
 -- main.lua lives in the executor workspace (Delta/Workspace).
 -- Absolute paths are not readable there: the executor resolves names
 -- relative to its workspace folder, so we try several spellings.
-local DS_DEMO_VERSION = "72"
+local DS_DEMO_VERSION = "73"
 print("[DeepSeekUI] demo build " .. DS_DEMO_VERSION)
 
 local CANDIDATES = {
@@ -318,36 +318,39 @@ Call(Scripts, "Button", {
 
 Group = "Appearance"
 
--- Font picker: DS_SetFontIndex ships with Source Sans / Gotham / Noto Sans /
--- Roboto / Montserrat, plus any "font.ttf" dropped in the workspace and any
--- font loaded through _G.DS_LoadFontUrl("https://.../font.ttf").
-Call(Look, "Dropdown", {
-	Title = "Font",
-	Description = "UI typeface (CJK-capable options included)",
-	Values = (function()
-		local ok, list = pcall(function()
-			return _G.DS_FontNames and _G.DS_FontNames()
-		end)
-		if ok and type(list) == "table" and #list > 0 then
-			return list
+-- Font buttons: each one switches the whole UI typeface immediately.
+do
+	local names = {}
+	local ok, list = pcall(function()
+		return _G.DS_FontList
+	end)
+	if ok and type(list) == "table" then
+		for idx, f in ipairs(list) do
+			names[#names + 1] = { idx = idx, name = f.name }
 		end
-		return { "Source Sans", "Gotham", "Noto Sans", "Roboto", "Montserrat" }
-	end)(),
-	Callback = function(opt)
-		local ok, names = pcall(function()
-			return (_G.DS_FontNames and _G.DS_FontNames()) or {}
-		end)
-		if not ok or type(names) ~= "table" then
-			names = { "Source Sans", "Gotham", "Noto Sans", "Roboto", "Montserrat" }
-		end
-		for i, n in ipairs(names) do
-			if n == opt then
-				_G.DS_SetFontIndex(i)
-				return
-			end
-		end
-	end,
-})
+	end
+	if #names == 0 then
+		names = {
+			{ idx = 1, name = "Gotham" },
+			{ idx = 2, name = "Source Sans" },
+			{ idx = 3, name = "Roboto" },
+			{ idx = 4, name = "Montserrat" },
+			{ idx = 5, name = "Noto Sans" },
+		}
+	end
+	for k = 1, math.min(#names, 8) do
+		local entry = names[k]
+		Call(Look, "Button", {
+			Title = "Font: " .. tostring(entry.name),
+			Description = "Apply this typeface to the whole interface",
+			Callback = function()
+				pcall(function()
+					_G.DS_SetFontIndex(entry.idx)
+				end)
+			end,
+		})
+	end
+end
 
 -- Accent picker: recolours every themed element at runtime.
 Call(Look, "Colorpicker", {
