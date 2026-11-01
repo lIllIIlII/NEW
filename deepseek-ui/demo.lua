@@ -1,21 +1,53 @@
--- main.lua lives in the executor workspace, not on GitHub any more.
-local LOCAL_MAIN = "/storage/emulated/0/Delta/Workspace/main.lua"
-local DS_DEMO_VERSION = "58"
+-- main.lua lives in the executor workspace (Delta/Workspace).
+-- Absolute paths are not readable there: the executor resolves names
+-- relative to its workspace folder, so we try several spellings.
+local DS_DEMO_VERSION = "59"
 print("[DeepSeekUI] demo build " .. DS_DEMO_VERSION)
 
-local src
-if readfile then
-	src = readfile(LOCAL_MAIN)
+local CANDIDATES = {
+	"main.lua",
+	"Workspace/main.lua",
+	"Delta/Workspace/main.lua",
+}
+
+local function tryRead(name)
+	local ok, data = pcall(function()
+		if readfile then
+			return readfile(name)
+		end
+		return nil
+	end)
+	if ok and type(data) == "string" and #data > 1000 then
+		return data
+	end
+	ok, data = pcall(function()
+		if io and io.open then
+			local f = io.open(name, "r")
+			if f then
+				local t = f:read("*a")
+				f:close()
+				return t
+			end
+		end
+		return nil
+	end)
+	if ok and type(data) == "string" and #data > 1000 then
+		return data
+	end
+	return nil
 end
-if not src and io and io.open then
-	local f = io.open(LOCAL_MAIN, "r")
-	if f then
-		src = f:read("*a")
-		f:close()
+
+local src
+for _, name in ipairs(CANDIDATES) do
+	src = tryRead(name)
+	if src then
+		print("[DeepSeekUI] main.lua <- " .. name .. " (" .. #src .. " bytes)")
+		break
 	end
 end
-if not src or #src < 1000 then
-	error("[DeepSeekUI] cannot read " .. LOCAL_MAIN)
+
+if not src then
+	error("[DeepSeekUI] main.lua not found in workspace: " .. table.concat(CANDIDATES, ", "))
 end
 
 local WindUI = loadstring(src)()
