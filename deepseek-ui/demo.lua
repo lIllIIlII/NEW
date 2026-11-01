@@ -65,7 +65,7 @@ Window:CreateTopbarButton("跳转", "search", function()
 	end
 end, 24, nil, Color3.fromHex("#4D6BFE"))
 
-local TAG_ICON = _G.DS_Asset and _G.DS_Asset("ds-logo-blue.png") or nil
+local TAG_ICON = "https://raw.githubusercontent.com/lIllIIlII/NEW/main/deepseek-ui/assets/ds-logo-blue.png"
 pcall(function()
 	Window:Tag({ Title = "DEEPSEEK", Icon = TAG_ICON })
 end)
