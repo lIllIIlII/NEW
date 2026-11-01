@@ -17286,6 +17286,14 @@ hideBubble()
 fitMini()
 end
 end)
+local function reopen()
+if moved>10 then
+return
+end
+pcall(function()
+h:Open()
+end)
+end
 miniBtn.Activated:Connect(function()
 if moved>10 then
 return
@@ -17298,19 +17306,17 @@ if id and p then
 p.Image=id
 end
 end
-if math.random()<0.55 then
+if math.random()<0.55 and bgImg then
 local id=DS_Asset(DS_Pick(DS_BG))
-if id and bgImg then
+if id then
 bgImg.Image=id
 end
 end
 end)
-task.delay(0.06,function()
-pcall(function()
-h:Open()
+reopen()
 end)
-end)
-end)
+miniBtn.MouseButton1Click:Connect(reopen)
+
 miniBtn.MouseEnter:Connect(function()
 if dragging then
 return
