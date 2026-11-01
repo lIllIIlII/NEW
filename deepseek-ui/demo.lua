@@ -1,7 +1,7 @@
 -- main.lua lives in the executor workspace (Delta/Workspace).
 -- Absolute paths are not readable there: the executor resolves names
 -- relative to its workspace folder, so we try several spellings.
-local DS_DEMO_VERSION = "59"
+local DS_DEMO_VERSION = "60"
 print("[DeepSeekUI] demo build " .. DS_DEMO_VERSION)
 
 local CANDIDATES = {
@@ -54,7 +54,7 @@ local WindUI = loadstring(src)()
 
 local Window = WindUI:CreateWindow({
 	Title = "DeepSeek",
-	Icon = ICON_LOGO,
+	Icon = "lucide:sparkles",
 	Author = "DeepSeek AI",
 	Folder = "DeepSeekUI",
 	Size = UDim2.fromOffset(680, 480),
@@ -114,7 +114,7 @@ _G.DS_Window = Window
 -- Resolve the lockup locally first: passing a getcustomasset path avoids
 -- WindUI's async URL loader, which races with the tag frame and errors out.
 pcall(function()
-	Window:Tag({ Title = "", Icon = ICON_LOCK })
+	Window:Tag({ Title = "", Icon = "lucide:sparkles" })
 end)
 
 -- CreateWindow returns the window object itself (not a wrapper), so the
