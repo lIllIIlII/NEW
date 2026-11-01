@@ -17058,9 +17058,30 @@ box.Size=UDim2.new(0.62,0,0.02,0)
 DS_Tween(box,0.24,{Size=UDim2.new(0.62,0,0.34,0)},Enum.EasingStyle.Quint,Enum.EasingDirection.Out)
 end
 pcall(function()
-h:CreateTopbarButton("关闭","x",function()
+local btn=DS_Node("TextButton",root,{
+Name="DeepSeekCloseBtn",
+AnchorPoint=Vector2.new(0,1),
+Position=UDim2.new(0,12,1,-12),
+Size=UDim2.fromOffset(96,26),
+BackgroundColor3=Color3.fromHex"#FF4D4D",
+BackgroundTransparency=0.82,
+BorderSizePixel=0,
+Text="关闭界面",
+TextColor3=Color3.fromHex"#FFD9D9",
+TextSize=13,
+AutoButtonColor=false,
+ZIndex=640,
+})
+DS_Node("UIStroke",btn,{Color=Color3.fromHex"#FF4D4D",Thickness=1,Transparency=0.45,ApplyStrokeMode=Enum.ApplyStrokeMode.Border})
+btn.MouseEnter:Connect(function()
+DS_Tween(btn,0.14,{BackgroundTransparency=0.62,TextColor3=Color3.new(1,1,1)})
+end)
+btn.MouseLeave:Connect(function()
+DS_Tween(btn,0.16,{BackgroundTransparency=0.82,TextColor3=Color3.fromHex"#FFD9D9"})
+end)
+btn.MouseButton1Click:Connect(function()
 DS_ConfirmClose()
-end,24,nil,Color3.fromHex"#FF6B6B")
+end)
 end)
 if _G then
 _G.DS_Close=DS_Close
