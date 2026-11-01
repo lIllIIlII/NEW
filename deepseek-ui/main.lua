@@ -396,6 +396,11 @@ local i,j=parseIconString(f)
 local l=i or g or d.IconsType
 local m=j
 
+local R=_G and _G.DS_Icons
+if R and i and R[i] and R[i][m]then
+return h and{R[i][m],{ImageRectSize=Vector2.new(0,0),ImageRectPosition=Vector2.new(0,0)}}or R[i][m]
+end
+
 local p=d.Icons[l]
 
 if p and p.Icons and p.Icons[m]then
@@ -15685,6 +15690,7 @@ return nil
 end
 if _G then
 _G.DS_Asset=DS_Asset
+_G.DS_Icons={}
 end
 local function DS_Face(name)
 if DS_FACES[name]~=nil then
@@ -16946,6 +16952,10 @@ DS_Stage("brand",function()
 local sg=DS_ScreenRoot(root,h,al)
 local b=DS_Asset"ds-lockup-blue.png"
 local k=DS_Asset"ds-lockup-black.png"
+local lg=DS_Asset"ds-logo-blue.png"
+if lg and _G and _G.DS_Icons then
+_G.DS_Icons.ds={logo=lg}
+end
 if b and k and sg then
 local vp=DS_Viewport()
 local wS=0.145
