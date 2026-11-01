@@ -18187,6 +18187,51 @@ end
 if _G then
 _G.DS_Img=DS_Img
 end
+local DS_NET={}
+local function DS_Hash(t)
+local h=0
+for i=1,#t do
+h=(h*31+string.byte(t,i))%2147483647
+end
+return tostring(h)
+end
+local function DS_Img(url)
+if type(url)~="string"or #url<8 then
+return nil
+end
+if DS_NET[url]then
+return DS_NET[url]
+end
+if not(writefile and getcustomasset)then
+return nil
+end
+if isfolder and not isfolder"DeepSeekUI"then
+pcall(makefolder,"DeepSeekUI")
+end
+local name="DeepSeekUI/net_"..DS_Hash(url)
+if isfile and isfile(name)then
+local got=DS_Try(name)
+if got then
+DS_NET[url]=got
+return got
+end
+end
+local b=DS_Request(url)
+if not b then
+return nil
+end
+if not pcall(writefile,name,b)then
+return nil
+end
+local got=DS_Try(name)
+if got then
+DS_NET[url]=got
+end
+return got
+end
+if _G then
+_G.DS_Img=DS_Img
+end
 local function DS_Json(url)
 local b=DS_Request(url)
 if not b then
@@ -18207,65 +18252,35 @@ return DS_Img(d.data[1].imageUrl)
 end
 return nil
 end
+local function DS_SetDesc(obj,txt)
+if not obj then
+return
+end
+pcall(function()
+local t={}
+for _,d in next,obj.UIElements:GetDescendants()do
+if d:IsA"TextLabel"then
+table.insert(t,d)
+end
+end
+if t[2]then
+t[2].Text=txt
+elseif t[1]then
+t[1].Text=txt
+end
+end)
+end
 local function DS_Home(h)
 if not h or not h.Tab then
 return
 end
 pcall(function()
 local home=h:Tab({Title="Home",Icon="ds:house"})
-local cv=home.ContainerFrame
-if not cv then
-return
-end
-local pal=DS_PAL or{accent=Color3.fromHex"#4D6BFE",soft=Color3.fromHex"#7C97FF"}
 local Players=game:GetService"Players"
 local lp=Players.LocalPlayer
 local RunService=game:GetService"RunService"
 local Stats=game:GetService"Stats"
 local TPS=game:GetService"TeleportService"
-local card=DS_Node("Frame",cv,{
-Name="DeepSeekHomeCard",
-Size=UDim2.new(1,-10,0,214),
-BackgroundColor3=Color3.fromHex"#0A1220",
-BackgroundTransparency=0.12,
-BorderSizePixel=0,
-LayoutOrder=-999,
-ZIndex=5,
-})
-DS_Node("UIStroke",card,{Color=pal.accent,Thickness=1,Transparency=0.68,ApplyStrokeMode=Enum.ApplyStrokeMode.Border})
-local av=DS_Node("ImageLabel",card,{
-Name="Avatar",
-Size=UDim2.fromOffset(58,58),
-Position=UDim2.fromOffset(14,14),
-BackgroundColor3=Color3.fromHex"#111A2B",
-BorderSizePixel=0,
-ScaleType=Enum.ScaleType.Crop,
-ZIndex=6,
-})
-DS_Node("UIStroke",av,{Color=pal.accent,Thickness=1,Transparency=0.35,ApplyStrokeMode=Enum.ApplyStrokeMode.Border})
-local nm=DS_Node("TextLabel",card,{
-BackgroundTransparency=1,
-BorderSizePixel=0,
-Size=UDim2.new(1,-160,0,20),
-Position=UDim2.fromOffset(84,16),
-Text=lp.Name,
-TextColor3=Color3.new(1,1,1),
-TextSize=15,
-TextXAlignment=Enum.TextXAlignment.Left,
-ZIndex=6,
-})
-local dn=DS_Node("TextLabel",card,{
-BackgroundTransparency=1,
-BorderSizePixel=0,
-Size=UDim2.new(1,-160,0,16),
-Position=UDim2.fromOffset(84,36),
-Text="@"..lp.DisplayName,
-TextColor3=pal.soft,
-TextTransparency=0.2,
-TextSize=12,
-TextXAlignment=Enum.TextXAlignment.Left,
-ZIndex=6,
-})
 local ex="Unknown"
 pcall(function()
 if identifyexecutor then
@@ -18274,150 +18289,29 @@ elseif getexecutorname then
 ex=getexecutorname()
 end
 end)
-local exl=DS_Node("TextLabel",card,{
-BackgroundTransparency=1,
-BorderSizePixel=0,
-Size=UDim2.new(1,-160,0,16),
-Position=UDim2.fromOffset(84,54),
-Text="执行器: "..tostring(ex),
-TextColor3=pal.soft,
-TextTransparency=0.35,
-TextSize=11,
-TextXAlignment=Enum.TextXAlignment.Left,
-ZIndex=6,
-})
-local fpsL=DS_Node("TextLabel",card,{
-BackgroundTransparency=1,
-BorderSizePixel=0,
-Size=UDim2.fromOffset(120,18),
-Position=UDim2.new(1,-132,0,16),
-Text="FPS --",
-TextColor3=Color3.new(1,1,1),
-TextSize=13,
-TextXAlignment=Enum.TextXAlignment.Right,
-ZIndex=6,
-})
-local pingL=DS_Node("TextLabel",card,{
-BackgroundTransparency=1,
-BorderSizePixel=0,
-Size=UDim2.fromOffset(120,18),
-Position=UDim2.new(1,-132,0,36),
-Text="PING --",
-TextColor3=pal.soft,
-TextSize=13,
-TextXAlignment=Enum.TextXAlignment.Right,
-ZIndex=6,
-})
-local graph=DS_Node("Frame",card,{
-Name="Graph",
-Size=UDim2.new(1,-28,0,44),
-Position=UDim2.fromOffset(14,86),
-BackgroundColor3=Color3.fromHex"#0E1728",
-BackgroundTransparency=0.35,
-BorderSizePixel=0,
-ClipsDescendants=true,
-ZIndex=6,
-})
-local bars={}
-local N=32
-for i=1,N do
-bars[i]=DS_Node("Frame",graph,{
-Size=UDim2.new(1/N,-2,0,2),
-AnchorPoint=Vector2.new(0,1),
-Position=UDim2.new((i-1)/N,1,1,0),
-BackgroundColor3=pal.accent,
-BorderSizePixel=0,
-ZIndex=7,
-})
-end
-local srv=DS_Node("Frame",card,{
-Name="Server",
-Size=UDim2.new(1,-28,0,58),
-Position=UDim2.fromOffset(14,142),
-BackgroundColor3=Color3.fromHex"#0E1728",
-BackgroundTransparency=0.45,
-BorderSizePixel=0,
-ZIndex=6,
-})
-local icon=DS_Node("ImageLabel",srv,{
-Name="GameIcon",
-Size=UDim2.fromOffset(42,42),
-Position=UDim2.fromOffset(8,8),
-BackgroundColor3=Color3.fromHex"#111A2B",
-BorderSizePixel=0,
-ScaleType=Enum.ScaleType.Crop,
-ZIndex=7,
-})
-local sname=DS_Node("TextLabel",srv,{
-BackgroundTransparency=1,
-BorderSizePixel=0,
-Size=UDim2.new(1,-70,0,18),
-Position=UDim2.fromOffset(58,7),
-Text=game:GetService"MarketplaceService":GetProductInfo(game.PlaceId).Name or"Unknown",
-TextColor3=Color3.new(1,1,1),
-TextSize=12,
-TextXAlignment=Enum.TextXAlignment.Left,
-TextTruncate=Enum.TextTruncate.AtEnd,
-ZIndex=7,
-})
-local sinfo=DS_Node("TextLabel",srv,{
-BackgroundTransparency=1,
-BorderSizePixel=0,
-Size=UDim2.new(1,-70,0,14),
-Position=UDim2.fromOffset(58,26),
-Text=string.format("人数 %d / %d   ID %s",#Players:GetPlayers(),Players.MaxPlayers,tostring(game.JobId):sub(1,12)),
-TextColor3=pal.soft,
-TextTransparency=0.25,
-TextSize=10,
-TextXAlignment=Enum.TextXAlignment.Left,
-TextTruncate=Enum.TextTruncate.AtEnd,
-ZIndex=7,
-})
-local rej=DS_Node("TextButton",card,{
-Size=UDim2.fromOffset(96,26),
-Position=UDim2.new(1,-110,1,-36),
-BackgroundColor3=pal.accent,
-BackgroundTransparency=0.75,
-BorderSizePixel=0,
-Text="重新加入",
-TextColor3=Color3.new(1,1,1),
-TextSize=12,
-AutoButtonColor=false,
-ZIndex=7,
-})
-DS_Node("UIStroke",rej,{Color=pal.accent,Thickness=1,Transparency=0.45,ApplyStrokeMode=Enum.ApplyStrokeMode.Border})
-rej.MouseEnter:Connect(function()
-DS_Tween(rej,0.14,{BackgroundTransparency=0.55})
-end)
-rej.MouseLeave:Connect(function()
-DS_Tween(rej,0.16,{BackgroundTransparency=0.75})
-end)
-rej.MouseButton1Click:Connect(function()
+home:Section({Title="用户信息"})
+home:Paragraph({Title="账号",Desc=lp.Name.."  @"..lp.DisplayName})
+home:Paragraph({Title="执行器",Desc=tostring(ex)})
+local live=home:Paragraph({Title="实时状态",Desc="FPS --   PING --"})
+home:Section({Title="服务器信息"})
+local srv=home:Paragraph({Title="房间",Desc="读取中..."})
+home:Button({
+Title="重新加入当前服务器",
+Desc="传送到同一个 JobId",
+Callback=function()
 pcall(function()
 TPS:TeleportToPlaceInstance(game.PlaceId,game.JobId,lp)
 end)
-end)
-task.spawn(function()
-local id=DS_Thumb("https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds="..lp.UserId.."&size=150x150&format=Png&isCircular=true")
-if id then
-av.Image=id
-end
-end)
-task.spawn(function()
-local id=DS_Thumb("https://thumbnails.roblox.com/v1/games/icons?universeIds="..game.GameId.."&returnPolicy=PlaceHolder&size=512x512&format=Png&isCircular=false")
-if id then
-icon.Image=id
-end
-end)
+end,
+})
 local acc=0
 local frames=0
 RunService.RenderStepped:Connect(function(dt)
 acc=acc+dt
 frames=frames+1
 end)
-local hist={}
 task.spawn(function()
-while card.Parent do
+while true do
 local fps=0
 if acc>0 then
 fps=math.floor(frames/acc+0.5)
@@ -18428,26 +18322,8 @@ local ping=0
 pcall(function()
 ping=math.floor(Stats.Network.ServerStatsItem["Data Ping"]:GetValue())
 end)
-fpsL.Text="FPS "..tostring(fps)
-pingL.Text="PING "..tostring(ping)
-table.insert(hist,fps)
-while #hist>N do
-table.remove(hist,1)
-end
-local mx=60
-for _,v in next,hist do
-if v>mx then
-mx=v
-end
-end
-for i=1,N do
-local b=bars[i]
-local v=hist[i]or 0
-local hh=math.clamp(v/mx,0.04,1)*44
-b.Size=UDim2.new(1/N,-2,0,hh)
-b.BackgroundColor3=pal.accent:Lerp(Color3.fromRGB(255,90,90),1-math.clamp(v/mx,0,1))
-end
-sinfo.Text=string.format("人数 %d / %d   ID %s",#Players:GetPlayers(),Players.MaxPlayers,tostring(game.JobId):sub(1,12))
+DS_SetDesc(live,string.format("FPS %d    PING %d ms",fps,ping))
+DS_SetDesc(srv,string.format("%s   人数 %d / %d   JobId %s",tostring(game.PlaceId),#Players:GetPlayers(),Players.MaxPlayers,tostring(game.JobId):sub(1,14)))
 task.wait(1)
 end
 end)
