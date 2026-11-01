@@ -16578,16 +16578,16 @@ local pal=DS_Palette(w.Theme and w.Theme.Name or DS_THEME)
 DS_PAL=pal
 DS_Stage("pack",function()
 local pk={Icons={},Spritesheets={}}
-local function reg(name,id)
+local function reg(name,id,w,h)
 pk.Spritesheets[name]=id
 pk.Icons[name]={
 Image=name,
-ImageRectSize=Vector2.new(256,256),
+ImageRectSize=Vector2.new(w,h),
 ImageRectPosition=Vector2.new(0,0),
 }
 end
-reg("logo","rbxassetid://75699947237241")
-reg("lockup","rbxassetid://97359679500298")
+reg("logo","rbxassetid://75699947237241",256,195)
+reg("lockup","rbxassetid://97359679500298",256,41)
 pcall(function()
 local mod=w and w.Icons
 if mod and mod.Icons then
