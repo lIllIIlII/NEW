@@ -3,7 +3,7 @@
 local BUST = tostring(math.floor(tick() * 1000))
 local BASE = "https://raw.githubusercontent.com/lIllIIlII/NEW/main/deepseek-ui/"
 
-local DS_DEMO_VERSION = "49"
+local DS_DEMO_VERSION = "50"
 print("[DeepSeekUI] demo build " .. DS_DEMO_VERSION)
 
 local WindUI = loadstring(game:HttpGet(BASE .. "main.lua?t=" .. BUST))()
@@ -153,9 +153,9 @@ local function paintIcons(logo, lock)
 								pad:Destroy()
 							end
 						end
-						d.AnchorPoint = Vector2.new(0.5, 0.5)
-						d.Position = UDim2.new(0.5, 0, 0.5, 0)
-						d.Size = UDim2.fromOffset(110, 17)
+						d.AnchorPoint = Vector2.new(0, 0)
+						d.Position = UDim2.fromOffset(0, 0)
+						d.Size = UDim2.fromScale(1, 1)
 						paintedLock = true
 					else
 						paintedLogo = true
@@ -225,16 +225,6 @@ task.spawn(function()
 		task.wait(0.25)
 	end
 end)
-
-Window:CreateTopbarButton("Info", "info", function()
-	notify("DeepSeek UI", "WindUI 1.6.65 fork with a DeepSeek skin.")
-end, 24, nil, Color3.fromHex("#4D6BFE"))
-
-Window:CreateTopbarButton("Jump", "search", function()
-	if _G.DS_OpenJump then
-		_G.DS_OpenJump()
-	end
-end, 24, nil, Color3.fromHex("#4D6BFE"))
 
 local Home = Window:Tab({ Title = "Home", Icon = "lucide:house" })
 local Controls = Window:Tab({ Title = "Controls", Icon = "lucide:sliders-horizontal" })
