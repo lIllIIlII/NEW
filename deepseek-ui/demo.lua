@@ -56,27 +56,33 @@ local function tick(name, on)
 end
 
 -- Tag: icon only, no text.
-pcall(function()
-	Window:Tag({ Title = "", Icon = "rbxassetid://97359679500298" })
-end)
+_G.DS_WindUI = WindUI
+_G.DS_Window = Window
 
--- The lockup asset is 256x41, so the tag icon slot is widened to match it.
-task.delay(0.5, function()
+-- Tag is replaced by a plain lockup image: no pill background, no text.
+task.delay(0.45, function()
 	pcall(function()
 		local tb = Window.Window.UIElements.Main.Main.Topbar
 		local center = tb:FindFirstChild("Center")
-		local holder = center and (center:FindFirstChild("Holder") or center)
-		if not holder then return end
-		for _, d in next, holder:GetDescendants() do
-			if d:IsA("ImageLabel") then
-				d.Size = UDim2.fromOffset(92, 15)
-				d.ScaleType = Enum.ScaleType.Fit
-				d.ImageColor3 = Color3.new(1, 1, 1)
-				d.ImageRectOffset = Vector2.new(0, 0)
-				d.ImageRectSize = Vector2.new(0, 0)
-				break
-			end
+		if not center then return end
+		center.Visible = true
+		local holder = center:FindFirstChild("Holder") or center
+		local mark = holder:FindFirstChild("DeepSeekLockup")
+		if not mark then
+			mark = Instance.new("ImageLabel")
+			mark.Name = "DeepSeekLockup"
+			mark.BackgroundTransparency = 1
+			mark.BorderSizePixel = 0
+			mark.ScaleType = Enum.ScaleType.Fit
+			mark.AnchorPoint = Vector2.new(0, 0.5)
+			mark.Position = UDim2.new(0, 0, 0.5, 0)
+			mark.ZIndex = 20
+			mark.Parent = holder
 		end
+		mark.Size = UDim2.fromOffset(92, 15)
+		mark.Image = "rbxassetid://97359679500298"
+		mark.ImageColor3 = Color3.new(1, 1, 1)
+		mark.ImageTransparency = 0
 	end)
 end)
 
