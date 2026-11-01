@@ -2,9 +2,15 @@ local BASE = "https://raw.githubusercontent.com/lIllIIlII/NEW/main/deepseek-ui/"
 
 local WindUI = loadstring(game:HttpGet(BASE .. "main.lua"))()
 
+-- Resolve brand assets synchronously (getcustomasset path). Passing a local
+-- path keeps WindUI on its synchronous code path and avoids the async URL
+-- loader, which races with the topbar/tag frames and throws.
+local ICON_LOGO = (WindUI.Asset and WindUI.Asset("ds-logo-blue.png")) or "lucide:sparkles"
+local ICON_LOCK = (WindUI.Asset and WindUI.Asset("ds-lockup-black.png")) or "lucide:sparkles"
+
 local Window = WindUI:CreateWindow({
 	Title = "DeepSeek",
-	Icon = "https://raw.githubusercontent.com/lIllIIlII/NEW/main/deepseek-ui/assets/ds-logo-blue.png",
+	Icon = ICON_LOGO,
 	Author = "DeepSeek AI",
 	Folder = "DeepSeekUI",
 	Size = UDim2.fromOffset(680, 480),
@@ -63,35 +69,39 @@ _G.DS_Window = Window
 -- the same icon pack path as lucide (pack "ds" is registered by the library).
 -- Resolve the lockup locally first: passing a getcustomasset path avoids
 -- WindUI's async URL loader, which races with the tag frame and errors out.
-local TAG_LOCK = WindUI.Asset and WindUI.Asset("ds-lockup-blue.png")
 pcall(function()
-	Window:Tag({ Title = "", Icon = TAG_LOCK or "lucide:sparkles" })
+	Window:Tag({ Title = "", Icon = ICON_LOCK })
 end)
 
 local function fixIcons()
 	pcall(function()
 		local tb = Window.Window.UIElements.Main.Main.Topbar
-		local lf = tb:FindFirstChild("Left")
-		if lf then
-			for _, d in next, lf:GetDescendants() do
-				if d:IsA("ImageLabel") then
-					d.ImageRectSize = Vector2.new(0, 0)
-					d.ImageRectOffset = Vector2.new(0, 0)
-					d.ScaleType = Enum.ScaleType.Fit
-					d.ImageColor3 = Color3.new(1, 1, 1)
-				end
-			end
-		end
 		local center = tb:FindFirstChild("Center")
-		local holder = center and (center:FindFirstChild("Holder") or center)
-		if holder then
-			for _, d in next, holder:GetDescendants() do
-				if d:IsA("ImageLabel") then
-					d.ImageRectSize = Vector2.new(0, 0)
-					d.ImageRectOffset = Vector2.new(0, 0)
-					d.ScaleType = Enum.ScaleType.Fit
-					d.ImageColor3 = Color3.new(1, 1, 1)
-					d.Size = UDim2.fromOffset(96, 16)
+		for _, d in next, tb:GetDescendants() do
+			if d:IsA("ImageLabel") then
+				d.ImageRectSize = Vector2.new(0, 0)
+				d.ImageRectOffset = Vector2.new(0, 0)
+				d.ScaleType = Enum.ScaleType.Fit
+				d.ImageColor3 = Color3.new(1, 1, 1)
+				d.ImageTransparency = 0
+				local inCenter = false
+				local node = d
+				while node and node ~= tb do
+					if node == center then
+						inCenter = true
+						break
+					end
+					node = node.Parent
+				end
+				if inCenter then
+					d.Size = UDim2.fromOffset(104, 17)
+					local box = d.Parent
+					if box and box:IsA("GuiObject") then
+						box.AutomaticSize = Enum.AutomaticSize.None
+						box.Size = UDim2.fromOffset(120, 32)
+						box.BackgroundTransparency = 1
+						box.ClipsDescendants = false
+					end
 				end
 			end
 		end
