@@ -16586,8 +16586,10 @@ ImageRectSize=Vector2.new(w,h),
 ImageRectPosition=Vector2.new(0,0),
 }
 end
-reg("logo","rbxassetid://75699947237241",256,195)
-reg("lockup","rbxassetid://97359679500298",256,41)
+reg("logo","rbxassetid://76812298700165",1024,780)
+reg("lockup","rbxassetid://134655875998764",1024,164)
+reg("logo-mono","rbxassetid://108023120756076",1024,780)
+reg("lockup-mono","rbxassetid://106034927644134",1024,164)
 pcall(function()
 local mod=w and w.Icons
 if mod and mod.Icons then
