@@ -73,30 +73,41 @@ pcall(function()
 	Window:Tag({ Title = "", Icon = ICON_LOCK })
 end)
 
+local function findTopbar()
+	local ui = Window.Window and Window.Window.UIElements
+	if not ui then return nil end
+	local main = ui.Main
+	if not main then return nil end
+	return main:FindFirstChild("Topbar", true)
+end
+
+local paintedLogo, paintedLock = false, false
+
 local function paintIcons(logo, lock)
-	pcall(function()
-		local tb = Window.Window.UIElements.Main.Main.Topbar
-		local center = tb:FindFirstChild("Center")
-		for _, d in next, tb:GetDescendants() do
-			if d:IsA("ImageLabel") then
-				local inCenter = false
-				local node = d
-				while node and node ~= tb do
-					if node == center then
-						inCenter = true
-						break
-					end
-					node = node.Parent
+	local tb = findTopbar()
+	if not tb then
+		return
+	end
+	local center = tb:FindFirstChild("Center")
+	for _, d in next, tb:GetDescendants() do
+		if d:IsA("ImageLabel") then
+			local inCenter = false
+			local node = d
+			while node and node ~= tb do
+				if node == center then
+					inCenter = true
+					break
 				end
-				local want = inCenter and lock or logo
-				if want then
-					d.Image = want
-					d.ImageRectSize = Vector2.new(0, 0)
-					d.ImageRectOffset = Vector2.new(0, 0)
-					d.ScaleType = Enum.ScaleType.Fit
-					d.ImageColor3 = Color3.new(1, 1, 1)
-					d.ImageTransparency = 0
-				end
+				node = node.Parent
+			end
+			local want = inCenter and lock or logo
+			if want and d.Visible ~= false then
+				d.Image = want
+				d.ImageRectSize = Vector2.new(0, 0)
+				d.ImageRectOffset = Vector2.new(0, 0)
+				d.ScaleType = Enum.ScaleType.Fit
+				d.ImageColor3 = Color3.new(1, 1, 1)
+				d.ImageTransparency = 0
 				if inCenter then
 					d.Size = UDim2.fromOffset(104, 17)
 					local box = d.Parent
@@ -106,10 +117,29 @@ local function paintIcons(logo, lock)
 						box.BackgroundTransparency = 1
 						box.ClipsDescendants = false
 					end
+					paintedLock = true
+				else
+					paintedLogo = true
 				end
 			end
 		end
-	end)
+	end
+end
+
+local function fallbackMark(tb, name, image, size, pos, anchor)
+	if not tb or not image then return end
+	if tb:FindFirstChild(name, true) then return end
+	local img = Instance.new("ImageLabel")
+	img.Name = name
+	img.BackgroundTransparency = 1
+	img.BorderSizePixel = 0
+	img.ScaleType = Enum.ScaleType.Fit
+	img.Image = image
+	img.Size = size
+	img.Position = pos
+	img.AnchorPoint = anchor
+	img.ZIndex = 30
+	img.Parent = tb
 end
 
 task.spawn(function()
@@ -120,10 +150,19 @@ task.spawn(function()
 			lock = lock or WindUI.Asset("ds-lockup-black.png")
 		end
 		if logo or lock then
-			paintIcons(logo, lock)
+			pcall(paintIcons, logo, lock)
 		end
-		if logo and lock then
+		if paintedLogo and paintedLock then
 			return
+		end
+		if i == 20 then
+			local tb = findTopbar()
+			if not paintedLogo then
+				fallbackMark(tb, "DSLogoFallback", logo, UDim2.fromOffset(22, 22), UDim2.new(0, 14, 0.5, 0), Vector2.new(0, 0.5))
+			end
+			if not paintedLock then
+				fallbackMark(tb, "DSLockFallback", lock, UDim2.fromOffset(104, 17), UDim2.new(0.5, 0, 0.5, 0), Vector2.new(0.5, 0.5))
+			end
 		end
 		task.wait(0.25)
 	end
