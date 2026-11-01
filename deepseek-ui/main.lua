@@ -17397,6 +17397,60 @@ end)
 end)
 end)
 end)
+DS_Stage("polish",function()
+pcall(function()
+for _,d in next,root:GetDescendants()do
+if d:IsA"ScrollingFrame"then
+d.ScrollBarThickness=4
+d.ScrollBarImageColor3=pal.accent
+d.ScrollBarImageTransparency=0.45
+d.BorderSizePixel=0
+end
+end
+end)
+pcall(function()
+local top=root:FindFirstChild("Main")
+if not top then
+return
+end
+local tb=top:FindFirstChild"Topbar"
+if not tb then
+return
+end
+local center=tb:FindFirstChild"Center"
+local holder=center and center:FindFirstChild"Holder"
+if not holder then
+return
+end
+for _,d in next,holder:GetDescendants()do
+if d:IsA"ImageLabel"and not d:FindFirstAncestorOfClass"ImageButton"then
+local n=string.lower(d.Name)
+if string.find(n,"background",1,true)or string.find(n,"bg",1,true)or string.find(n,"pill",1,true)then
+d.ImageTransparency=0.72
+d.ImageColor3=Color3.fromHex"#0E1116"
+local st=d:FindFirstChildOfClass"UIStroke"or Instance.new("UIStroke",d)
+st.Color=pal.soft
+st.Thickness=1
+st.Transparency=0.35
+end
+end
+end
+end)
+end)
+
+DS_Parts.pet={root:FindFirstChild"DeepSeekPet"}
+DS_Parts.sitter={root:FindFirstChild"DeepSeekSitter"}
+DS_Parts.sticker={root:FindFirstChild"DeepSeekSticker"}
+DS_Parts.sheen={root:FindFirstChild"DeepSeekSheenHolder"}
+DS_Parts.glow={root:FindFirstChild"DeepSeekGlow"}
+DS_Parts.bg={bg and bg:FindFirstChild"DeepSeekBackground"}
+DS_Parts.ticker={DS_TickerRoot,DS_TickerLine}
+DS_Parts.jag={}
+for _,c in next,root:GetChildren()do
+if c.Name=="DeepSeekJag"then
+table.insert(DS_Parts.jag,c)
+end
+end
 DS_Parts.pet={root:FindFirstChild"DeepSeekPet"}
 DS_Parts.sitter={root:FindFirstChild"DeepSeekSitter"}
 DS_Parts.sticker={root:FindFirstChild"DeepSeekSticker"}
