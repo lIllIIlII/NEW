@@ -17274,12 +17274,17 @@ hideBubble()
 fitMini()
 end
 end)
+local reopening=false
 local function reopen()
-if moved>10 then
+if moved>10 or reopening then
 return
 end
+reopening=true
 pcall(function()
 h:Open()
+end)
+task.delay(0.5,function()
+reopening=false
 end)
 end
 miniBtn.Activated:Connect(function()
@@ -17438,231 +17443,52 @@ end
 end)
 end)
 
-DS_Parts.pet={root:FindFirstChild"DeepSeekPet"}
-DS_Parts.sitter={root:FindFirstChild"DeepSeekSitter"}
-DS_Parts.sticker={root:FindFirstChild"DeepSeekSticker"}
-DS_Parts.sheen={root:FindFirstChild"DeepSeekSheenHolder"}
-DS_Parts.glow={root:FindFirstChild"DeepSeekGlow"}
-DS_Parts.bg={bg and bg:FindFirstChild"DeepSeekBackground"}
-DS_Parts.ticker={DS_TickerRoot,DS_TickerLine}
-DS_Parts.jag={}
-for _,c in next,root:GetChildren()do
-if c.Name=="DeepSeekJag"then
-table.insert(DS_Parts.jag,c)
-end
-end
-DS_Parts.pet={root:FindFirstChild"DeepSeekPet"}
-DS_Parts.sitter={root:FindFirstChild"DeepSeekSitter"}
-DS_Parts.sticker={root:FindFirstChild"DeepSeekSticker"}
-DS_Parts.sheen={root:FindFirstChild"DeepSeekSheenHolder"}
-DS_Parts.glow={root:FindFirstChild"DeepSeekGlow"}
-DS_Parts.bg={bg and bg:FindFirstChild"DeepSeekBackground"}
-DS_Parts.ticker={DS_TickerRoot,DS_TickerLine}
-DS_Parts.jag={}
-for _,c in next,root:GetChildren()do
-if c.Name=="DeepSeekJag"then
-table.insert(DS_Parts.jag,c)
-end
-end
-DS_Stage("lag",function()
-local lagX=0
-local lagY=0
-local lastPos=root.Position
-local t0=tick()
-local cachePet=nil
-local cacheStick=nil
-root:GetPropertyChangedSignal"Position":Connect(function()
-local d=root.Position-lastPos
-lastPos=root.Position
-lagX=lagX-(d.X.Offset+d.X.Scale*260)*3.4
-lagY=lagY-(d.Y.Offset+d.Y.Scale*200)*3.4
-lagX=math.clamp(lagX,-26,26)
-lagY=math.clamp(lagY,-26,26)
-end)
-local rs=game:GetService"RunService"
-rs.RenderStepped:Connect(function()
-lagX=lagX*0.87
-lagY=lagY*0.87
-if math.abs(lagX)<0.2 then
-lagX=0
-end
-if math.abs(lagY)<0.2 then
-lagY=0
-end
-if not cachePet then
-cachePet=root:FindFirstChild"DeepSeekPet"
-end
-if cachePet and cachePet.Parent then
-local bob=math.sin((tick()-t0)*1.6)*5
-cachePet.Position=UDim2.new(0,-152+lagX*1.3,0.54,8+bob+lagY*1.3)
-end
-if not cacheStick then
-cacheStick=root:FindFirstChild"DeepSeekSticker"
-end
-if cacheStick and cacheStick.Parent then
-cacheStick.Position=UDim2.new(1,-8+lagX*1.7,1,-8+lagY*1.7)
-end
-end)
-end)
-
-DS_Parts.pet={root:FindFirstChild"DeepSeekPet"}
-DS_Parts.sitter={root:FindFirstChild"DeepSeekSitter"}
-DS_Parts.sticker={root:FindFirstChild"DeepSeekSticker"}
-DS_Parts.sheen={root:FindFirstChild"DeepSeekSheenHolder"}
-DS_Parts.glow={root:FindFirstChild"DeepSeekGlow"}
-DS_Parts.bg={bg and bg:FindFirstChild"DeepSeekBackground"}
-DS_Parts.ticker={DS_TickerRoot,DS_TickerLine}
-DS_Parts.jag={}
-for _,c in next,root:GetChildren()do
-if c.Name=="DeepSeekJag"then
-table.insert(DS_Parts.jag,c)
-end
-end
-DS_Stage("lag",function()
-local lagX=0
-local lagY=0
-local lastPos=root.Position
-local t0=tick()
-local targets={}
-local cachePet=nil
-local cacheStick=nil
-local function isTarget(n)
-local name=string.lower(n.Name)
-return name=="toggleframe"or string.find(name,"thumb",1,true)~=nil or string.find(name,"knob",1,true)~=nil
-end
-local function collect()
-targets={}
-for _,d in next,root:GetDescendants()do
-if d:IsA"GuiObject"and isTarget(d)then
-local ok=not(d.Parent and d.Parent:FindFirstChildOfClass"UIListLayout")
-if ok and not d:FindFirstAncestorOfClass"ScrollingFrame"then
-table.insert(targets,{node=d,base=d.Position})
-end
-end
-end
-end
-root:GetPropertyChangedSignal"Position":Connect(function()
-local d=root.Position-lastPos
-lastPos=root.Position
-lagX=lagX-(d.X.Offset+d.X.Scale*260)*3.4
-lagY=lagY-(d.Y.Offset+d.Y.Scale*200)*3.4
-lagX=math.clamp(lagX,-26,26)
-lagY=math.clamp(lagY,-26,26)
-end)
+DS_Stage("polish2",function()
 task.delay(1.2,function()
-pcall(collect)
-end)
-task.delay(3,function()
-pcall(collect)
-end)
-task.delay(6,function()
-pcall(collect)
-end)
-local rs=game:GetService"RunService"
-rs.RenderStepped:Connect(function()
-lagX=lagX*0.87
-lagY=lagY*0.87
-if math.abs(lagX)<0.2 then
-lagX=0
-end
-if math.abs(lagY)<0.2 then
-lagY=0
-end
-for _,t in next,targets do
-if t.node.Parent then
-t.node.Position=t.base+UDim2.fromOffset(lagX*1.15,lagY*1.15)
-end
-end
-if not cachePet then
-cachePet=root:FindFirstChild"DeepSeekPet"
-end
-if cachePet and cachePet.Parent then
-local bob=math.sin((tick()-t0)*1.6)*5
-cachePet.Position=UDim2.new(0,-152+lagX*1.3,0.54,8+bob+lagY*1.3)
-end
-if not cacheStick then
-cacheStick=root:FindFirstChild"DeepSeekSticker"
-end
-if cacheStick and cacheStick.Parent then
-cacheStick.Position=UDim2.new(1,-8+lagX*1.7,1,-8+lagY*1.7)
-end
-end)
-end)
-
-DS_Parts.pet={root:FindFirstChild"DeepSeekPet"}
-DS_Parts.sitter={root:FindFirstChild"DeepSeekSitter"}
-DS_Parts.sticker={root:FindFirstChild"DeepSeekSticker"}
-DS_Parts.sheen={root:FindFirstChild"DeepSeekSheenHolder"}
-DS_Parts.glow={root:FindFirstChild"DeepSeekGlow"}
-DS_Parts.bg={bg and bg:FindFirstChild"DeepSeekBackground"}
-DS_Parts.ticker={DS_TickerRoot,DS_TickerLine}
-DS_Parts.jag={}
-for _,c in next,root:GetChildren()do
-if c.Name=="DeepSeekJag"then
-table.insert(DS_Parts.jag,c)
-end
-end
-DS_Stage("inertia",function()
-local cachePet=nil
-local cacheStick=nil
-local buttons={}
-local lagX=0
-local lagY=0
-local lastPos=root.Position
-local t0=tick()
-root:GetPropertyChangedSignal"Position":Connect(function()
-local d=root.Position-lastPos
-lastPos=root.Position
-lagX=lagX-(d.X.Offset+d.X.Scale*260)*3.2
-lagY=lagY-(d.Y.Offset+d.Y.Scale*200)*3.2
-lagX=math.clamp(lagX,-30,30)
-lagY=math.clamp(lagY,-30,30)
-end)
-local function collectButtons()
-buttons={}
+pcall(function()
 for _,d in next,root:GetDescendants()do
-if (d:IsA"ImageLabel"or d:IsA"ImageButton")and d:FindFirstAncestorOfClass"GuiButton"then
-local ok=d:IsA"ImageLabel"
-if ok and d.Parent and not d.Parent:FindFirstChildOfClass"UIListLayout"then
-table.insert(buttons,{node=d,base=d.Position})
+if d.Name=="TitleFrame"and d:IsA"GuiObject"then
+if not d:FindFirstChild"DSLine"then
+local ln=Instance.new"Frame"
+ln.Name="DSLine"
+ln.BorderSizePixel=0
+ln.Size=UDim2.new(1,0,0,1)
+ln.Position=UDim2.new(0,0,1,-1)
+ln.AnchorPoint=Vector2.new(0,1)
+ln.BackgroundColor3=pal.accent
+ln.BackgroundTransparency=0.82
+local gr=Instance.new"UIGradient"
+gr.Transparency=NumberSequence.new{NumberSequenceKeypoint.new(0,0.2),NumberSequenceKeypoint.new(1,1)}
+ln.Parent=d
+gr.Parent=ln
+end
+elseif d.Name=="ScrollSliderHolder"then
+for _,c in next,d:GetChildren()do
+if c:IsA"GuiObject"then
+c.Size=UDim2.new(0,4,1,0)
 end
 end
 end
 end
-task.delay(1.5,function()
-pcall(collectButtons)
 end)
-task.delay(4,function()
-pcall(collectButtons)
 end)
-local rs=game:GetService"RunService"
-rs.RenderStepped:Connect(function(dt)
-lagX=lagX*0.86
-lagY=lagY*0.86
-if math.abs(lagX)<0.25 then
-lagX=0
+task.delay(2,function()
+pcall(function()
+for _,d in next,root:GetDescendants()do
+if d.Name=="Highlight"and d:IsA"GuiObject"then
+local host=d:FindFirstAncestorOfClass"GuiButton"
+if host and not host:GetAttribute"DSHover"then
+host:SetAttribute("DSHover",true)
+host.MouseEnter:Connect(function()
+DS_Tween(d,0.12,{BackgroundTransparency=0.86})
+end)
+host.MouseLeave:Connect(function()
+DS_Tween(d,0.18,{BackgroundTransparency=1})
+end)
 end
-if math.abs(lagY)<0.25 then
-lagY=0
-end
-for _,b in next,buttons do
-if b.node.Parent then
-b.node.Position=b.base+UDim2.fromOffset(lagX*1.1,lagY*1.1)
 end
 end
-if not cachePet then
-cachePet=root:FindFirstChild"DeepSeekPet"
-end
-if cachePet and cachePet.Parent then
-local bob=math.sin((tick()-t0)*1.6)*5
-cachePet.Position=UDim2.new(0,-152+lagX*1.25,0.54,8+bob+lagY*1.25)
-end
-if not cacheStick then
-cacheStick=root:FindFirstChild"DeepSeekSticker"
-end
-if cacheStick and cacheStick.Parent then
-cacheStick.Position=UDim2.new(1,-8+lagX*1.6,1,-8+lagY*1.6)
-end
+end)
 end)
 end)
 
@@ -17679,53 +17505,61 @@ if c.Name=="DeepSeekJag"then
 table.insert(DS_Parts.jag,c)
 end
 end
-DS_Stage("inertia",function()
-local mainFrame=root:FindFirstChild"Main"
-local cachePet=nil
-local cacheStick=nil
-local lagX=0
-local lagY=0
-local lastPos=root.Position
-local t0=tick()
-root:GetPropertyChangedSignal"Position":Connect(function()
-local d=root.Position-lastPos
-lastPos=root.Position
-lagX=lagX-(d.X.Offset+d.X.Scale*260)*3.2
-lagY=lagY-(d.Y.Offset+d.Y.Scale*200)*3.2
-lagX=math.clamp(lagX,-30,30)
-lagY=math.clamp(lagY,-30,30)
-end)
-local rs=game:GetService"RunService"
-rs.RenderStepped:Connect(function(dt)
-lagX=lagX*0.86
-lagY=lagY*0.86
-if math.abs(lagX)<0.25 then
-lagX=0
+DS_Parts.pet={root:FindFirstChild"DeepSeekPet"}
+DS_Parts.sitter={root:FindFirstChild"DeepSeekSitter"}
+DS_Parts.sticker={root:FindFirstChild"DeepSeekSticker"}
+DS_Parts.sheen={root:FindFirstChild"DeepSeekSheenHolder"}
+DS_Parts.glow={root:FindFirstChild"DeepSeekGlow"}
+DS_Parts.bg={bg and bg:FindFirstChild"DeepSeekBackground"}
+DS_Parts.ticker={DS_TickerRoot,DS_TickerLine}
+DS_Parts.jag={}
+for _,c in next,root:GetChildren()do
+if c.Name=="DeepSeekJag"then
+table.insert(DS_Parts.jag,c)
 end
-if math.abs(lagY)<0.25 then
-lagY=0
 end
-if not mainFrame then
-mainFrame=root:FindFirstChild"Main"
+
+DS_Parts.pet={root:FindFirstChild"DeepSeekPet"}
+DS_Parts.sitter={root:FindFirstChild"DeepSeekSitter"}
+DS_Parts.sticker={root:FindFirstChild"DeepSeekSticker"}
+DS_Parts.sheen={root:FindFirstChild"DeepSeekSheenHolder"}
+DS_Parts.glow={root:FindFirstChild"DeepSeekGlow"}
+DS_Parts.bg={bg and bg:FindFirstChild"DeepSeekBackground"}
+DS_Parts.ticker={DS_TickerRoot,DS_TickerLine}
+DS_Parts.jag={}
+for _,c in next,root:GetChildren()do
+if c.Name=="DeepSeekJag"then
+table.insert(DS_Parts.jag,c)
 end
-if mainFrame then
-mainFrame.Position=UDim2.fromOffset(lagX*0.65,lagY*0.65)
 end
-if not cachePet then
-cachePet=root:FindFirstChild"DeepSeekPet"
+
+DS_Parts.pet={root:FindFirstChild"DeepSeekPet"}
+DS_Parts.sitter={root:FindFirstChild"DeepSeekSitter"}
+DS_Parts.sticker={root:FindFirstChild"DeepSeekSticker"}
+DS_Parts.sheen={root:FindFirstChild"DeepSeekSheenHolder"}
+DS_Parts.glow={root:FindFirstChild"DeepSeekGlow"}
+DS_Parts.bg={bg and bg:FindFirstChild"DeepSeekBackground"}
+DS_Parts.ticker={DS_TickerRoot,DS_TickerLine}
+DS_Parts.jag={}
+for _,c in next,root:GetChildren()do
+if c.Name=="DeepSeekJag"then
+table.insert(DS_Parts.jag,c)
 end
-if cachePet and cachePet.Parent then
-local bob=math.sin((tick()-t0)*1.6)*5
-cachePet.Position=UDim2.new(0,-152+lagX*1.25,0.54,8+bob+lagY*1.25)
 end
-if not cacheStick then
-cacheStick=root:FindFirstChild"DeepSeekSticker"
+
+DS_Parts.pet={root:FindFirstChild"DeepSeekPet"}
+DS_Parts.sitter={root:FindFirstChild"DeepSeekSitter"}
+DS_Parts.sticker={root:FindFirstChild"DeepSeekSticker"}
+DS_Parts.sheen={root:FindFirstChild"DeepSeekSheenHolder"}
+DS_Parts.glow={root:FindFirstChild"DeepSeekGlow"}
+DS_Parts.bg={bg and bg:FindFirstChild"DeepSeekBackground"}
+DS_Parts.ticker={DS_TickerRoot,DS_TickerLine}
+DS_Parts.jag={}
+for _,c in next,root:GetChildren()do
+if c.Name=="DeepSeekJag"then
+table.insert(DS_Parts.jag,c)
 end
-if cacheStick and cacheStick.Parent then
-cacheStick.Position=UDim2.new(1,-8+lagX*1.6,1,-8+lagY*1.6)
 end
-end)
-end)
 
 task.delay(1.4,DS_ApplyFont)
 end
