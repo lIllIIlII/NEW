@@ -1,5 +1,8 @@
 local BASE = "https://raw.githubusercontent.com/lIllIIlII/NEW/main/deepseek-ui/"
 
+local DS_DEMO_VERSION = "43"
+print("[DeepSeekUI] demo build " .. DS_DEMO_VERSION)
+
 local WindUI = loadstring(game:HttpGet(BASE .. "main.lua"))()
 
 -- The brand artwork is applied after the window exists: WindUI's own icon
@@ -191,24 +194,31 @@ Window:CreateTopbarButton("Jump", "search", function()
 	end
 end, 24, nil, Color3.fromHex("#4D6BFE"))
 
-task.delay(0.8, function()
-	pcall(function()
-		local ui = (Window.UIElements) or (Window.Window and Window.Window.UIElements)
-		local tb = ui and ui.Main and ui.Main:FindFirstChild("Topbar", true)
-		if not tb then return end
-		for _, c in next, tb:GetDescendants() do
-			local hit = false
-			if c:IsA("TextButton") or c:IsA("ImageButton") then
-				local n = string.lower(tostring(c.Name))
-				if string.find(n, "full", 1, true) or string.find(n, "maxim", 1, true) then
-					hit = true
+task.spawn(function()
+	for _ = 1, 12 do
+		pcall(function()
+			local ui = (Window.UIElements) or (Window.Window and Window.Window.UIElements)
+			local tb = ui and ui.Main and ui.Main:FindFirstChild("Topbar", true)
+			if tb then
+				for _, c in next, tb:GetDescendants() do
+					if c:IsA("TextButton") or c:IsA("ImageButton") then
+						local n = string.lower(tostring(c.Name))
+						if string.find(n, "full", 1, true) or string.find(n, "maxim", 1, true) then
+							local node = c
+							while node and node ~= tb do
+								if node.Visible ~= nil and node:IsA("GuiObject") then
+									node.Visible = false
+								end
+								node = node.Parent
+							end
+							c.Visible = false
+						end
+					end
 				end
 			end
-			if hit and c.Parent then
-				c.Parent.Visible = false
-			end
-		end
-	end)
+		end)
+		task.wait(0.4)
+	end
 end)
 
 local Home = Window:Tab({ Title = "Home", Icon = "lucide:house" })
