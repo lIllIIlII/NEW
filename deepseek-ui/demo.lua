@@ -1,18 +1,24 @@
--- Cache busting: every load builds a unique query string so the CDN cannot
--- hand back a previous revision of main.lua.
-local BUST = tostring(math.floor(tick() * 1000))
-local BASE = "https://raw.githubusercontent.com/lIllIIlII/NEW/main/deepseek-ui/"
-
-local DS_DEMO_VERSION = "57"
+-- main.lua lives in the executor workspace, not on GitHub any more.
+local LOCAL_MAIN = "/storage/emulated/0/Delta/Workspace/main.lua"
+local DS_DEMO_VERSION = "58"
 print("[DeepSeekUI] demo build " .. DS_DEMO_VERSION)
 
-local WindUI = loadstring(game:HttpGet(BASE .. "main.lua?t=" .. BUST))()
+local src
+if readfile then
+	src = readfile(LOCAL_MAIN)
+end
+if not src and io and io.open then
+	local f = io.open(LOCAL_MAIN, "r")
+	if f then
+		src = f:read("*a")
+		f:close()
+	end
+end
+if not src or #src < 1000 then
+	error("[DeepSeekUI] cannot read " .. LOCAL_MAIN)
+end
 
--- The brand artwork is applied after the window exists: WindUI's own icon
--- loader runs async and can race with the topbar frames, so both slots are
--- created with a placeholder and painted directly once the asset resolves.
-local ICON_LOGO = "lucide:sparkles"
-local ICON_LOCK = "lucide:sparkles"
+local WindUI = loadstring(src)()
 
 local Window = WindUI:CreateWindow({
 	Title = "DeepSeek",
@@ -82,117 +88,8 @@ end)
 -- CreateWindow returns the window object itself (not a wrapper), so the
 -- element tree lives at Window.UIElements.Main. Every previous attempt used
 -- Window.Window.UIElements... which is nil, which is why nothing was painted.
-local function getUI()
-	local w = Window
-	if w and w.UIElements then
-		return w.UIElements
-	end
-	if w and w.Window and w.Window.UIElements then
-		return w.Window.UIElements
-	end
-	return nil
-end
-
-local function findTopbar()
-	local ui = getUI()
-	if not ui or not ui.Main then
-		return nil
-	end
-	return ui.Main:FindFirstChild("Topbar", true)
-end
-
-local paintedLogo, paintedLock = false, false
-
-local function paintIcons(logo, lock)
-	local ui = getUI()
-	local tb = ui and ui.Main and ui.Main:FindFirstChild("Topbar", true)
-	if not tb then
-		return
-	end
-	paintedLogo, paintedLock = false, false
-	for _, d in next, tb:GetDescendants() do
-		if d:IsA("ImageLabel") or d:IsA("ImageButton") then
-			local inCenter, inLeft, inRight = false, false, false
-			local node = d
-			while node and node ~= tb do
-				local n = node.Name
-				if n == "Holder" or n == "Center" then
-					inCenter = true
-				elseif n == "Left" then
-					inLeft = true
-				elseif n == "Right" then
-					inRight = true
-				end
-				node = node.Parent
-			end
-			if not inRight then
-				local want
-				if inCenter then
-					want = lock
-				elseif inLeft then
-					want = logo
-				else
-					want = nil
-				end
-				if inCenter and paintedLock and want then
-					d.Visible = false
-					want = nil
-				end
-				if want and (not inCenter or not paintedLock) then
-					d.Image = want
-					d.ImageRectSize = Vector2.new(0, 0)
-					d.ImageRectOffset = Vector2.new(0, 0)
-					d.ScaleType = Enum.ScaleType.Fit
-					d.ImageColor3 = Color3.new(1, 1, 1)
-					d.ImageTransparency = 0
-					if d:IsA("ImageButton") then
-						d.AutoButtonColor = false
-					end
-					if inCenter then
-						local box = d.Parent
-						if box and box:IsA("GuiObject") then
-							box.AutomaticSize = Enum.AutomaticSize.None
-							box.Size = UDim2.fromOffset(164, 34)
-							box.BackgroundTransparency = 1
-							box.ClipsDescendants = false
-							local pad = box:FindFirstChildOfClass("UIPadding")
-							if pad then
-								pad:Destroy()
-							end
-						end
-						d.AnchorPoint = Vector2.new(0.5, 0.5)
-						d.Position = UDim2.fromScale(0.5, 0.5)
-						d.ScaleType = Enum.ScaleType.Fit
-						local pw = box and box:IsA("GuiObject") and box.AbsoluteSize.X or 164
-						if pw <= 0 then
-							pw = 118
-						end
-						d.Size = UDim2.fromOffset(math.min(pw, 156), 25)
-						paintedLock = true
-					else
-						paintedLogo = true
-					end
-				end
-			end
-		end
-	end
-end
-
-task.spawn(function()
-	local logo, lock
-	for i = 1, 600 do
-		if WindUI.Asset then
-			logo = logo or WindUI.Asset("ds-logo-blue.png")
-			lock = lock or WindUI.Asset("ds-lockup-black.png")
-		end
-		if logo or lock then
-			pcall(paintIcons, logo, lock)
-		end
-
-		task.wait(0.25)
-	end
-end)
-
+-- Two extra topbar buttons (the brand icons and the hidden fullscreen
+-- button are handled globally inside main.lua).
 Window:CreateTopbarButton("Info", "info", function()
 	notify("DeepSeek UI", "WindUI 1.6.65 fork with a DeepSeek skin.")
 end, 24, nil, Color3.fromHex("#4D6BFE"))
@@ -202,39 +99,6 @@ Window:CreateTopbarButton("Jump", "search", function()
 		_G.DS_OpenJump()
 	end
 end, 24, nil, Color3.fromHex("#4D6BFE"))
-
-local hiddenFullscreen = nil
-
-task.spawn(function()
-	for _ = 1, 25 do
-		pcall(function()
-			local ui = (Window.UIElements) or (Window.Window and Window.Window.UIElements)
-			local tb = ui and ui.Main and ui.Main:FindFirstChild("Topbar", true)
-			local right = tb and tb:FindFirstChild("Right")
-			if not right then
-				return
-			end
-			if not hiddenFullscreen or not hiddenFullscreen.Parent then
-				local list = {}
-				for _, c in next, right:GetChildren() do
-					if c:IsA("GuiObject") then
-						table.insert(list, c)
-					end
-				end
-				table.sort(list, function(a, b)
-					return a.AbsolutePosition.X < b.AbsolutePosition.X
-				end)
-				if #list >= 3 then
-					hiddenFullscreen = list[#list - 1]
-				end
-			end
-			if hiddenFullscreen and hiddenFullscreen.Parent then
-				hiddenFullscreen.Visible = false
-			end
-		end)
-		task.wait(0.25)
-	end
-end)
 
 local Home = Window:Tab({ Title = "Home", Icon = "lucide:house" })
 local Controls = Window:Tab({ Title = "Controls", Icon = "lucide:sliders-horizontal" })
