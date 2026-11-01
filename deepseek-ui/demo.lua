@@ -65,58 +65,10 @@ Window:CreateTopbarButton("跳转", "search", function()
 	end
 end, 24, nil, Color3.fromHex("#4D6BFE"))
 
-local function setTagIcon()
-	local id = nil
-	if _G.DS_Asset then
-		id = _G.DS_Asset("ds-logo-blue.png")
-	end
-	if not id and _G.DS_Img then
-		id = _G.DS_Img("https://raw.githubusercontent.com/lIllIIlII/NEW/main/deepseek-ui/assets/ds-logo-blue.png")
-	end
-	if not id then
-		warn("[DeepSeekUI] tag icon: asset nil")
-		return
-	end
-	pcall(function()
-		local tb = Window.Window.UIElements.Main.Main.Topbar
-		local center = tb:FindFirstChild("Center") or tb
-		local holder = center:FindFirstChild("Holder") or center
-		local src = nil
-		for _, d in next, holder:GetDescendants() do
-			if d:IsA("ImageLabel") then
-				src = d
-				break
-			end
-		end
-		if not src then
-			warn("[DeepSeekUI] tag icon: no ImageLabel")
-			return
-		end
-		local mine = src.Parent:FindFirstChild("DeepSeekTagLogo")
-		if not mine then
-			mine = Instance.new("ImageLabel")
-			mine.Name = "DeepSeekTagLogo"
-			mine.BackgroundTransparency = 1
-			mine.BorderSizePixel = 0
-			mine.ScaleType = Enum.ScaleType.Fit
-			mine.Parent = src.Parent
-		end
-		mine.Image = id
-		mine.ImageColor3 = Color3.new(1, 1, 1)
-		mine.ImageTransparency = 0
-		mine.Size = UDim2.fromOffset(16, 16)
-		mine.Position = src.Position
-		mine.AnchorPoint = src.AnchorPoint
-		mine.ZIndex = (src.ZIndex or 1) + 5
-		src.ImageTransparency = 1
-	end)
-end
-
+local TAG_ICON = _G.DS_Asset and _G.DS_Asset("ds-logo-blue.png") or nil
 pcall(function()
-	Window:Tag({ Title = "DEEPSEEK", Icon = "lucide:whale" })
+	Window:Tag({ Title = "DEEPSEEK", Icon = TAG_ICON })
 end)
-task.delay(0.6, setTagIcon)
-task.delay(1.8, setTagIcon)
 
 local Home = Window:Tab({ Title = "首页", Icon = "lucide:house" })
 local Controls = Window:Tab({ Title = "控件", Icon = "lucide:sliders-horizontal" })
