@@ -390,6 +390,36 @@ Call(Info, "Button", {
 		if _G.DS_Ascii then _G.DS_Ascii("whale") end
 	end,
 })
+Call(Info, "Section", { Title = "网络图片" })
+Call(Info, "Paragraph", {
+	Title = "免上传图源",
+	Desc = "_G.DS_Img(url) 会下载任意 http(s) 图片并缓存成本地资源，返回可直接赋给 Image 的路径。不用一张张传 GitHub。",
+})
+Call(Info, "Button", {
+	Title = "随机网络壁纸",
+	Desc = "picsum.photos 随机图，直接铺到窗口背景",
+	Callback = function()
+		if not _G.DS_Img then return end
+		local url = "https://picsum.photos/seed/" .. tostring(math.random(1, 99999)) .. "/1200/800"
+		local id = _G.DS_Img(url)
+		if id then
+			pcall(function() Window:SetBackgroundImage(id) end)
+			notify("壁纸已更换", "来源 picsum.photos")
+		else
+			notify("下载失败", "换个网络再试")
+		end
+	end,
+})
+Call(Info, "Button", {
+	Title = "随机头像",
+	Desc = "dicebear 生成的矢量头像 PNG",
+	Callback = function()
+		if not _G.DS_Img then return end
+		local url = "https://api.dicebear.com/9.x/bottts/png?seed=" .. tostring(math.random(1, 99999)) .. "&size=256"
+		local id = _G.DS_Img(url)
+		notify("头像", id and "已缓存" or "下载失败")
+	end,
+})
 Call(Info, "Paragraph", {
 	Title = "图片资源",
 	Desc = "ds-lockup-blue / ds-lockup-black / ds-logo-blue / ds-logo-black，四张 256px 透明底图，已随库上传。",
