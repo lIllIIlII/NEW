@@ -17283,7 +17283,7 @@ reopening=true
 pcall(function()
 h:Open()
 end)
-task.delay(0.5,function()
+task.delay(0.8,function()
 reopening=false
 end)
 end
@@ -17308,7 +17308,7 @@ end
 end)
 reopen()
 end)
-miniBtn.MouseButton1Click:Connect(reopen)
+
 
 miniBtn.MouseEnter:Connect(function()
 if dragging then
@@ -17488,6 +17488,63 @@ end)
 end
 end
 end
+end)
+end)
+end)
+
+DS_Stage("polish3",function()
+task.delay(1.6,function()
+pcall(function()
+for _,d in next,root:GetDescendants()do
+if d:IsA"TextBox"then
+d.BorderSizePixel=0
+d.ClearTextOnFocus=false
+d.BackgroundTransparency=0.55
+if not d:FindFirstChild"DSFieldStroke"then
+local st=Instance.new"UIStroke"
+st.Name="DSFieldStroke"
+st.Color=pal.soft
+st.Thickness=1
+st.Transparency=0.72
+st.ApplyStrokeMode=Enum.ApplyStrokeMode.Border
+st.Parent=d
+d.Focused:Connect(function()
+DS_Tween(st,0.15,{Transparency=0.12,Thickness=2})
+end)
+d.FocusLost:Connect(function()
+DS_Tween(st,0.28,{Transparency=0.72,Thickness=1})
+end)
+end
+end
+end
+end)
+end)
+task.delay(2.2,function()
+pcall(function()
+local function shade(node,w,h,yoff)
+if not node or not node.Parent then
+return
+end
+if node.Parent:FindFirstChild"DSShadow"then
+return
+end
+local sh=Instance.new"Frame"
+sh.Name="DSShadow"
+sh.AnchorPoint=Vector2.new(0.5,0.5)
+sh.Position=UDim2.new(0.5,0,yoff)
+sh.Size=UDim2.fromOffset(w,h)
+sh.BackgroundColor3=Color3.new(0,0,0)
+sh.BackgroundTransparency=0.72
+sh.BorderSizePixel=0
+sh.ZIndex=node.ZIndex-1
+local c=Instance.new"UICorner"
+c.CornerRadius=UDim.new(1,0)
+c.Parent=sh
+sh.Parent=node.Parent
+node.Position=node.Position-UDim2.fromOffset(0,0)
+end
+shade(root:FindFirstChild"DeepSeekPet",90,16,UDim2.new(0,0,1,26))
+shade(root:FindFirstChild"DeepSeekSticker",56,12,UDim2.new(0,0,1,10))
 end)
 end)
 end)
