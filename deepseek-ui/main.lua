@@ -1,16 +1,12 @@
 --[[
-     _      ___         ____  ______
-    | | /| / (_)__  ___/ / / / /  _/
-    | |/ |/ / / _ \/ _  / /_/ // /  
-    |__/|__/_/_//_/\_,_/\____/___/
-    
-    v1.6.65  |  2026-07-01  |  Roblox UI Library for scripts
-    
-    To view the source code, see the `src/` folder on the official GitHub repository.
-    
-    Author: Footagesus (Footages, .ftgs, oftgs)
-    Github: https://github.com/Footagesus/WindUI
-    Discord: https://discord.gg/ftgs-development-hub-1300692552005189632
+   ___               ____        __
+  / _ \___ ___ ___  / __/__ ___ / /__
+ / // / -_) -_) _ \_\ \/ -_) -_)  '_/
+/____/\__/\__/ .__/___/\__/\__/_/\_\
+            /_/
+
+    DeepSeek UI  |  WindUI 1.6.65 改版  |  2026
+
     License: MIT
 ]]
 
@@ -16514,6 +16510,48 @@ overlay:Destroy()
 end
 end)
 end
+local DS_NET={}
+local function DS_Hash(t)
+local h=0
+for i=1,#t do
+h=(h*31+string.byte(t,i))%2147483647
+end
+return tostring(h)
+end
+local function DS_Img(url)
+if type(url)~="string"or #url<8 then
+return nil
+end
+if DS_NET[url]then
+return DS_NET[url]
+end
+if not(writefile and getcustomasset)then
+return nil
+end
+if isfolder and not isfolder"DeepSeekUI"then
+pcall(makefolder,"DeepSeekUI")
+end
+local name="DeepSeekUI/net_"..DS_Hash(url)
+if isfile and isfile(name)then
+local got=DS_Try(name)
+if got then
+DS_NET[url]=got
+return got
+end
+end
+local b=DS_Request(url)
+if not b then
+return nil
+end
+if not pcall(writefile,name,b)then
+return nil
+end
+local got=DS_Try(name)
+if got then
+DS_NET[url]=got
+end
+return got
+end
 local function DS_ScreenRoot(root,h,al)
 local c
 pcall(function()
@@ -16996,6 +17034,66 @@ _G.DS_Close=DS_Close
 end
 end)
 
+DS_Stage("brand",function()
+local sg=DS_ScreenRoot(root,h,al)
+local b=DS_Asset"ds-lockup-blue.png"
+local k=DS_Asset"ds-lockup-black.png"
+if b and k and sg then
+local vp=DS_Viewport()
+local wS=0.10
+local hS=wS*(41/256)*(vp.X/math.max(1,vp.Y))
+local function mk(img,tr)
+return DS_Node("ImageLabel",sg,{
+Name="DeepSeekBrand",
+AnchorPoint=Vector2.new(0,1),
+Position=UDim2.new(0,0.014,1,-0.02),
+Size=UDim2.new(wS,0,hS,0),
+BackgroundTransparency=1,
+BorderSizePixel=0,
+ScaleType=Enum.ScaleType.Fit,
+Image=img,
+ImageTransparency=tr,
+ZIndex=690,
+})
+end
+local A=mk(b,0.12)
+local B=mk(k,1)
+task.spawn(function()
+local on=true
+while A.Parent do
+task.wait(4.6)
+on=not on
+if on then
+DS_Tween(A,0.9,{ImageTransparency=0.12},Enum.EasingStyle.Sine,Enum.EasingDirection.InOut)
+DS_Tween(B,0.9,{ImageTransparency=1},Enum.EasingStyle.Sine,Enum.EasingDirection.InOut)
+else
+DS_Tween(A,0.9,{ImageTransparency=1},Enum.EasingStyle.Sine,Enum.EasingDirection.InOut)
+DS_Tween(B,0.9,{ImageTransparency=0.12},Enum.EasingStyle.Sine,Enum.EasingDirection.InOut)
+end
+end
+end)
+end
+pcall(function()
+local lg=DS_Asset"ds-logo-blue.png"
+if not lg then
+return
+end
+local mm=root:FindFirstChild"Main"
+local tb=mm and mm:FindFirstChild"Topbar"
+local lf=tb and tb:FindFirstChild"Left"
+if not lf then
+return
+end
+for _,d in next,lf:GetDescendants()do
+if d:IsA"ImageLabel"then
+d.Image=lg
+d.ImageColor3=Color3.new(1,1,1)
+d.ScaleType=Enum.ScaleType.Fit
+end
+end
+end)
+end)
+
 DS_Stage("sound",function()
 DS_PlaySound()
 end)
@@ -17231,23 +17329,6 @@ end
 end)
 end
 end)
-do
-local bid=DS_Asset"ds-lockup-blue.png"
-if bid then
-DS_Node("ImageLabel",root,{
-Name="DeepSeekBrand",
-AnchorPoint=Vector2.new(0,1),
-Position=UDim2.new(0,14,1,-9),
-Size=UDim2.fromOffset(96,15),
-BackgroundTransparency=1,
-BorderSizePixel=0,
-ScaleType=Enum.ScaleType.Fit,
-Image=bid,
-ImageTransparency=0.82,
-ZIndex=431,
-})
-end
-end
 local foot=DS_Node("Frame",root,{
 Name="DeepSeekFoot",
 AnchorPoint=Vector2.new(0.5,1),
@@ -17406,6 +17487,7 @@ _G.DS_PlaySound=DS_PlaySound
 _G.DS_StopSound=DS_StopSound
 _G.DS_Set=DS_SetPart
 _G.DS_Ascii=DS_Ascii
+_G.DS_Img=DS_Img
 _G.DS_LOGO=DS_LOGO
 _G.DS_State=DS_State
 _G.DS_Debug=DS_Debug
