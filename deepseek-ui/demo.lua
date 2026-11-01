@@ -2,11 +2,11 @@ local BASE = "https://raw.githubusercontent.com/lIllIIlII/NEW/main/deepseek-ui/"
 
 local WindUI = loadstring(game:HttpGet(BASE .. "main.lua"))()
 
--- Resolve brand assets synchronously (getcustomasset path). Passing a local
--- path keeps WindUI on its synchronous code path and avoids the async URL
--- loader, which races with the topbar/tag frames and throws.
-local ICON_LOGO = (WindUI.Asset and WindUI.Asset("ds-logo-blue.png")) or "lucide:sparkles"
-local ICON_LOCK = (WindUI.Asset and WindUI.Asset("ds-lockup-black.png")) or "lucide:sparkles"
+-- The brand artwork is applied after the window exists: WindUI's own icon
+-- loader runs async and can race with the topbar frames, so both slots are
+-- created with a placeholder and painted directly once the asset resolves.
+local ICON_LOGO = "lucide:sparkles"
+local ICON_LOCK = "lucide:sparkles"
 
 local Window = WindUI:CreateWindow({
 	Title = "DeepSeek",
@@ -73,17 +73,12 @@ pcall(function()
 	Window:Tag({ Title = "", Icon = ICON_LOCK })
 end)
 
-local function fixIcons()
+local function paintIcons(logo, lock)
 	pcall(function()
 		local tb = Window.Window.UIElements.Main.Main.Topbar
 		local center = tb:FindFirstChild("Center")
 		for _, d in next, tb:GetDescendants() do
 			if d:IsA("ImageLabel") then
-				d.ImageRectSize = Vector2.new(0, 0)
-				d.ImageRectOffset = Vector2.new(0, 0)
-				d.ScaleType = Enum.ScaleType.Fit
-				d.ImageColor3 = Color3.new(1, 1, 1)
-				d.ImageTransparency = 0
 				local inCenter = false
 				local node = d
 				while node and node ~= tb do
@@ -92,6 +87,15 @@ local function fixIcons()
 						break
 					end
 					node = node.Parent
+				end
+				local want = inCenter and lock or logo
+				if want then
+					d.Image = want
+					d.ImageRectSize = Vector2.new(0, 0)
+					d.ImageRectOffset = Vector2.new(0, 0)
+					d.ScaleType = Enum.ScaleType.Fit
+					d.ImageColor3 = Color3.new(1, 1, 1)
+					d.ImageTransparency = 0
 				end
 				if inCenter then
 					d.Size = UDim2.fromOffset(104, 17)
@@ -109,9 +113,19 @@ local function fixIcons()
 end
 
 task.spawn(function()
-	for i = 1, 8 do
-		fixIcons()
-		task.wait(0.35)
+	local logo, lock
+	for i = 1, 40 do
+		if WindUI.Asset then
+			logo = logo or WindUI.Asset("ds-logo-blue.png")
+			lock = lock or WindUI.Asset("ds-lockup-black.png")
+		end
+		if logo or lock then
+			paintIcons(logo, lock)
+		end
+		if logo and lock then
+			return
+		end
+		task.wait(0.25)
 	end
 end)
 
