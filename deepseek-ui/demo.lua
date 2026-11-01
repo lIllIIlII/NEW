@@ -103,18 +103,24 @@ local function paintIcons(logo, lock)
 		return
 	end
 	local center = tb:FindFirstChild("Center")
+	local right = tb:FindFirstChild("Right")
 	for _, d in next, tb:GetDescendants() do
 		if d:IsA("ImageLabel") then
 			local inCenter = false
+			local inRight = false
 			local node = d
 			while node and node ~= tb do
 				if node == center then
 					inCenter = true
-					break
+				elseif node == right then
+					inRight = true
 				end
 				node = node.Parent
 			end
-			local want = inCenter and lock or logo
+			if inRight then
+				inCenter = nil
+			end
+			local want = (not inRight) and (inCenter and lock or logo) or nil
 			if want then
 				d.Image = want
 				d.ImageRectSize = Vector2.new(0, 0)
@@ -124,6 +130,8 @@ local function paintIcons(logo, lock)
 				d.ImageTransparency = 0
 				if inCenter then
 					d.Size = UDim2.fromOffset(104, 17)
+					d.AnchorPoint = Vector2.new(0.5, 0.5)
+					d.Position = UDim2.new(0.5, 0, 0.5, 5)
 					local box = d.Parent
 					if box and box:IsA("GuiObject") then
 						box.AutomaticSize = Enum.AutomaticSize.None
