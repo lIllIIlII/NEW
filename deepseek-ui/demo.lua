@@ -1,7 +1,7 @@
 -- main.lua lives in the executor workspace (Delta/Workspace).
 -- Absolute paths are not readable there: the executor resolves names
 -- relative to its workspace folder, so we try several spellings.
-local DS_DEMO_VERSION = "61"
+local DS_DEMO_VERSION = "62"
 print("[DeepSeekUI] demo build " .. DS_DEMO_VERSION)
 
 local CANDIDATES = {
@@ -317,6 +317,38 @@ Call(Scripts, "Button", {
 })
 
 Group = "Appearance"
+
+-- Font picker: DS_SetFontIndex ships with Source Sans / Gotham / Noto Sans /
+-- Roboto / Montserrat, plus any "font.ttf" dropped in the workspace and any
+-- font loaded through _G.DS_LoadFontUrl("https://.../font.ttf").
+Call(Look, "Dropdown", {
+	Title = "Font",
+	Description = "UI typeface (CJK-capable options included)",
+	Values = _G.DS_FontNames and _G.DS_FontNames() or { "Source Sans" },
+	Callback = function(opt)
+		local names = _G.DS_FontNames and _G.DS_FontNames() or {}
+		for i, n in ipairs(names) do
+			if n == opt then
+				_G.DS_SetFontIndex(i)
+				return
+			end
+		end
+	end,
+})
+
+-- Accent picker: recolours every themed element at runtime.
+Call(Look, "Colorpicker", {
+	Title = "Accent Color",
+	Description = "Highlight tone used across the UI",
+	Default = Color3.fromHex("#4D6BFE"),
+	Callback = function(c)
+		if _G.DS_SetPalette then
+			_G.DS_SetPalette(c)
+		end
+	end,
+})
+
+
 Call(Look, "Section", { Title = "Theme" })
 Call(Look, "Button", {
 	Title = "Dark",
