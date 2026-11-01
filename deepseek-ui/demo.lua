@@ -65,9 +65,8 @@ Window:CreateTopbarButton("跳转", "search", function()
 	end
 end, 24, nil, Color3.fromHex("#4D6BFE"))
 
-local TAG_ICON = "https://raw.githubusercontent.com/lIllIIlII/NEW/main/deepseek-ui/assets/ds-logo-blue.png"
 pcall(function()
-	Window:Tag({ Title = "DEEPSEEK", Icon = TAG_ICON })
+	Window:Tag({ Title = "DEEPSEEK", Icon = "lucide:whale" })
 end)
 
 local Home = Window:Tab({ Title = "首页", Icon = "lucide:house" })
