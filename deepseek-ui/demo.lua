@@ -86,6 +86,9 @@ local function setTagIcon()
 				d.Image = id
 				d.ImageColor3 = Color3.new(1, 1, 1)
 				d.ScaleType = Enum.ScaleType.Fit
+				d.ImageRectOffset = Vector2.new(0, 0)
+				d.ImageRectSize = Vector2.new(0, 0)
+				d.ImageTransparency = 0
 				d.Size = UDim2.fromOffset(16, 16)
 				return
 			end
