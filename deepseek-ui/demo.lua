@@ -1,6 +1,6 @@
-local BASE = "https://raw.githubusercontent.com/lIllIIlII/NEW/main/deepseek-ui/"
+local BASE = "https://cdn.jsdelivr.net/gh/lIllIIlII/NEW@main/deepseek-ui/"
 
-local DS_DEMO_VERSION = "43"
+local DS_DEMO_VERSION = "44"
 print("[DeepSeekUI] demo build " .. DS_DEMO_VERSION)
 
 local WindUI = loadstring(game:HttpGet(BASE .. "main.lua"))()
