@@ -418,6 +418,10 @@ p[m],
 {ImageRectSize=Vector2.new(0,0),ImageRectPosition=Vector2.new(0,0)}
 }or p[m]
 end
+local FR=_G and _G.DS_Icons
+if FR and FR.ds and FR.ds[m]then
+return FR.ds[m]
+end
 return nil
 end
 
@@ -18292,6 +18296,76 @@ end)
 home:Section({Title="用户信息"})
 home:Paragraph({Title="账号",Desc=lp.Name.."  @"..lp.DisplayName})
 home:Paragraph({Title="执行器",Desc=tostring(ex)})
+local pal=DS_PAL or{accent=Color3.fromHex"#4D6BFE",soft=Color3.fromHex"#7C97FF"}
+local cv=home.ContainerFrame
+local bars={}
+local fpsV=0
+if cv then
+local card=DS_Node("Frame",cv,{
+Name="DeepSeekMedia",
+Size=UDim2.new(1,-10,0,126),
+BackgroundColor3=Color3.fromHex"#0A1220",
+BackgroundTransparency=0.10,
+BorderSizePixel=0,
+LayoutOrder=-999,
+ZIndex=5,
+})
+DS_Node("UIStroke",card,{Color=pal.accent,Thickness=1,Transparency=0.70,ApplyStrokeMode=Enum.ApplyStrokeMode.Border})
+local av=DS_Node("ImageLabel",card,{
+Size=UDim2.fromOffset(60,60),
+Position=UDim2.fromOffset(12,12),
+BackgroundColor3=Color3.fromHex"#111A2B",
+BorderSizePixel=0,
+ScaleType=Enum.ScaleType.Crop,
+ZIndex=6,
+})
+DS_Node("UIStroke",av,{Color=pal.accent,Thickness=1,Transparency=0.35,ApplyStrokeMode=Enum.ApplyStrokeMode.Border})
+DS_Node("ImageLabel",card,{
+Size=UDim2.fromOffset(20,20),
+Position=UDim2.fromOffset(84,16),
+BackgroundTransparency=1,
+BorderSizePixel=0,
+ScaleType=Enum.ScaleType.Fit,
+ImageColor3=pal.accent,
+Image=DS_ICON_TABLE["terminal"]or"",
+ZIndex=6,
+})
+DS_Node("ImageLabel",card,{
+Size=UDim2.fromOffset(20,20),
+Position=UDim2.fromOffset(84,50),
+BackgroundTransparency=1,
+BorderSizePixel=0,
+ScaleType=Enum.ScaleType.Fit,
+ImageColor3=pal.soft,
+Image=DS_ICON_TABLE["server"]or"",
+ZIndex=6,
+})
+local graph=DS_Node("Frame",card,{
+Size=UDim2.new(1,-118,0,58),
+Position=UDim2.fromOffset(112,16),
+BackgroundColor3=Color3.fromHex"#0E1728",
+BackgroundTransparency=0.40,
+BorderSizePixel=0,
+ClipsDescendants=true,
+ZIndex=6,
+})
+for i=1,28 do
+bars[i]=DS_Node("Frame",graph,{
+Size=UDim2.new(1/28,-2,0,2),
+AnchorPoint=Vector2.new(0,1),
+Position=UDim2.new((i-1)/28,1,1,0),
+BackgroundColor3=pal.accent,
+BorderSizePixel=0,
+ZIndex=7,
+})
+end
+task.spawn(function()
+local id=DS_Thumb("https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds="..lp.UserId.."&size=150x150&format=Png&isCircular=true")
+if id then
+av.Image=id
+end
+end)
+end
 local live=home:Paragraph({Title="实时状态",Desc="FPS --   PING --"})
 home:Section({Title="服务器信息"})
 local srv=home:Paragraph({Title="房间",Desc="读取中..."})
@@ -18310,6 +18384,7 @@ RunService.RenderStepped:Connect(function(dt)
 acc=acc+dt
 frames=frames+1
 end)
+local hist={}
 task.spawn(function()
 while true do
 local fps=0
@@ -18323,6 +18398,25 @@ pcall(function()
 ping=math.floor(Stats.Network.ServerStatsItem["Data Ping"]:GetValue())
 end)
 DS_SetDesc(live,string.format("FPS %d    PING %d ms",fps,ping))
+table.insert(hist,fps)
+while #hist>28 do
+table.remove(hist,1)
+end
+local mx=60
+for _,v in next,hist do
+if v>mx then
+mx=v
+end
+end
+for i=1,28 do
+local b=bars[i]
+if b then
+local v=hist[i]or 0
+local hh=math.clamp(v/mx,0.05,1)*58
+b.Size=UDim2.new(1/28,-2,0,hh)
+b.BackgroundColor3=pal.accent:Lerp(Color3.fromRGB(255,90,90),1-math.clamp(v/mx,0,1))
+end
+end
 DS_SetDesc(srv,string.format("%s   人数 %d / %d   JobId %s",tostring(game.PlaceId),#Players:GetPlayers(),Players.MaxPlayers,tostring(game.JobId):sub(1,14)))
 task.wait(1)
 end
