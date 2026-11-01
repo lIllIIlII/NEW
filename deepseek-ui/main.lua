@@ -16362,6 +16362,37 @@ DS_Snd=nil
 end
 end)
 end
+local DS_Parts={}
+local DS_State={pet=true,sitter=true,sticker=true,ticker=true,bg=true,sheen=true,jag=true,glow=true,sound=true}
+local function DS_SetPart(key,on)
+key=tostring(key)
+on=not(on==false)
+DS_State[key]=on
+if key=="sound"then
+if on then
+pcall(function()
+DS_PlaySound()
+end)
+else
+pcall(function()
+DS_StopSound()
+end)
+end
+return true
+end
+local list=DS_Parts[key]
+if not list then
+return false
+end
+for _,n in next,list do
+if n and typeof(n)=="Instance"and n.Parent then
+pcall(function()
+n.Visible=on
+end)
+end
+end
+return true
+end
 local function DS_ScreenRoot(root,h,al)
 local c
 pcall(function()
@@ -16488,6 +16519,18 @@ task.wait(0.5)
 pcall(DS_TickerApplySize)
 end
 end)
+task.spawn(function()
+task.wait(0.6)
+while DS_TickerLine and DS_TickerLine.Parent do
+DS_Tween(DS_TickerLine,1.8,{BackgroundTransparency=0.45},Enum.EasingStyle.Sine,Enum.EasingDirection.InOut)
+task.wait(1.8)
+if not DS_TickerLine.Parent then
+break
+end
+DS_Tween(DS_TickerLine,1.8,{BackgroundTransparency=0},Enum.EasingStyle.Sine,Enum.EasingDirection.InOut)
+task.wait(1.8)
+end
+end)
 end)
 
 local bg=root:FindFirstChild"Background"
@@ -16571,10 +16614,10 @@ local a=UDim2.new(i/N,0,0,math.random(-20,20)/10)
 local b=UDim2.new(i/N,0,1,math.random(-20,20)/10)
 local c=UDim2.new(0,math.random(-20,20)/10,i/N,0)
 local d=UDim2.new(1,math.random(-20,20)/10,i/N,0)
-DS_Node("Frame",root,{AnchorPoint=Vector2.new(0,0),Position=a,Size=UDim2.new(1/N,0,0,1),BackgroundColor3=pal.soft,BackgroundTransparency=0.40,BorderSizePixel=0,ZIndex=431})
-DS_Node("Frame",root,{AnchorPoint=Vector2.new(0,1),Position=b,Size=UDim2.new(1/N,0,0,1),BackgroundColor3=pal.soft,BackgroundTransparency=0.40,BorderSizePixel=0,ZIndex=431})
-DS_Node("Frame",root,{AnchorPoint=Vector2.new(0,0),Position=c,Size=UDim2.new(0,1,1/N,0),BackgroundColor3=pal.soft,BackgroundTransparency=0.40,BorderSizePixel=0,ZIndex=431})
-DS_Node("Frame",root,{AnchorPoint=Vector2.new(1,0),Position=d,Size=UDim2.new(0,1,1/N,0),BackgroundColor3=pal.soft,BackgroundTransparency=0.40,BorderSizePixel=0,ZIndex=431})
+DS_Node("Frame",root,{Name="DeepSeekJag",AnchorPoint=Vector2.new(0,0),Position=a,Size=UDim2.new(1/N,0,0,1),BackgroundColor3=pal.soft,BackgroundTransparency=0.40,BorderSizePixel=0,ZIndex=431})
+DS_Node("Frame",root,{Name="DeepSeekJag",AnchorPoint=Vector2.new(0,1),Position=b,Size=UDim2.new(1/N,0,0,1),BackgroundColor3=pal.soft,BackgroundTransparency=0.40,BorderSizePixel=0,ZIndex=431})
+DS_Node("Frame",root,{Name="DeepSeekJag",AnchorPoint=Vector2.new(0,0),Position=c,Size=UDim2.new(0,1,1/N,0),BackgroundColor3=pal.soft,BackgroundTransparency=0.40,BorderSizePixel=0,ZIndex=431})
+DS_Node("Frame",root,{Name="DeepSeekJag",AnchorPoint=Vector2.new(1,0),Position=d,Size=UDim2.new(0,1,1/N,0),BackgroundColor3=pal.soft,BackgroundTransparency=0.40,BorderSizePixel=0,ZIndex=431})
 end
 local tb=root:FindFirstChild"Topbar"
 if tb then
@@ -16877,6 +16920,7 @@ end
 local px=m*k
 local sw=math.clamp(px/a.X,0.015,0.5)
 mini.Size=UDim2.new(sw,0,sw*a.X/(1.354*a.Y),0)
+miniBase=mini.Size
 end
 DS_FitMini=fitMini
 fitMini()
@@ -16965,6 +17009,8 @@ task.delay(0.18,function()
 bubble.Visible=false
 end)
 end
+local miniBase=mini.Size
+local hovering=false
 local dragging=false
 local moved=0
 local startPos
@@ -17005,6 +17051,7 @@ if openId then
 fish.Image=openId
 end
 hideBubble()
+fitMini()
 end
 end)
 miniBtn.Activated:Connect(function()
@@ -17018,17 +17065,24 @@ end)
 end)
 end)
 miniBtn.MouseEnter:Connect(function()
-if not dragging then
-DS_Tween(mini,0.16,{Size=UDim2.new(mini.Size.X.Scale*1.05,0,mini.Size.Y.Scale*1.05,0)})
+hovering=true
+if dragging then
+return
 end
+DS_Tween(mini,0.16,{Size=UDim2.new(miniBase.X.Scale*1.06,0,miniBase.Y.Scale*1.06,0)})
 end)
 miniBtn.MouseLeave:Connect(function()
-if not dragging then
-fitMini()
+hovering=false
+if dragging then
+return
 end
+DS_Tween(mini,0.2,{Size=miniBase})
 end)
 local function sync()
 mini.Visible=(not root.Visible)and(#root:GetChildren()>0)
+if not dragging and not hovering then
+pcall(fitMini)
+end
 end
 pcall(function()
 root:GetPropertyChangedSignal"Visible":Connect(sync)
@@ -17104,6 +17158,19 @@ end)
 end)
 end)
 end)
+DS_Parts.pet={root:FindFirstChild"DeepSeekPet"}
+DS_Parts.sitter={root:FindFirstChild"DeepSeekSitter"}
+DS_Parts.sticker={root:FindFirstChild"DeepSeekSticker"}
+DS_Parts.sheen={root:FindFirstChild"DeepSeekSheenHolder"}
+DS_Parts.glow={root:FindFirstChild"DeepSeekGlow"}
+DS_Parts.bg={bg and bg:FindFirstChild"DeepSeekBackground"}
+DS_Parts.ticker={DS_TickerRoot,DS_TickerLine}
+DS_Parts.jag={}
+for _,c in next,root:GetChildren()do
+if c.Name=="DeepSeekJag"then
+table.insert(DS_Parts.jag,c)
+end
+end
 task.delay(1.4,DS_ApplyFont)
 end
 DS_SetFont=DS_SetFont
@@ -17184,6 +17251,8 @@ _G.DS_SetMiniScale=DS_SetMiniScale
 _G.DS_ReScale=DS_ReScale
 _G.DS_PlaySound=DS_PlaySound
 _G.DS_StopSound=DS_StopSound
+_G.DS_Set=DS_SetPart
+_G.DS_State=DS_State
 _G.DS_Debug=DS_Debug
 end
 aa.Themes=a.load'v'(aa,as)
