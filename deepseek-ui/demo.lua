@@ -378,7 +378,7 @@ Call(Info, "Section", { Title = "DeepSeek UI" })
 Call(Info, "Paragraph", {
 	Title = "标志",
 	Desc = [[
-      .-\'-.
+      .-''-.
     .'  o o  '.
    /  .-. .-.  \
   |  ( o )( o )  |
