@@ -15726,7 +15726,7 @@ local DS_PAL=nil
 local DS_FONT="Arcade"
 local DS_FONTSCALE=1.08
 local DS_FACES={}
-local DS_VER="v7_"
+local DS_VER="v8_"
 local DS_DIR="DeepSeekUI"
 local function DS_EnsureDir()
 if isfolder and not isfolder(DS_DIR)then
