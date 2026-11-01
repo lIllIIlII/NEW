@@ -16843,19 +16843,7 @@ Position=UDim2.new(0,-152,0.54,8),
 Rotation=-3,
 ZIndex=-60,
 })
-task.spawn(function()
-local a=UDim2.new(0,-152,0.54,8)
-local b=UDim2.new(0,-152,0.54,0)
-while pet.Parent do
-DS_Tween(pet,2.6,{Position=b},Enum.EasingStyle.Sine,Enum.EasingDirection.InOut)
-task.wait(2.6)
-if not pet.Parent then
-break
-end
-DS_Tween(pet,2.6,{Position=a},Enum.EasingStyle.Sine,Enum.EasingDirection.InOut)
-task.wait(2.6)
-end
-end)
+
 task.spawn(function()
 while pet.Parent do
 DS_Tween(pet,3.4,{Rotation=1.5},Enum.EasingStyle.Sine,Enum.EasingDirection.InOut)
@@ -17422,6 +17410,54 @@ if c.Name=="DeepSeekJag"then
 table.insert(DS_Parts.jag,c)
 end
 end
+DS_Stage("inertia",function()
+local mainFrame=root:FindFirstChild"Main"
+local cachePet=nil
+local cacheStick=nil
+local lagX=0
+local lagY=0
+local lastPos=root.Position
+local t0=tick()
+root:GetPropertyChangedSignal"Position":Connect(function()
+local d=root.Position-lastPos
+lastPos=root.Position
+lagX=lagX-(d.X.Offset+d.X.Scale*260)*3.2
+lagY=lagY-(d.Y.Offset+d.Y.Scale*200)*3.2
+lagX=math.clamp(lagX,-30,30)
+lagY=math.clamp(lagY,-30,30)
+end)
+local rs=game:GetService"RunService"
+rs.RenderStepped:Connect(function(dt)
+lagX=lagX*0.86
+lagY=lagY*0.86
+if math.abs(lagX)<0.25 then
+lagX=0
+end
+if math.abs(lagY)<0.25 then
+lagY=0
+end
+if not mainFrame then
+mainFrame=root:FindFirstChild"Main"
+end
+if mainFrame then
+mainFrame.Position=UDim2.fromOffset(lagX*0.65,lagY*0.65)
+end
+if not cachePet then
+cachePet=root:FindFirstChild"DeepSeekPet"
+end
+if cachePet and cachePet.Parent then
+local bob=math.sin((tick()-t0)*1.6)*5
+cachePet.Position=UDim2.new(0,-152+lagX*1.25,0.54,8+bob+lagY*1.25)
+end
+if not cacheStick then
+cacheStick=root:FindFirstChild"DeepSeekSticker"
+end
+if cacheStick and cacheStick.Parent then
+cacheStick.Position=UDim2.new(1,-8+lagX*1.6,1,-8+lagY*1.6)
+end
+end)
+end)
+
 task.delay(1.4,DS_ApplyFont)
 end
 DS_SetFont=DS_SetFont
