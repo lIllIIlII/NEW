@@ -16222,6 +16222,28 @@ r.holder.Size=UDim2.new(1,0,0,rowH)
 end
 end
 end
+local function DS_Wide(t)
+t=tostring(t)
+for i=1,#t do
+if string.byte(t,i)>=0xE3 then
+return true
+end
+end
+return false
+end
+local function DS_TickerFace()
+local wide=false
+for _,n in next,DS_TickerList do
+if DS_Wide(n)then
+wide=true
+break
+end
+end
+if wide then
+return DS_Face"SourceSans"or DS_Face"Gotham"
+end
+return DS_Face"Arcade"
+end
 local function DS_TickerRow(name,order)
 local holder=DS_Node("Frame",DS_TickerRoot,{
 Name="TickerRow",
@@ -16243,7 +16265,7 @@ TextTransparency=0.72,
 ZIndex=701,
 })
 pcall(function()
-glow.FontFace=DS_Face"Arcade"
+glow.FontFace=DS_TickerFace()
 end)
 DS_Node("UIStroke",glow,{Color=Color3.fromRGB(40,130,255),Thickness=0.8,Transparency=0.65})
 local label=DS_Node("TextLabel",holder,{
@@ -16257,7 +16279,7 @@ TextColor3=Color3.new(1,1,1),
 ZIndex=702,
 })
 pcall(function()
-label.FontFace=DS_Face"Arcade"
+label.FontFace=DS_TickerFace()
 end)
 local grad=DS_Node("UIGradient",label,{
 Color=ColorSequence.new({
@@ -17355,6 +17377,7 @@ _G.DS_PlaySound=DS_PlaySound
 _G.DS_StopSound=DS_StopSound
 _G.DS_Set=DS_SetPart
 _G.DS_Img=DS_Img
+_G.DS_Asset=DS_Asset
 _G.DS_LOGO=DS_LOGO
 _G.DS_State=DS_State
 _G.DS_Debug=DS_Debug
