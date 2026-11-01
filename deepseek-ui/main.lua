@@ -396,6 +396,11 @@ local i,j=parseIconString(f)
 local l=i or g or d.IconsType
 local m=j
 
+local R=_G and _G.DS_Icons
+if R and i and R[i] and R[i].Icons and R[i].Icons[m]and R[i].Spritesheets then
+return{R[i].Spritesheets[tostring(R[i].Icons[m].Image)],R[i].Icons[m]}
+end
+
 local p=d.Icons[l]
 
 if p and p.Icons and p.Icons[m]then
@@ -16572,31 +16577,27 @@ DS_WIN=h
 local pal=DS_Palette(w.Theme and w.Theme.Name or DS_THEME)
 DS_PAL=pal
 DS_Stage("pack",function()
-local mod=w and w.Icons
-if not mod or not mod.Icons then
-return
-end
-local pk=mod.Icons.ds
-if not pk then
-pk={Icons={},Spritesheets={}}
-mod.Icons.ds=pk
-end
-if not pk.Icons then
-pk.Icons={}
-end
-if not pk.Spritesheets then
-pk.Spritesheets={}
-end
+local pk={Icons={},Spritesheets={}}
 local function reg(name,id)
 pk.Spritesheets[name]=id
 pk.Icons[name]={
 Image=name,
-ImageRectSize=Vector2.new(420,420),
+ImageRectSize=Vector2.new(256,256),
 ImageRectPosition=Vector2.new(0,0),
 }
 end
 reg("logo","rbxassetid://75699947237241")
 reg("lockup","rbxassetid://97359679500298")
+pcall(function()
+local mod=w and w.Icons
+if mod and mod.Icons then
+mod.Icons.ds=pk
+end
+end)
+if _G then
+_G.DS_Icons=_G.DS_Icons or{}
+_G.DS_Icons.ds=pk
+end
 end)
 
 DS_Stage("scale",function()
