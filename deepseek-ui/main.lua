@@ -13028,7 +13028,7 @@ local au=a.load'z'
 
 return function(av)
 local aw={
-Title=av.Title or"UI Library",
+Title=av.Title or"DeepSeek",
 Author=av.Author,
 Icon=av.Icon,
 IconSize=av.IconSize or 22,
@@ -15339,7 +15339,7 @@ Scale=aa.UIScale,
 aa.UIScaleObj=ax
 
 aa.ScreenGui=at("ScreenGui",{
-Name="WindUI",
+Name="DeepSeek",
 Parent=aw,
 IgnoreGuiInset=true,
 ScreenInsets="None",
@@ -15536,7 +15536,7 @@ local DS_CDN={
 "https://raw.githubusercontent.com/lIllIIlII/NEW/main/deepseek-ui/assets/",
 "https://cdn.jsdelivr.net/gh/lIllIIlII/NEW@main/deepseek-ui/assets/",
 }
-local DS_BG={"bg_01.jpg","bg_02.jpg","bg_03.jpg","bg_04.jpg","bg_05.jpg"}
+local DS_BG={"bg_01.jpg","bg_02.jpg","bg_03.jpg","bg_04.jpg","bg_05.jpg","bg_06.jpg","bg_07.jpg","bg_08.jpg","bg_09.jpg","bg_10.jpg","bg_11.jpg","bg_12.jpg","bg_13.jpg","bg_14.jpg","bg_15.jpg"}
 local DS_PET={"pet_01.png","pet_02.png","pet_03.png","pet_04.png","pet_05.png","pet_06.png","pet_07.png","pet_08.png","pet_09.png","pet_10.png","pet_11.png","pet_12.png"}
 local DS_TOP={"pet_03.png","pet_07.png","pet_10.png","pet_12.png"}
 local DS_ART={"art_01.jpg","art_02.jpg","art_03.jpg","art_04.jpg","art_05.jpg","art_06.jpg","art_07.jpg","art_08.jpg","art_09.jpg","art_10.jpg"}
@@ -16871,7 +16871,7 @@ end)
 end)
 end
 if _G then
-_G._G.DS_Close=DS_Close
+_G.DS_Close=DS_Close
 end
 end)
 
@@ -16920,7 +16920,6 @@ end
 local px=m*k
 local sw=math.clamp(px/a.X,0.015,0.5)
 mini.Size=UDim2.new(sw,0,sw*a.X/(1.354*a.Y),0)
-miniBase=mini.Size
 end
 DS_FitMini=fitMini
 fitMini()
@@ -17010,7 +17009,6 @@ bubble.Visible=false
 end)
 end
 local miniBase=mini.Size
-local hovering=false
 local dragging=false
 local moved=0
 local startPos
@@ -17058,6 +17056,21 @@ miniBtn.Activated:Connect(function()
 if moved>10 then
 return
 end
+pcall(function()
+if math.random()<0.55 then
+local id=DS_Asset(DS_Pick(DS_PET))
+local p=root:FindFirstChild"DeepSeekPet"
+if id and p then
+p.Image=id
+end
+end
+if math.random()<0.55 then
+local id=DS_Asset(DS_Pick(DS_BG))
+if id and bgImg then
+bgImg.Image=id
+end
+end
+end)
 task.delay(0.06,function()
 pcall(function()
 h:Open()
@@ -17065,22 +17078,20 @@ end)
 end)
 end)
 miniBtn.MouseEnter:Connect(function()
-hovering=true
 if dragging then
 return
 end
-DS_Tween(mini,0.16,{Size=UDim2.new(miniBase.X.Scale*1.06,0,miniBase.Y.Scale*1.06,0)})
+DS_Tween(mini,0.18,{Rotation=-4},Enum.EasingStyle.Quad,Enum.EasingDirection.Out)
 end)
 miniBtn.MouseLeave:Connect(function()
-hovering=false
 if dragging then
 return
 end
-DS_Tween(mini,0.2,{Size=miniBase})
+DS_Tween(mini,0.22,{Rotation=0},Enum.EasingStyle.Quad,Enum.EasingDirection.Out)
 end)
 local function sync()
 mini.Visible=(not root.Visible)and(#root:GetChildren()>0)
-if not dragging and not hovering then
+if not dragging then
 pcall(fitMini)
 end
 end
