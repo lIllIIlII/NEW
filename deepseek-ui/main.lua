@@ -15612,6 +15612,110 @@ aA.WindUI=aa
 return a.load'u'.new(aA,aa.ScreenGui.Popups)
 end
 
+local DS_ICON_TABLE={
+["maximize"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/26f6.png",
+["brain"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f9e0.png",
+["crown"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f451.png",
+["info"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/2139.png",
+["eye-off"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f648.png",
+["clock"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/23f0.png",
+["arrow-right"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/27a1.png",
+["chat"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f4ac.png",
+["puzzle"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f9e9.png",
+["flask"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f9ea.png",
+["cross"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/274c.png",
+["wallet"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f4b3.png",
+["plus"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/2795.png",
+["skull"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f480.png",
+["bolt"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/26a1.png",
+["warning"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/26a0.png",
+["server"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f5a5.png",
+["archive"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f5c3.png",
+["badge-check"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/2705.png",
+["check"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/2705.png",
+["tag"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f3f7.png",
+["users"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f465.png",
+["user-round"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f464.png",
+["zap"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/26a1.png",
+["music"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f3b5.png",
+["cart"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f6d2.png",
+["send"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f4e4.png",
+["wifi"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f4f6.png",
+["moon"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f319.png",
+["menu"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/2630.png",
+["bell"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f514.png",
+["palette"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f3a8.png",
+["fire"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f525.png",
+["trash"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f5d1.png",
+["link"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f517.png",
+["hammer"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f528.png",
+["user"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f464.png",
+["cloud"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/2601.png",
+["mail"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/2709.png",
+["star"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/2b50.png",
+["search"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f50d.png",
+["rocket"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f680.png",
+["map"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f5fa.png",
+["receipt"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f9fe.png",
+["key"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f511.png",
+["search-2"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f50e.png",
+["whale"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f433.png",
+["ghost"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f47b.png",
+["book"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f4d6.png",
+["power"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f50c.png",
+["stop"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/23f9.png",
+["chart"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f4c8.png",
+["cpu"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f5b1.png",
+["globe"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f310.png",
+["sun"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/2600.png",
+["sliders-horizontal"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/2699.png",
+["gamepad"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f3ae.png",
+["grid"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f532.png",
+["hash"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/0023.png",
+["list"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f4cb.png",
+["play"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/25b6.png",
+["gear"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/2699.png",
+["save"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f4be.png",
+["layers"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f4da.png",
+["sword"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/2694.png",
+["camera"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f4f7.png",
+["bug"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f41b.png",
+["at"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/0040.png",
+["upload"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/2b06.png",
+["gem"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f48e.png",
+["gift"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f381.png",
+["eye"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f441.png",
+["pause"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/23f8.png",
+["wrench"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f527.png",
+["heart"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/2764.png",
+["activity"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f4c8.png",
+["leaf"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f343.png",
+["log-out"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f6aa.png",
+["inbox"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f4e5.png",
+["waves"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f30a.png",
+["fish"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f41f.png",
+["lock"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f512.png",
+["medal"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f3c5.png",
+["filter"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f5c7.png",
+["pin"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f4cd.png",
+["package"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f4e6.png",
+["flag"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f3f4.png",
+["target"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f3af.png",
+["shield"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f6e1.png",
+["house"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f3e0.png",
+["sparkles"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/2728.png",
+["robot"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f916.png",
+["database"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f5c4.png",
+["drop"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f4a7.png",
+["download"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/2b07.png",
+["code"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f4bb.png",
+["folder"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f4c1.png",
+["minus"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/2796.png",
+["unlock"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f513.png",
+["image"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f5bc.png",
+["terminal"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/2328.png",
+["refresh"]="https://cdn.jsdelivr.net/gh/jdecked/twemoji@latest/assets/72x72/1f504.png",
+}
 local DS_THEME=(math.random(2)==1)and"Dark"or"Light"
 local DS_CDN={
 "https://raw.githubusercontent.com/lIllIIlII/NEW/main/deepseek-ui/assets/",
@@ -15640,6 +15744,23 @@ local DS_FONT="Arcade"
 local DS_FONTSCALE=1.08
 local DS_FACES={}
 local DS_VER="v7_"
+local DS_DIR="Delta/Workspace/DeepSeekUI"
+local function DS_EnsureDir()
+if not isfolder then
+return
+end
+local a="Delta"
+if not isfolder(a)then
+pcall(makefolder,a)
+end
+a="Delta/Workspace"
+if not isfolder(a)then
+pcall(makefolder,a)
+end
+if not isfolder(DS_DIR)then
+pcall(makefolder,DS_DIR)
+end
+end
 local DS_Flash=nil
 local DS_TickerRoot=nil
 local DS_TickerRows={}
@@ -15679,7 +15800,7 @@ end
 if not(writefile and getcustomasset)then
 return nil
 end
-local p="DeepSeekUI/"..DS_VER..n
+local p=DS_DIR.."/"..DS_VER..n
 if isfile and isfile(p)then
 local got=DS_Try(p)
 if got then
@@ -15687,9 +15808,7 @@ DS_CACHE[n]=got
 return got
 end
 end
-if isfolder and not isfolder"DeepSeekUI"then
-pcall(makefolder,"DeepSeekUI")
-end
+DS_EnsureDir()
 local b
 for _,x in next,DS_CDN do
 b=DS_Request(x..n)
@@ -15704,7 +15823,7 @@ DS_CACHE[n]=got
 return got
 end
 end
-for _,old in next,{"DeepSeekUI/v6_"..n,"DeepSeekUI/v5_"..n,"DeepSeekUI/v4_"..n,"DeepSeekUI/"..n}do
+for _,old in next,{DS_DIR.."/v6_"..n,DS_DIR.."/v5_"..n,"DeepSeekUI/v7_"..n,"DeepSeekUI/v6_"..n,"DeepSeekUI/"..n}do
 if isfile and isfile(old)then
 local got=DS_Try(old)
 if got then
@@ -15718,33 +15837,6 @@ end
 if _G then
 _G.DS_Asset=DS_Asset
 _G.DS_Icons={}
-end
-local DS_ICON_TABLE={}
-local function DS_LoadIcons()
-local src
-for _,b in next,DS_CDN do
-src=DS_Request(b.."icons.lua")
-if src then
-break
-end
-end
-if not src then
-return
-end
-local f
-local ok=pcall(function()
-f=loadstring(src)
-end)
-if not ok or not f then
-return
-end
-local ok2,t=pcall(f)
-if ok2 and type(t)=="table"then
-DS_ICON_TABLE=t
-if _G then
-_G.DS_ICON_TABLE=t
-end
-end
 end
 local function DS_Face(name)
 if DS_FACES[name]~=nil then
@@ -16435,9 +16527,7 @@ if isfile and isfile(name)then
 have=true
 end
 if not have then
-if isfolder and not isfolder"DeepSeekUI"then
-pcall(makefolder,"DeepSeekUI")
-end
+DS_EnsureDir()
 local b
 for _,x in next,DS_CDN do
 b=DS_Request(x.."load.mp3")
@@ -16538,9 +16628,7 @@ end
 if not(writefile and getcustomasset)then
 return nil
 end
-if isfolder and not isfolder"DeepSeekUI"then
-pcall(makefolder,"DeepSeekUI")
-end
+DS_EnsureDir()
 local name="DeepSeekUI/net_"..DS_Hash(url)
 if isfile and isfile(name)then
 local got=DS_Try(name)
@@ -16631,15 +16719,6 @@ DS_WIN=h
 local pal=DS_Palette(w.Theme and w.Theme.Name or DS_THEME)
 DS_PAL=pal
 DS_Stage("icons",function()
-task.spawn(function()
-task.wait(0.2)
-for _=1,5 do
-if #DS_ICON_TABLE>0 then
-break
-end
-pcall(DS_LoadIcons)
-task.wait(0.6)
-end
 local tbl=DS_ICON_TABLE
 local pk=nil
 local mod=w and w.Icons
@@ -16681,7 +16760,6 @@ if lk then
 pk.Spritesheets.lockup=lk
 pk.Icons.lockup={Image="lockup",ImageRectSize=Vector2.new(0,0),ImageRectPosition=Vector2.new(0,0)}
 end
-end)
 end)
 
 DS_Stage("scale",function()
@@ -16991,9 +17069,23 @@ local function reshuffle()
 local id=DS_Asset(DS_Pick(DS_STIKER))
 if id then
 stick.Image=id
+return true
+end
+return false
+end
+if not reshuffle()then
+task.spawn(function()
+for _=1,6 do
+task.wait(0.5)
+if stick.Image and stick.Image~=""then
+return
+end
+if reshuffle()then
+return
 end
 end
-reshuffle()
+end)
+end
 stick.MouseEnter:Connect(function()
 DS_Tween(stick,0.16,{Size=UDim2.fromOffset(108,108)})
 end)
