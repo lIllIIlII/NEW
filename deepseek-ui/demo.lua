@@ -4,7 +4,7 @@ local WindUI = loadstring(game:HttpGet(BASE .. "main.lua"))()
 
 local Window = WindUI:CreateWindow({
 	Title = "DeepSeek",
-	Icon = "rbxassetid://78645870311558",
+	Icon = "lucide:sparkles",
 	Author = "DeepSeek AI",
 	Folder = "DeepSeekUI",
 	Size = UDim2.fromOffset(680, 480),
@@ -57,7 +57,60 @@ end
 
 -- Tag: icon only, no text.
 pcall(function()
-	Window:Tag({ Title = "", Icon = "rbxassetid://99218075863166" })
+	Window:Tag({ Title = "", Icon = "lucide:sparkles" })
+end)
+
+-- The Roblox decals you uploaded came back blank, so the DS artwork is applied
+-- here from the repo asset pipeline instead, with retries while it downloads.
+local function applyBrand()
+	local logo = WindUI.Asset and WindUI.Asset("ds-logo-blue.png")
+	local lock = WindUI.Asset and WindUI.Asset("ds-lockup-blue.png")
+	if not logo then
+		return false
+	end
+	pcall(function()
+		local tb = Window.Window.UIElements.Main.Main.Topbar
+		local lf = tb:FindFirstChild("Left")
+		if lf then
+			for _, d in next, lf:GetDescendants() do
+				if d:IsA("ImageLabel") then
+					d.Image = logo
+					d.ImageColor3 = Color3.new(1, 1, 1)
+					d.ImageTransparency = 0
+					d.ImageRectOffset = Vector2.new(0, 0)
+					d.ImageRectSize = Vector2.new(0, 0)
+					break
+				end
+			end
+		end
+		if lock then
+			local center = tb:FindFirstChild("Center")
+			local holder = center and (center:FindFirstChild("Holder") or center)
+			if holder then
+				for _, d in next, holder:GetDescendants() do
+					if d:IsA("ImageLabel") then
+						d.Image = lock
+						d.ImageColor3 = Color3.new(1, 1, 1)
+						d.ImageTransparency = 0
+						d.ImageRectOffset = Vector2.new(0, 0)
+						d.ImageRectSize = Vector2.new(0, 0)
+						d.ScaleType = Enum.ScaleType.Fit
+						d.Size = UDim2.fromOffset(92, 15)
+					end
+				end
+			end
+		end
+	end)
+	return true
+end
+
+task.spawn(function()
+	for i = 1, 12 do
+		if applyBrand() then
+			break
+		end
+		task.wait(0.5)
+	end
 end)
 
 local Home = Window:Tab({ Title = "Home", Icon = "lucide:house" })
