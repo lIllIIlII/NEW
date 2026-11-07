@@ -18,9 +18,17 @@ local WindUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/lIllII
 
 ## 资源与远程加载
 
-所有欢迎音频、背景图、顶栏横幅、贴纸和桌宠均存放在 [`assets/`](assets/) 并由 `main.lua` 在运行时从 GitHub Raw 加载；GitHub Raw 不可用时回退到 jsDelivr。二进制素材不嵌入 Lua 文件。
+资源按以下优先级解析：先检查 Roblox 原生资源 ID，再从 GitHub Raw 下载；Raw 不可用时回退到 jsDelivr。二进制素材不嵌入 Lua 文件。当前库内置已确认的 DeepSeek logo / lockup 原生 ID。背景图、桌宠、贴纸及欢迎音频如有已上传的 Roblox ID，可在运行前注入映射表：
 
-运行时为执行器的 `getcustomasset` 建立 `DeepSeekUI/v9_<文件名>` 缓存。首次使用会下载并缓存，后续启动直接复用相同版本缓存。资源清单包括：
+```lua
+_G.DS_NATIVE_ASSETS = {
+    ["bg_01.jpg"] = "rbxassetid://1234567890",
+    ["pet_extra_01.png"] = 2345678901,
+    ["welcome_new.mp3"] = "rbxassetid://3456789012",
+}
+```
+
+映射支持数字 ID 与 `rbxassetid://...` 字符串。未配置原生 ID 的资源自动从 GitHub 加载。GitHub 下载的文件会通过执行器 `getcustomasset` 接入，并缓存到 `DeepSeekUI/v9_<文件名>`；该缓存仅用于适配 `getcustomasset`，素材权威来源仍是远端。
 
 - `bg_01.jpg`–`bg_15.jpg`：背景图
 - `pet_01.png`–`pet_12.png`、`pet_extra_01.png`–`pet_extra_06.png`：桌宠和贴纸

@@ -15167,6 +15167,15 @@ end
 for _,name in ipairs({"Gotham","SourceSans","Roboto","RobotoMono","Arial","Ubuntu","Nunito","Montserrat","Oswald","Code","Cartoon","SciFi","Arcade","Bangers","Garamond","Antique","Bodoni","Highway","Fantasy","Jura","Merriweather","TitilliumWeb"})do DS_AddBuiltin(name)end
 for _,font in ipairs(Enum.Font:GetEnumItems())do if font.Name~="Unknown"then DS_AddBuiltin(font.Name)end end
 local DS_CACHE={}
+local DS_NATIVE_ASSETS={
+["ds-logo-blue.png"]="rbxassetid://76812298700165",
+["ds-lockup-blue.png"]="rbxassetid://134655875998764",
+["ds-logo-black.png"]="rbxassetid://108023120756076",
+["ds-lockup-black.png"]="rbxassetid://106034927644134",
+}
+if _G and type(rawget(_G,"DS_NATIVE_ASSETS"))=="table"then
+for name,id in pairs(rawget(_G,"DS_NATIVE_ASSETS"))do DS_NATIVE_ASSETS[name]=id end
+end
 local DS_TS=game:GetService"TweenService"
 local DS_UIS=game:GetService"UserInputService"
 local DS_ROOT=nil
@@ -15239,7 +15248,15 @@ if isfile(path)then return path end
 return nil
 end
 local function DS_Asset(n)
+if type(n)~="string"or n==""then return nil end
 if DS_CACHE[n]then return DS_CACHE[n]end
+local native=DS_NATIVE_ASSETS[n]
+if type(native)=="number"and native>0 and native%1==0 then native=tostring(native)end
+if type(native)=="string"and native:match("^%d+$")and tonumber(native)>0 then native="rbxassetid://"..native end
+if type(native)=="string"and native:match("^rbxassetid://%d+$")then
+DS_CACHE[n]=native
+return native
+end
 if not getcustomasset then return nil end
 local path=DS_AssetPath(n)
 if not path then return nil end
@@ -16162,13 +16179,11 @@ local DS_SndVol=0.55
 local DS_WelcomeSoundName="welcome_new.mp3"
 local function DS_PlaySound(vol)
 if vol then DS_SndVol=math.clamp(tonumber(vol)or 0.55,0,3)end
-local path=DS_AssetPath(DS_WelcomeSoundName)
-if not path then
-warn("[DeepSeekUI] could not download welcome audio from the configured GitHub asset mirrors")
+local id=DS_Asset(DS_WelcomeSoundName)
+if type(id)~="string"or id==""then
+warn("[DeepSeekUI] could not resolve the welcome audio asset")
 return nil
 end
-local ok,id=pcall(getcustomasset,path)
-if not ok or type(id)~="string"or id==""then return nil end
 if DS_Snd then pcall(function()DS_Snd:Destroy()end)end
 DS_Snd=DS_Node("Sound",game:GetService("SoundService"),{Name="DeepSeekWelcome",SoundId=id,Volume=DS_SndVol,PlayOnRemove=false,Looped=false})
 pcall(function()DS_Snd:Play()end)
