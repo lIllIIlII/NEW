@@ -2,19 +2,24 @@
 
 Build 80 是 WindUI 1.6.65 的 DeepSeek 主题单文件库和原生控件示例，提供五个普通页签（首页、控件、脚本、外观、关于）。
 
+## 文件位置
+
+本仓库只托管 `demo.lua` 与 `assets/`，**不再托管 `main.lua`**。库文件放在执行器工作区：
+
+```
+Delta/Workspace/main.lua        ← demo.lua 自动读取
+Delta/Workspace/demo.lua
+```
+
+同时建议在 `Deepseek/` 保留一份备份。`demo.lua` 会按 `main.lua`、`Workspace/main.lua`、`Delta/Workspace/main.lua` 的顺序查找库文件。
+
 ## 直接运行
 
 ```lua
 loadstring(game:HttpGet("https://raw.githubusercontent.com/lIllIIlII/NEW/main/deepseek-ui/demo.lua"))()
 ```
 
-只加载库：
-
-```lua
-local WindUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/lIllIIlII/NEW/main/deepseek-ui/main.lua"))()
-```
-
-`demo.lua` 会从执行器工作区读取 `main.lua`，兼容 `main.lua`、`Workspace/main.lua` 和 `Delta/Workspace/main.lua` 三种路径。
+运行前请确认工作区已有 `main.lua`。
 
 ## 资源与远程加载
 
@@ -30,6 +35,16 @@ _G.DS_NATIVE_ASSETS = {
 
 映射支持数字 ID 与 `rbxassetid://...` 字符串。未配置原生 ID 的资源自动从 GitHub 加载。GitHub 下载的文件会通过执行器 `getcustomasset` 接入，并缓存到 `DeepSeekUI/v9_<文件名>`；该缓存仅用于适配 `getcustomasset`，素材权威来源仍是远端。
 
+加载顺序（重要）：
+
+1. 已配置的 Roblox 原生 ID
+2. 远程下载并写入 `DeepSeekUI/v9_<文件名>`
+3. 旧缓存 / 工作区同名文件兜底
+
+背景图每次启动会先尝试远程刷新，下载失败才回退旧缓存；随机选中的背景若解析失败，会自动尝试其余 14 张，不会整块空白。
+
+资源清单：
+
 - `bg_01.jpg`–`bg_15.jpg`：背景图
 - `pet_01.png`–`pet_12.png`、`pet_extra_01.png`–`pet_extra_06.png`：桌宠和贴纸
 - `art_01.jpg`–`art_10.jpg`：顶栏横幅
@@ -40,8 +55,9 @@ _G.DS_NATIVE_ASSETS = {
 
 - 窗口开合主动画约 0.48 秒，背景和辅助元素淡入淡出约 0.42 秒，并带取消和过期回调保护。
 - 走马灯由单一状态表驱动；自动运行、队伍检查、方框和欢迎音频开关共用状态，开关改变后立即同步显示。
+- 左下角 DeepSeek Lockup 宽度由 7.5% 提升到 9%，更易辨认。
 - 资源加载使用 GitHub 远程源和统一 `v9_` 缓存，不把二进制资源塞进 `main.lua`。
 
 ## 验证
 
-库文件通过 Luau 编译；项目回归测试覆盖窗口生命周期、原生控件、字体、下拉框、通知、走马灯和视觉动画。
+库文件通过 Luau 编译；项目回归测试覆盖窗口生命周期、原生控件、字体、下拉框、通知、走马灯、背景回退和视觉动画。

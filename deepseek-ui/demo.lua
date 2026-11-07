@@ -6,16 +6,7 @@ for _,path in ipairs(CANDIDATES)do
  local ok,value=pcall(function()return readfile(path)end)
  if ok and type(value)=="string"and #value>100000 then source=value;print("[DeepSeekUI] main.lua <- "..path);break end
 end
-if not source then
- for _,url in ipairs({
-  "https://raw.githubusercontent.com/lIllIIlII/NEW/main/deepseek-ui/main.lua",
-  "https://cdn.jsdelivr.net/gh/lIllIIlII/NEW@main/deepseek-ui/main.lua",
- })do
-  local ok,value=pcall(function()return game:HttpGet(url)end)
-  if ok and type(value)=="string"and #value>100000 then source=value;print("[DeepSeekUI] main.lua <- GitHub");break end
- end
-end
-assert(source,"DeepSeekUI main.lua was not found in the workspace or GitHub mirrors")
+assert(source,"DeepSeekUI main.lua was not found in the executor workspace (place it next to demo.lua)")
 local loader,compileError=loadstring(source,"DeepSeekUI/main")
 assert(loader,compileError)
 local WindUI=loader()
