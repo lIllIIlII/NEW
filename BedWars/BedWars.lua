@@ -12,6 +12,9 @@ local unpack = table.unpack or unpack
 
 UI = UI or { DS = nil }
 
+local VER = "2.0"
+local TAG = "DeepSeekBW"
+
 local function Cam()
     return Workspace.CurrentCamera
 end
@@ -228,6 +231,14 @@ local CFG = {
     NoFallMode = "Teleport",
     NoSlow = false,
 
+    Scaffold = false,
+    ScaffoldExpand = 3,
+    ScaffoldTower = true,
+    ScaffoldDiag = true,
+    NameTag = false,
+    NameTagHp = true,
+    NameTagDist = true,
+
     Breaker = false,
     BreakRange = 20,
     BreakMax = 8,
@@ -313,7 +324,25 @@ local function Dummy(m)
     return ok and h
 end
 
-local World = { list = {}, at = 0 }
+local World = { list = {}, at = 0, tag = {}, tagAt = 0 }
+
+local function Tagged(name)
+    local now = os.clock()
+    if now - World.tagAt > 0.5 then
+        World.tag = {}
+        World.tagAt = now
+    end
+    local c = World.tag[name]
+    if c then
+        return c
+    end
+    local ok, r = pcall(function()
+        return CollectionService:GetTagged(name)
+    end)
+    c = ok and r or {}
+    World.tag[name] = c
+    return c
+end
 
 local function Scan()
     local out, seen = {}, {}
@@ -321,7 +350,7 @@ local function Scan()
     local org = r and r.Position or Cam().CFrame.Position
     local me = Char()
     pcall(function()
-        for _, m in ipairs(CollectionService:GetTagged("entity")) do
+        for _, m in ipairs(Tagged("entity")) do
             if m ~= me and not seen[m] and m.Parent and Alive(m) then
                 seen[m] = true
                 local p = PartOf(m)
@@ -676,7 +705,10 @@ local function EspTick()
                 e.bb.Adornee = t.part
             end
             if e.name then
-                e.name.Text = t.name
+                if e.lastName ~= t.name then
+                    e.lastName = t.name
+                    e.name.Text = t.name
+                end
                 e.name.TextColor3 = col
             end
             local h, mx = HP(t.model)
@@ -703,7 +735,11 @@ local function EspTick()
                     end
                 end
                 b[#b + 1] = string.format("%dm", math.floor(t.dist))
-                e.info.Text = table.concat(b, " · ")
+                local txt = table.concat(b, " · ")
+                if e.txt ~= txt then
+                    e.txt = txt
+                    e.info.Text = txt
+                end
             end
         end
     end
@@ -762,7 +798,7 @@ local function BedTick()
     end
     local live = {}
     pcall(function()
-        for _, bed in ipairs(CollectionService:GetTagged("bed")) do
+        for _, bed in ipairs(Tagged("bed")) do
             local part = PartOf(bed)
             if part and part.Parent then
                 live[bed] = part
@@ -859,7 +895,7 @@ local function ChestTick()
     local live = {}
     pcall(function()
         for _, tag in ipairs(CHEST_TAGS) do
-            for _, o in ipairs(CollectionService:GetTagged(tag)) do
+            for _, o in ipairs(Tagged(tag)) do
                 local p = PartOf(o)
                 if p and p.Parent then
                     live[o] = { part = p, tag = tag }
@@ -943,7 +979,7 @@ local function KitTick()
     end
     local live = {}
     pcall(function()
-        for _, o in ipairs(CollectionService:GetTagged(icon)) do
+        for _, o in ipairs(Tagged(icon)) do
             local p = PartOf(o)
             if p and p.Parent then
                 live[o] = p
@@ -1908,6 +1944,65 @@ local function BlockPos(pos)
     )
 end
 
+local SCAF = { last = nil }
+
+local function ScaffoldTick()
+    if not CFG.Scaffold then
+        SCAF.last = nil
+        return
+    end
+    local r = Root()
+    local h = Hum()
+    if not r or not h then
+        return
+    end
+    local dir = h.MoveDirection
+    if dir.Magnitude < 0.1 then
+        return
+    end
+    local inv = Inv()
+    if not inv then
+        return
+    end
+    local block
+    for _, o in ipairs(inv:GetChildren()) do
+        if o:IsA("Tool") then
+            local n = string.lower(o.Name)
+            if string.find(n, "wool", 1, true) or string.find(n, "plank", 1, true)
+                or string.find(n, "block", 1, true) then
+                block = o
+                break
+            end
+        end
+    end
+    if not block then
+        return
+    end
+    local hip = h.HipHeight or 0
+    local base = r.Position - Vector3.new(0, hip + 1.5, 0)
+    local step = 3
+    for i = CFG.ScaffoldExpand, 1, -1 do
+        local pos = base + dir * (i * step)
+        local bp = Vector3.new(
+            math.floor(pos.X / step + 0.5) * step,
+            math.floor(pos.Y / step + 0.5) * step,
+            math.floor(pos.Z / step + 0.5) * step
+        )
+        if CFG.ScaffoldDiag and SCAF.last then
+            local d = SCAF.last - bp
+            if math.abs(d.X) > 0.1 and math.abs(d.Z) > 0.1 then
+                bp = Vector3.new(bp.X, bp.Y, SCAF.last.Z)
+            end
+        end
+        Call("PlaceBlock", { position = bp, blockType = block.Name })
+        SCAF.last = bp
+        break
+    end
+    if CFG.ScaffoldTower and UIS:IsKeyDown(Enum.KeyCode.Space) then
+        SetVel(r, Vector3.new(r.AssemblyLinearVelocity.X, 38, r.AssemblyLinearVelocity.Z))
+    end
+end
+
 local BREAK_TAGS = { "block", "bed", "LuckyBlock", "iron-ore" }
 
 local function BreakerTick()
@@ -1922,7 +2017,7 @@ local function BreakerTick()
     local n = 0
     pcall(function()
         for _, tag in ipairs(BREAK_TAGS) do
-            for _, b in ipairs(CollectionService:GetTagged(tag)) do
+            for _, b in ipairs(Tagged(tag)) do
                 if n >= CFG.BreakMax then
                     return
                 end
@@ -2225,6 +2320,79 @@ local function ReachTick()
     ReachHud.label.Visible = true
 end
 
+local NT = { cache = {} }
+
+local function NameTagTick()
+    if not CFG.NameTag then
+        Wipe(NT.cache)
+        return
+    end
+    local dir = Dir("DS_NAME")
+    if not dir then
+        return
+    end
+    local live = {}
+    for _, t in ipairs(Targets()) do
+        if t.kind == "player" and t.part and t.part.Parent and t.dist <= CFG.EspDist then
+            live[t.model] = t
+        end
+    end
+    for m, t in pairs(live) do
+        local e = NT.cache[m]
+        if not e or not e.bb or not e.bb.Parent then
+            e = {}
+            local bb = Bbg(dir, t.part, UDim2.fromOffset(170, 40), Vector3.new(0, 3.4, 0), 1500)
+            e.bb = bb
+            e.name = Txt(bb, UDim2.new(1, 0, 0, 16), Color3.fromRGB(255, 255, 255), 14)
+            e.sub = Txt(bb, UDim2.new(1, 0, 0, 13), Color3.fromRGB(200, 200, 200), 11, 0.3)
+            e.sub.Position = UDim2.fromOffset(0, 17)
+            NT.cache[m] = e
+        end
+        if e.bb then
+            e.bb.Adornee = t.part
+        end
+        if e.name then
+            if e.ln ~= t.name then
+                e.ln = t.name
+                e.name.Text = t.name
+            end
+            e.name.TextColor3 = EC[t.kind] or EC.npc
+        end
+        if e.sub then
+            local b = {}
+            if CFG.NameTagHp then
+                local hp, mx = HP(m)
+                if hp then
+                    b[#b + 1] = string.format("%d/%d", math.floor(hp), math.floor(mx))
+                end
+            end
+            if CFG.NameTagDist then
+                b[#b + 1] = string.format("%dm", math.floor(t.dist))
+            end
+            local txt = table.concat(b, "  ")
+            if e.ls ~= txt then
+                e.ls = txt
+                e.sub.Text = txt
+            end
+        end
+    end
+    for m in pairs(NT.cache) do
+        if not live[m] then
+            local e = NT.cache[m]
+            if e then
+                for _, o in pairs(e) do
+                    if typeof(o) == "Instance" then
+                        pcall(function()
+                            o:Destroy()
+                        end)
+                    end
+                end
+            end
+            NT.cache[m] = nil
+        end
+    end
+end
+
 local function FovTick()
     local cam = Cam()
     if not cam then
@@ -2401,6 +2569,8 @@ local TORDER = {
     { "EspPlayer", "ESP 玩家" },
     { "EspNpc", "ESP 怪物" },
     { "EspDummy", "ESP 训练场人机" },
+    { "Scaffold", "自动搭桥" },
+    { "NameTag", "名字标签" },
     { "BedEsp", "床透视" },
     { "BedPlate", "床顶浮字" },
     { "StorageEsp", "容器透视" },
@@ -2501,6 +2671,8 @@ local Tasks = {
     { 0.50, AutoBalloonTick, "AutoBalloon" },
     { 0.50, AutoPearlTick, "AutoPearl" },
     { 0.40, BreakerTick, "Breaker" },
+    { 0.06, ScaffoldTick, "Scaffold" },
+    { 0.20, NameTagTick, "NameTag" },
     { 5.00, AntiAfk, "AntiAfk" },
     { 0.10, NoSlowTick, "NoSlow" },
     { 0.10, SpeedTick, "Speed" },
@@ -2815,6 +2987,11 @@ local OK, ERR = pcall(function()
     Tog(Visual, "容器透视", "StorageEsp")
     Tog(Visual, "道具透视", "KitEsp")
 
+    C(Visual, "Section", { Title = "标签" })
+    Tog(Visual, "名字标签", "NameTag")
+    Tog(Visual, "显示血量", "NameTagHp")
+    Tog(Visual, "显示距离", "NameTagDist")
+
     C(Visual, "Section", { Title = "界面" })
     Tog(Visual, "屏幕血量", "HealthHud")
     Tog(Visual, "自定义准星", "Crosshair")
@@ -2845,6 +3022,10 @@ local OK, ERR = pcall(function()
     Tog(Auto, "自动珍珠", "AutoPearl")
 
     C(Auto, "Section", { Title = "世界" })
+    Tog(Auto, "自动搭桥", "Scaffold")
+    Sld(Auto, "搭桥长度", 1, 1, 6, "ScaffoldExpand")
+    Tog(Auto, "搭桥搭塔", "ScaffoldTower")
+    Tog(Auto, "斜向补齐", "ScaffoldDiag")
     Tog(Auto, "自动破坏", "Breaker")
     Sld(Auto, "破坏范围", 1, 1, 30, "BreakRange")
     Sld(Auto, "每轮上限", 1, 1, 20, "BreakMax")
@@ -3015,7 +3196,7 @@ local OK, ERR = pcall(function()
     C(Settings, "Button", {
         Title = "打印状态",
         Callback = function()
-            print("[DS] net", NM() ~= nil, "hit", R("SwordHit") ~= nil)
+            print("[DS] v" .. VER, "net", NM() ~= nil, "hit", R("SwordHit") ~= nil)
             print("[DS] targets", #Targets(), "hand", Hand() and Hand().Name or "nil")
             print("[DS] aura", Aura.sent, Aura.last, "rescue", Rescue.on)
         end,
