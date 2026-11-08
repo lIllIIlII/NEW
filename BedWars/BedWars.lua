@@ -5,6 +5,8 @@ local Workspace = game:GetService("Workspace")
 local CollectionService = game:GetService("CollectionService")
 local CoreGui = game:GetService("CoreGui")
 local UIS = game:GetService("UserInputService")
+local StarterGui = game:GetService("StarterGui")
+local Lighting = game:GetService("Lighting")
 local LP = Players.LocalPlayer
 local unpack = table.unpack or unpack
 
@@ -163,11 +165,38 @@ local CFG = {
     HealthHud = false,
     KitEsp = false,
 
+    Crosshair = false,
+    DamageNum = false,
+    ReachDisplay = false,
+    FOV = false,
+    FOVVal = 70,
+
     Aimbot = false,
     AimbotFov = 200,
     AimbotSmooth = 0.35,
     Silent = false,
     ProjAim = false,
+
+    AimAssist = false,
+    AssistSpeed = 6,
+    AssistAngle = 70,
+    AssistClick = true,
+    AssistStrafe = false,
+
+    AutoClick = false,
+    ClickCps = 8,
+    Trigger = false,
+    TriggerCps = 7,
+
+    HitBox = false,
+    HitBoxSize = 14.4,
+    Reach = false,
+    ReachVal = 18,
+
+    Velocity = false,
+    VelPct = 0,
+    Sprint = false,
+    KeepSprint = false,
 
     Aura = false,
     AuraRange = 13,
@@ -189,11 +218,37 @@ local CFG = {
     VoidDrop = false,
     AntiAfk = false,
 
+    Fly = false,
+    FlySpeed = 23,
+    FlyVert = 50,
+    FlyWall = true,
+    LongJump = false,
+    LJPower = 37,
+    NoFall = false,
+    NoFallMode = "Teleport",
+    NoSlow = false,
+
+    Breaker = false,
+    BreakRange = 20,
+    BreakMax = 8,
+
+    AutoBank = false,
+    ArmorSwitch = false,
+    FastConsume = false,
+    FastDrop = false,
+    AutoBalloon = false,
+    AutoPearl = false,
+
     Speed = false,
     SpeedVal = 32,
     AntiFall = false,
     AntiFallY = -18,
     Team = true,
+
+    FPSBoost = false,
+    UICleanup = false,
+    Viewmodel = false,
+    VMOffset = 0,
 
     Ticker = true,
     TickerTarget = true,
@@ -794,7 +849,7 @@ end
 
 local Chest = { cache = {} }
 
-local CHEST_TAGS = { "chest", "LuckyBlockDisplay", "VendingMachine", "CottonCandyMachine" }
+local CHEST_TAGS = { "chest", "LuckyBlockDisplay", "VendingMachine", "CottonCandyMachine", "personal-chest" }
 
 local function ChestTick()
     local dir = Dir("DS_CHEST")
@@ -976,7 +1031,7 @@ local function HudTick()
     end
 end
 
-local REACH = 14.399
+local REACH_BASE = 14.399
 
 local function Payload(t, w, cr)
     local c = Char()
@@ -994,7 +1049,11 @@ local function Payload(t, w, cr)
         return nil
     end
     local dir = d.Unit
-    local push = sp + dir * math.max(dist - REACH, 0)
+    local limit = REACH_BASE
+    if CFG.Reach then
+        limit = CFG.ReachVal + 2
+    end
+    local push = sp + dir * math.max(dist - limit, 0)
     return {
         weapon = w,
         entityInstance = m,
@@ -1186,6 +1245,179 @@ local function ProjAim()
     end)
 end
 
+local Assist = { last = 0 }
+
+local function AimAssist(dt)
+    if not CFG.AimAssist then
+        return
+    end
+    local h = Hand()
+    if not h or not IsSword(h.Name) then
+        return
+    end
+    if CFG.AssistClick then
+        if os.clock() - Assist.last > 0.4 then
+            return
+        end
+    end
+    local r = Root()
+    if not r then
+        return
+    end
+    local t = Best(30, CFG.AssistAngle)
+    if not t then
+        return
+    end
+    local cam = Cam()
+    local speed = CFG.AssistSpeed
+    if CFG.AssistStrafe and (UIS:IsKeyDown(Enum.KeyCode.A) or UIS:IsKeyDown(Enum.KeyCode.D)) then
+        speed = speed + 10
+    end
+    local goal = CFrame.lookAt(cam.CFrame.Position, t.part.Position)
+    pcall(function()
+        cam.CFrame = cam.CFrame:Lerp(goal, math.clamp(speed * dt, 0, 1))
+    end)
+end
+
+local function AutoClickTick()
+    if not CFG.AutoClick then
+        return
+    end
+    local r = Root()
+    local w = r and Sword()
+    if not (r and w) then
+        return
+    end
+    local t = Best(CFG.AuraRange, 360)
+    if not t then
+        return
+    end
+    local p = Payload(t, w, 0)
+    if p then
+        Call("SwordHit", p)
+        Assist.last = os.clock()
+    end
+    task.wait(1 / math.max(CFG.ClickCps, 1))
+end
+
+local function TriggerTick()
+    if not CFG.Trigger then
+        return
+    end
+    local r = Root()
+    local w = r and Sword()
+    local cam = Cam()
+    if not (r and w and cam) then
+        return
+    end
+    local params = RaycastParams.new()
+    params.FilterType = Enum.RaycastFilterType.Exclude
+    local c = Char()
+    params.FilterDescendantsInstances = c and { c } or {}
+    local origin = cam.CFrame.Position
+    local ray = Workspace:Raycast(origin, cam.CFrame.LookVector * 200, params)
+    if not ray then
+        return
+    end
+    local inst = ray.Instance
+    for _, t in ipairs(Targets()) do
+        if t.model and inst and inst:IsDescendantOf(t.model) then
+            local p = Payload(t, w, 0)
+            if p then
+                Call("SwordHit", p)
+                Assist.last = os.clock()
+            end
+            task.wait(1 / math.max(CFG.TriggerCps, 1))
+            return
+        end
+    end
+end
+
+local HB = { cache = {} }
+
+local function HitBoxTick()
+    if not CFG.HitBox then
+        for m, p in pairs(HB.cache) do
+            pcall(function()
+                p:Destroy()
+            end)
+        end
+        HB.cache = {}
+        return
+    end
+    for _, t in ipairs(Targets()) do
+        if t.kind == "player" and t.model.Parent and not HB.cache[t.model] then
+            local hrp = t.model:FindFirstChild("HumanoidRootPart")
+            if hrp then
+                local part = Instance.new("Part")
+                part.Name = "DS_HITBOX"
+                part.Size = Vector3.new(3, 6, 3) + Vector3.one * (CFG.HitBoxSize / 5)
+                part.Transparency = 1
+                part.CanCollide = false
+                part.CanQuery = true
+                part.Massless = true
+                part.Parent = t.model
+                local weld = Instance.new("Weld")
+                weld.Part0 = part
+                weld.Part1 = hrp
+                weld.Parent = part
+                HB.cache[t.model] = part
+            end
+        end
+    end
+    for m, p in pairs(HB.cache) do
+        if not m.Parent or not Alive(m) then
+            pcall(function()
+                p:Destroy()
+            end)
+            HB.cache[m] = nil
+        end
+    end
+end
+
+local Vel = { last = nil }
+
+local function VelocityTick()
+    if not CFG.Velocity then
+        Vel.last = nil
+        return
+    end
+    local r = Root()
+    if not r then
+        return
+    end
+    local now = r.AssemblyLinearVelocity
+    if Vel.last then
+        local dx = now.X - Vel.last.X
+        local dz = now.Z - Vel.last.Z
+        local mag = math.sqrt(dx * dx + dz * dz)
+        if mag > 14 then
+            local k = 1 - CFG.VelPct / 100
+            SetVel(r, Vector3.new(now.X - dx * k, now.Y, now.Z - dz * k))
+        end
+    end
+    Vel.last = r.AssemblyLinearVelocity
+end
+
+local SprintKeep = { on = false }
+
+local function SprintTick()
+    if not (CFG.Sprint or CFG.KeepSprint) then
+        SprintKeep.on = false
+        return
+    end
+    local h = Hum()
+    if not h then
+        return
+    end
+    if h.WalkSpeed < 20 then
+        pcall(function()
+            h.WalkSpeed = math.max(h.WalkSpeed, 20)
+        end)
+    end
+    SprintKeep.on = true
+end
+
 local function Drops()
     return Workspace:FindFirstChild("ItemDrops")
 end
@@ -1266,10 +1498,10 @@ local function SlotOf(o)
     end
 end
 
-local function Armor()
+local function BestArmor()
     local inv = Inv()
     if not inv then
-        return
+        return {}
     end
     local best = {}
     for _, o in ipairs(inv:GetChildren()) do
@@ -1283,6 +1515,11 @@ local function Armor()
             end
         end
     end
+    return best
+end
+
+local function Armor()
+    local best = BestArmor()
     for s = 0, 2 do
         if best[s] then
             Call("SetArmorInvItem", { item = best[s].tool, armorSlot = s })
@@ -1352,7 +1589,7 @@ local function Consume()
                 local isHeal = string.find(n, "apple", 1, true) ~= nil
                 if (isHeal and wantHeal) or (not isHeal) then
                     Call("ConsumeItem", { item = o })
-                    task.wait(0.15)
+                    task.wait(CFG.FastConsume and 0.05 or 0.15)
                     return
                 end
             end
@@ -1415,6 +1652,33 @@ local function Speed(v)
     if h then
         pcall(function()
             h.WalkSpeed = v
+        end)
+    end
+end
+
+local SpeedWall = true
+
+local function SpeedTick()
+    local h = Hum()
+    local r = Root()
+    if not h or not r then
+        return
+    end
+    pcall(function()
+        h.WalkSpeed = CFG.SpeedVal
+    end)
+    local dir = h.MoveDirection
+    if dir.Magnitude < 0.01 then
+        return
+    end
+    local params = RaycastParams.new()
+    params.FilterType = Enum.RaycastFilterType.Exclude
+    local c = Char()
+    params.FilterDescendantsInstances = c and { c, Cam() } or { Cam() }
+    local ray = Workspace:Raycast(r.Position, dir * 2.5, params)
+    if ray then
+        pcall(function()
+            h.WalkSpeed = 16
         end)
     end
 end
@@ -1538,6 +1802,508 @@ local function AntiFallTick()
     RescueStep()
 end
 
+local function FlyTick()
+    if not CFG.Fly then
+        return
+    end
+    local r = Root()
+    local h = Hum()
+    if not r or not h then
+        return
+    end
+    local dir = h.MoveDirection
+    local hv = dir * CFG.FlySpeed
+    if CFG.FlyWall then
+        local params = RaycastParams.new()
+        params.FilterType = Enum.RaycastFilterType.Exclude
+        local c = Char()
+        params.FilterDescendantsInstances = c and { c, Cam() } or { Cam() }
+        local ray = Workspace:Raycast(r.Position, hv * 0.1, params)
+        if ray then
+            hv = (ray.Position + ray.Normal - r.Position)
+        end
+    end
+    local up = 0
+    if UIS:IsKeyDown(Enum.KeyCode.Space) then
+        up = CFG.FlyVert
+    elseif UIS:IsKeyDown(Enum.KeyCode.LeftShift) then
+        up = -CFG.FlyVert
+    end
+    SetVel(r, Vector3.new(hv.X, up, hv.Z))
+end
+
+local LJ = { until_ = 0, dir = Vector3.zero }
+
+local function LongJumpTick()
+    if not CFG.LongJump then
+        LJ.until_ = 0
+        return
+    end
+    local r = Root()
+    local h = Hum()
+    if not r or not h then
+        return
+    end
+    if h:GetState() == Enum.HumanoidStateType.Jumping and LJ.until_ < os.clock() then
+        LJ.until_ = os.clock() + 0.5
+        LJ.dir = Vector3.new(r.CFrame.LookVector.X, 0, r.CFrame.LookVector.Z).Unit
+    end
+    if LJ.until_ > os.clock() then
+        SetVel(r, Vector3.new(LJ.dir.X * CFG.LJPower, r.AssemblyLinearVelocity.Y, LJ.dir.Z * CFG.LJPower))
+    end
+end
+
+local function NoFallTick()
+    if not CFG.NoFall then
+        return
+    end
+    local r = Root()
+    local h = Hum()
+    if not r or not h then
+        return
+    end
+    local vy = r.AssemblyLinearVelocity.Y
+    if vy > -60 then
+        return
+    end
+    if CFG.NoFallMode == "Teleport" then
+        local params = RaycastParams.new()
+        params.FilterType = Enum.RaycastFilterType.Exclude
+        local c = Char()
+        params.FilterDescendantsInstances = c and { c, Cam() } or { Cam() }
+        local ray = Workspace:Raycast(r.Position, Vector3.new(0, -1000, 0), params)
+        if ray then
+            local hip = h.HipHeight or 0
+            pcall(function()
+                r.CFrame = CFrame.new(Vector3.new(r.Position.X, ray.Position.Y + hip + 2, r.Position.Z))
+            end)
+        end
+    else
+        SetVel(r, Vector3.new(r.AssemblyLinearVelocity.X, -78, r.AssemblyLinearVelocity.Z))
+    end
+end
+
+local function NoSlowTick()
+    if not CFG.NoSlow then
+        return
+    end
+    local h = Hum()
+    if not h then
+        return
+    end
+    if h.WalkSpeed < 16 then
+        pcall(function()
+            h.WalkSpeed = 16
+        end)
+    end
+end
+
+local BLOCK_SIZE = 3
+
+local function BlockPos(pos)
+    return Vector3.new(
+        math.floor(pos.X / BLOCK_SIZE + 0.5),
+        math.floor(pos.Y / BLOCK_SIZE + 0.5),
+        math.floor(pos.Z / BLOCK_SIZE + 0.5)
+    )
+end
+
+local BREAK_TAGS = { "block", "bed", "LuckyBlock", "iron-ore" }
+
+local function BreakerTick()
+    if not CFG.Breaker then
+        return
+    end
+    local r = Root()
+    if not r then
+        return
+    end
+    local org = r.Position
+    local n = 0
+    pcall(function()
+        for _, tag in ipairs(BREAK_TAGS) do
+            for _, b in ipairs(CollectionService:GetTagged(tag)) do
+                if n >= CFG.BreakMax then
+                    return
+                end
+                local p = PartOf(b)
+                if p and p.Parent and (p.Position - org).Magnitude <= CFG.BreakRange then
+                    if b:GetAttribute("NoBreak") ~= true then
+                        Call("DamageBlock", {
+                            blockRef = { blockPosition = BlockPos(p.Position) },
+                            hitPosition = p.Position,
+                            hitNormal = Vector3.FromNormalId(Enum.NormalId.Top),
+                        })
+                        n = n + 1
+                    end
+                end
+            end
+        end
+    end)
+end
+
+local function AutoBankTick()
+    if not CFG.AutoBank then
+        return
+    end
+    local c = Char()
+    if not c then
+        return
+    end
+    local folder = c:FindFirstChild("ObservedChestFolder")
+    if not folder or not folder:IsA("ObjectValue") then
+        return
+    end
+    local chest = folder.Value
+    if not chest then
+        return
+    end
+    local inv = Inv()
+    if not inv then
+        return
+    end
+    local n = 0
+    for _, o in ipairs(inv:GetChildren()) do
+        if o:IsA("Tool") or o:IsA("Accessory") then
+            local nm = string.lower(o.Name)
+            if nm == "iron" or nm == "gold" or nm == "diamond" or nm == "emerald"
+                or string.find(nm, "void_crystal", 1, true) then
+                Call("Inventory/ChestGiveItem", chest, o)
+                n = n + 1
+                if n >= 6 then
+                    return
+                end
+                task.wait(0.05)
+            end
+        end
+    end
+end
+
+local ArmorSw = { off = false }
+
+local function ArmorSwitchTick()
+    if not CFG.ArmorSwitch then
+        return
+    end
+    local c = Char()
+    if not c then
+        return
+    end
+    if not ArmorSw.off then
+        for s = 0, 2 do
+            Call("SetArmorInvItem", { item = nil, armorSlot = s })
+            task.wait(0.05)
+        end
+        ArmorSw.off = true
+    end
+end
+
+local function FastDropTick()
+    if not CFG.FastDrop then
+        return
+    end
+    if not UIS:IsKeyDown(Enum.KeyCode.Q) then
+        return
+    end
+    local h = Hand()
+    if h then
+        Call("DropItem", { item = h })
+    end
+end
+
+local function AutoBalloonTick()
+    if not CFG.AutoBalloon then
+        return
+    end
+    local c = Char()
+    if not c or not c.PrimaryPart then
+        return
+    end
+    if c.PrimaryPart.Position.Y > -40 then
+        return
+    end
+    local n = c:GetAttribute("InflatedBalloons") or 0
+    if n >= 3 then
+        return
+    end
+    local inv = Inv()
+    if not inv then
+        return
+    end
+    for _, o in ipairs(inv:GetChildren()) do
+        if o:IsA("Tool") and string.find(string.lower(o.Name), "balloon", 1, true) then
+            pcall(function()
+                o:Activate()
+            end)
+            return
+        end
+    end
+end
+
+local function AutoPearlTick()
+    if not CFG.AutoPearl then
+        return
+    end
+    local c = Char()
+    if not c or not c.PrimaryPart then
+        return
+    end
+    if c.PrimaryPart.Position.Y > -30 then
+        return
+    end
+    local inv = Inv()
+    if not inv then
+        return
+    end
+    for _, o in ipairs(inv:GetChildren()) do
+        if o:IsA("Tool") and string.find(string.lower(o.Name), "pearl", 1, true) then
+            Equip(o)
+            task.wait(0.05)
+            pcall(function()
+                o:Activate()
+            end)
+            return
+        end
+    end
+end
+
+local Cross = {}
+
+local function CrosshairTick()
+    if not CFG.Crosshair then
+        if Cross.gui then
+            Cross.gui.Enabled = false
+        end
+        return
+    end
+    if not Cross.gui then
+        local sg = Instance.new("ScreenGui")
+        sg.Name = "DS_CROSS"
+        sg.ResetOnSpawn = false
+        sg.IgnoreGuiInset = true
+        pcall(function()
+            sg.Parent = CoreGui
+        end)
+        if not sg.Parent then
+            sg.Parent = LP:FindFirstChildOfClass("PlayerGui") or LP
+        end
+        Cross.gui = sg
+        local function line(w, h)
+            local f = Instance.new("Frame")
+            f.AnchorPoint = Vector2.new(0.5, 0.5)
+            f.Position = UDim2.fromScale(0.5, 0.5)
+            f.Size = UDim2.fromOffset(w, h)
+            f.BackgroundColor3 = Color3.fromRGB(0, 255, 140)
+            f.BorderSizePixel = 0
+            f.Parent = sg
+            return f
+        end
+        Cross.h = line(12, 2)
+        Cross.v = line(2, 12)
+    end
+    Cross.gui.Enabled = true
+end
+
+local DmgNum = { cache = {}, gui = nil, list = {} }
+
+local function DmgGui()
+    if DmgNum.gui and DmgNum.gui.Parent then
+        return DmgNum.gui
+    end
+    local sg = Instance.new("ScreenGui")
+    sg.Name = "DS_DMG"
+    sg.ResetOnSpawn = false
+    sg.IgnoreGuiInset = true
+    pcall(function()
+        sg.Parent = CoreGui
+    end)
+    if not sg.Parent then
+        sg.Parent = LP:FindFirstChildOfClass("PlayerGui") or LP
+    end
+    DmgNum.gui = sg
+    return sg
+end
+
+local function PopDmg(m, old, new)
+    local cam = Cam()
+    local p = PartOf(m)
+    if not (cam and p) then
+        return
+    end
+    local pos = p.Position + Vector3.new(0, 3, 0)
+    local sp, on = cam:WorldToViewportPoint(pos)
+    if not on then
+        return
+    end
+    local gui = DmgGui()
+    local t = Instance.new("TextLabel")
+    t.BackgroundTransparency = 1
+    t.Font = Enum.Font.Arcade
+    t.TextSize = 18
+    t.TextColor3 = Color3.fromRGB(255, 80, 80)
+    t.TextStrokeTransparency = 0
+    t.TextStrokeColor3 = Color3.new(0, 0, 0)
+    t.Size = UDim2.fromOffset(80, 20)
+    t.Position = UDim2.fromOffset(sp.X - 40, sp.Y)
+    t.Text = string.format("-%d", math.floor(old - new))
+    t.Parent = gui
+    local tw = game:GetService("TweenService"):Create(
+        t,
+        TweenInfo.new(0.7, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+        { Position = t.Position - UDim2.fromOffset(0, 40), TextTransparency = 1, TextStrokeTransparency = 1 }
+    )
+    tw:Play()
+    tw.Completed:Connect(function()
+        t:Destroy()
+    end)
+end
+
+local function DamageNumTick()
+    if not CFG.DamageNum then
+        for m, v in pairs(DmgNum.cache) do
+            if v.conn then
+                pcall(function()
+                    v.conn:Disconnect()
+                end)
+            end
+        end
+        DmgNum.cache = {}
+        return
+    end
+    for _, t in ipairs(Targets()) do
+        if t.model.Parent and not DmgNum.cache[t.model] then
+            local entry = {}
+            entry.last = t.model:GetAttribute("Health") or 100
+            entry.conn = t.model:GetAttributeChangedSignal("Health"):Connect(function()
+                local nv = t.model:GetAttribute("Health") or 0
+                if nv < entry.last then
+                    pcall(PopDmg, t.model, entry.last, nv)
+                end
+                entry.last = nv
+            end)
+            DmgNum.cache[t.model] = entry
+        end
+    end
+    for m, v in pairs(DmgNum.cache) do
+        if not m.Parent then
+            if v.conn then
+                pcall(function()
+                    v.conn:Disconnect()
+                end)
+            end
+            DmgNum.cache[m] = nil
+        end
+    end
+end
+
+local ReachHud = { label = nil }
+
+local function ReachTick()
+    if not CFG.ReachDisplay then
+        if ReachHud.label then
+            ReachHud.label.Visible = false
+        end
+        return
+    end
+    if not ReachHud.label then
+        local sg = Instance.new("ScreenGui")
+        sg.Name = "DS_REACH"
+        sg.ResetOnSpawn = false
+        pcall(function()
+            sg.Parent = CoreGui
+        end)
+        if not sg.Parent then
+            sg.Parent = LP:FindFirstChildOfClass("PlayerGui") or LP
+        end
+        local t = Txt(sg, UDim2.fromOffset(200, 22), Color3.fromRGB(120, 235, 255), 14)
+        t.AnchorPoint = Vector2.new(0.5, 1)
+        t.Position = UDim2.new(0.5, 0, 0.94, 0)
+        ReachHud.label = t
+    end
+    local limit = CFG.Reach and (CFG.ReachVal + 2) or 14.4
+    ReachHud.label.Text = string.format("攻击距离 %.1f 格", limit)
+    ReachHud.label.Visible = true
+end
+
+local function FovTick()
+    local cam = Cam()
+    if not cam then
+        return
+    end
+    if CFG.FOV then
+        cam.FieldOfView = CFG.FOVVal
+    elseif cam.FieldOfView ~= 70 then
+        cam.FieldOfView = 70
+    end
+end
+
+local FPS = { saved = {}, on = false }
+
+local function FPSBoostTick()
+    if CFG.FPSBoost then
+        if FPS.on then
+            return
+        end
+        FPS.on = true
+        for _, o in ipairs(Lighting:GetDescendants()) do
+            if o:IsA("PostEffect") or o:IsA("Atmosphere") or o:IsA("Sky") then
+                FPS.saved[o] = o.Enabled
+                pcall(function()
+                    o.Enabled = false
+                end)
+            end
+        end
+    elseif FPS.on then
+        FPS.on = false
+        for o, v in pairs(FPS.saved) do
+            if o and o.Parent then
+                pcall(function()
+                    o.Enabled = v
+                end)
+            end
+        end
+        FPS.saved = {}
+    end
+end
+
+local UIClean = { on = false }
+
+local function UICleanupTick()
+    if CFG.UICleanup then
+        if UIClean.on then
+            return
+        end
+        UIClean.on = true
+        pcall(function()
+            StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.PlayerList, false)
+            StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.Backpack, false)
+        end)
+    elseif UIClean.on then
+        UIClean.on = false
+        pcall(function()
+            StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.PlayerList, true)
+            StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.Backpack, true)
+        end)
+    end
+end
+
+local VM = { base = nil }
+
+local function ViewmodelTick()
+    local cam = Cam()
+    if not cam then
+        return
+    end
+    if CFG.Viewmodel then
+        if not VM.base then
+            VM.base = cam.CFrame
+        end
+        pcall(function()
+            cam.CFrame = cam.CFrame * CFrame.new(0, CFG.VMOffset / 100, 0)
+        end)
+    end
+end
+
 local MILESTONE = {
     "GoldLuckyCrate", "OwlKit", "TaliyahKit", "FreeKitSlot",
     "DiamondLuckyCrate_0", "DiamondLuckyCrate_1", "HeroTitle",
@@ -1623,15 +2389,27 @@ local TORDER = {
     { "Aura", "杀戮光环" },
     { "Silent", "静默瞄准" },
     { "Aimbot", "视角自瞄" },
+    { "AimAssist", "平滑自瞄" },
     { "ProjAim", "弹道自瞄" },
+    { "AutoClick", "自动点击" },
+    { "Trigger", "触发挥剑" },
+    { "HitBox", "扩大命中框" },
+    { "Reach", "攻击距离" },
+    { "Velocity", "减少击退" },
+    { "Sprint", "强制冲刺" },
+    { "KeepSprint", "保持冲刺" },
     { "EspPlayer", "ESP 玩家" },
-    { "EspNpc", "ESP NPC" },
+    { "EspNpc", "ESP 怪物" },
     { "EspDummy", "ESP 训练场人机" },
     { "BedEsp", "床透视" },
     { "BedPlate", "床顶浮字" },
     { "StorageEsp", "容器透视" },
     { "KitEsp", "道具透视" },
     { "HealthHud", "屏幕血量" },
+    { "Crosshair", "自定义准星" },
+    { "DamageNum", "伤害数字" },
+    { "ReachDisplay", "距离显示" },
+    { "FOV", "视野调整" },
     { "Pickup", "自动拾取" },
     { "Gen", "自动生成器" },
     { "Armor", "自动护甲" },
@@ -1640,10 +2418,24 @@ local TORDER = {
     { "Consume", "自动吃药" },
     { "ChestSteal", "自动开箱" },
     { "VoidDrop", "掉落丢弃" },
+    { "AutoBank", "自动存箱" },
+    { "ArmorSwitch", "护甲切换" },
+    { "FastConsume", "快速消耗" },
+    { "FastDrop", "快速丢弃" },
+    { "AutoBalloon", "自动充气球" },
+    { "AutoPearl", "自动珍珠" },
+    { "Fly", "飞行" },
+    { "LongJump", "远跳" },
+    { "NoFall", "无摔落伤害" },
+    { "NoSlow", "免疫减速" },
+    { "Breaker", "自动破坏" },
     { "AntiAfk", "防踢" },
     { "Claim", "自动领奖" },
     { "Speed", "加速" },
     { "AntiFall", "防掉落" },
+    { "FPSBoost", "帧率优化" },
+    { "UICleanup", "界面清理" },
+    { "Viewmodel", "视角模型" },
 }
 
 local TLast = ""
@@ -1685,21 +2477,35 @@ local Tasks = {
     { 0.30, ChestTick },
     { 0.50, KitTick },
     { 0.10, HudTick },
+    { 0.10, CrosshairTick },
+    { 0.30, DamageNumTick },
+    { 0.20, ReachTick },
+    { 0.30, FovTick },
     { 0.03, Aimbot },
     { 0.06, SilentTick },
     { 0.04, ProjAim },
+    { 0.05, HitBoxTick },
+    { 0.05, VelocityTick },
+    { 0.20, SprintTick },
     { 0.40, Pickup, "Pickup" },
     { 2.00, Gen, "Gen" },
     { 1.00, Armor, "Armor" },
     { 3.00, Shop, "Shop" },
     { 0.50, AutoTool, "Tool" },
     { 0.50, Consume, "Consume" },
-    { 0.25, ChestSteal, "自动开箱" },
+    { 0.25, ChestSteal, "ChestSteal" },
     { 0.50, VoidDrop, "VoidDrop" },
+    { 0.30, AutoBankTick, "AutoBank" },
+    { 1.00, ArmorSwitchTick, "ArmorSwitch" },
+    { 0.10, FastDropTick, "FastDrop" },
+    { 0.50, AutoBalloonTick, "AutoBalloon" },
+    { 0.50, AutoPearlTick, "AutoPearl" },
+    { 0.40, BreakerTick, "Breaker" },
     { 5.00, AntiAfk, "AntiAfk" },
-    { 0.10, function()
-        Speed(CFG.SpeedVal)
-    end, "Speed" },
+    { 0.10, NoSlowTick, "NoSlow" },
+    { 0.10, SpeedTick, "Speed" },
+    { 1.00, FPSBoostTick, "FPSBoost" },
+    { 1.00, UICleanupTick, "UICleanup" },
 }
 
 local Acc = {}
@@ -1741,6 +2547,11 @@ pcall(function()
         Wipe(Bed.plate)
         Wipe(Chest.cache)
         Wipe(Kit.cache)
+        for m, p in pairs(HB.cache) do
+            pcall(function()
+                p:Destroy()
+            end)
+        end
         pcall(Speed, 16)
     end)
 end)
@@ -1748,6 +2559,42 @@ end)
 HookSilent()
 HitRemote = R("SwordHit")
 AuraLoop()
+
+task.spawn(function()
+    while true do
+        if CFG.AimAssist then
+            pcall(AimAssist, 1 / 60)
+        end
+        task.wait(1 / 60)
+    end
+end)
+
+task.spawn(function()
+    while true do
+        if CFG.AutoClick then
+            pcall(AutoClickTick)
+        else
+            task.wait(0.1)
+        end
+    end
+end)
+
+task.spawn(function()
+    while true do
+        if CFG.Trigger then
+            pcall(TriggerTick)
+        else
+            task.wait(0.1)
+        end
+    end
+end)
+
+RunService.PreSimulation:Connect(function()
+    pcall(AntiFallTick)
+    pcall(FlyTick)
+    pcall(LongJumpTick)
+    pcall(NoFallTick)
+end)
 
 local Drag = nil
 
@@ -1894,6 +2741,19 @@ local OK, ERR = pcall(function()
         return Bind(s)
     end
 
+    local function Drop(parent, title, list, key)
+        return C(parent, "Dropdown", {
+            Title = title,
+            Values = list,
+            Value = CFG[key],
+            SearchBarEnabled = false,
+            Callback = function(v)
+                local n = type(v) == "table" and v[1] or v
+                CFG[key] = n
+            end,
+        })
+    end
+
     pcall(function()
         Win:Tag({ Title = "", Icon = "ds:lockup", Height = 30, IconWidth = 126, IconHeight = 21 })
     end)
@@ -1901,6 +2761,7 @@ local OK, ERR = pcall(function()
     local Combat = Win:Tab({ Title = "战斗", Icon = "lucide:swords" })
     local Visual = Win:Tab({ Title = "视觉", Icon = "lucide:eye" })
     local Auto = Win:Tab({ Title = "自动", Icon = "lucide:bot" })
+    local Move = Win:Tab({ Title = "移动", Icon = "lucide:move" })
     local Reward = Win:Tab({ Title = "奖励", Icon = "lucide:gift" })
     local Settings = Win:Tab({ Title = "设置", Icon = "lucide:settings" })
 
@@ -1913,11 +2774,30 @@ local OK, ERR = pcall(function()
     Tog(Combat, "自动转向", "AuraFace")
 
     C(Combat, "Section", { Title = "瞄准" })
+    Tog(Combat, "平滑自瞄", "AimAssist")
+    Sld(Combat, "自瞄速度", 1, 1, 20, "AssistSpeed")
+    Sld(Combat, "自瞄角度", 5, 1, 360, "AssistAngle")
+    Tog(Combat, "仅点击时", "AssistClick")
+    Tog(Combat, "横移加速", "AssistStrafe")
     Tog(Combat, "静默瞄准", "Silent")
     Tog(Combat, "视角自瞄", "Aimbot")
     Tog(Combat, "弹道自瞄", "ProjAim")
-    Sld(Combat, "自瞄 FOV", 5, 20, 360, "AimbotFov")
+    Sld(Combat, "自瞄视野", 5, 20, 360, "AimbotFov")
     Sld(Combat, "平滑度", 0.05, 0, 0.9, "AimbotSmooth")
+
+    C(Combat, "Section", { Title = "辅助" })
+    Tog(Combat, "自动点击", "AutoClick")
+    Sld(Combat, "点击 CPS", 1, 1, 20, "ClickCps")
+    Tog(Combat, "触发挥剑", "Trigger")
+    Sld(Combat, "触发 CPS", 1, 1, 20, "TriggerCps")
+    Tog(Combat, "扩大命中框", "HitBox")
+    Sld(Combat, "命中框大小", 0.5, 0, 14.4, "HitBoxSize")
+    Tog(Combat, "攻击距离", "Reach")
+    Sld(Combat, "距离值", 0.5, 0, 18, "ReachVal")
+    Tog(Combat, "减少击退", "Velocity")
+    Sld(Combat, "削减比例", 5, 0, 100, "VelPct")
+    Tog(Combat, "强制冲刺", "Sprint")
+    Tog(Combat, "保持冲刺", "KeepSprint")
     Tog(Combat, "队伍检测", "Team")
 
     Group = "Visual"
@@ -1934,7 +2814,14 @@ local OK, ERR = pcall(function()
     Tog(Visual, "床顶浮字", "BedPlate")
     Tog(Visual, "容器透视", "StorageEsp")
     Tog(Visual, "道具透视", "KitEsp")
+
+    C(Visual, "Section", { Title = "界面" })
     Tog(Visual, "屏幕血量", "HealthHud")
+    Tog(Visual, "自定义准星", "Crosshair")
+    Tog(Visual, "伤害数字", "DamageNum")
+    Tog(Visual, "距离显示", "ReachDisplay")
+    Tog(Visual, "视野调整", "FOV")
+    Sld(Visual, "视野值", 1, 40, 120, "FOVVal")
 
     Group = "Auto"
     C(Auto, "Section", { Title = "资源" })
@@ -1949,20 +2836,45 @@ local OK, ERR = pcall(function()
     Tog(Auto, "自动吃药", "Consume")
     Sld(Auto, "吃药血量", 1, 1, 99, "ConsumeHp")
     Tog(Auto, "自动开箱", "ChestSteal")
+    Tog(Auto, "自动存箱", "AutoBank")
+    Tog(Auto, "护甲切换", "ArmorSwitch")
+    Tog(Auto, "快速消耗", "FastConsume")
+    Tog(Auto, "快速丢弃", "FastDrop")
     Tog(Auto, "掉落丢弃", "VoidDrop")
+    Tog(Auto, "自动充气球", "AutoBalloon")
+    Tog(Auto, "自动珍珠", "AutoPearl")
 
-    C(Auto, "Section", { Title = "移动" })
-    Tog(Auto, "加速", "Speed", function(v)
+    C(Auto, "Section", { Title = "世界" })
+    Tog(Auto, "自动破坏", "Breaker")
+    Sld(Auto, "破坏范围", 1, 1, 30, "BreakRange")
+    Sld(Auto, "每轮上限", 1, 1, 20, "BreakMax")
+    Tog(Auto, "防踢", "AntiAfk")
+
+    Group = "Move"
+    C(Move, "Section", { Title = "移动" })
+    Tog(Move, "加速", "Speed", function(v)
         CFG.Speed = v
         if not v then
             pcall(Speed, 16)
         end
         TickerSync()
     end)
-    Sld(Auto, "速度值", 2, 16, 200, "SpeedVal")
-    Tog(Auto, "防掉落", "AntiFall")
-    Sld(Auto, "坠落阈值", 1, -80, 0, "AntiFallY")
-    Tog(Auto, "防踢", "AntiAfk")
+    Sld(Move, "速度值", 2, 16, 200, "SpeedVal")
+    Tog(Move, "防掉落", "AntiFall")
+    Sld(Move, "坠落阈值", 1, -80, 0, "AntiFallY")
+    Tog(Move, "免疫减速", "NoSlow")
+
+    C(Move, "Section", { Title = "飞行" })
+    Tog(Move, "飞行", "Fly")
+    Sld(Move, "飞行速度", 1, 1, 60, "FlySpeed")
+    Sld(Move, "垂直速度", 5, 1, 150, "FlyVert")
+    Tog(Move, "墙体检测", "FlyWall")
+    Tog(Move, "远跳", "LongJump")
+    Sld(Move, "远跳力度", 1, 1, 60, "LJPower")
+
+    C(Move, "Section", { Title = "防护" })
+    Tog(Move, "无摔落伤害", "NoFall")
+    Drop(Move, "模式", { "Teleport", "Gravity" }, "NoFallMode")
 
     Group = "Reward"
     C(Reward, "Section", { Title = "领取" })
@@ -2070,6 +2982,12 @@ local OK, ERR = pcall(function()
         end
     end)
 
+    C(Settings, "Section", { Title = "优化" })
+    Tog(Settings, "帧率优化", "FPSBoost")
+    Tog(Settings, "界面清理", "UICleanup")
+    Tog(Settings, "视角模型", "Viewmodel")
+    Sld(Settings, "模型偏移", 1, 0, 100, "VMOffset")
+
     C(Settings, "Section", { Title = "声音" })
     C(Settings, "Toggle", {
         Title = "欢迎音效",
@@ -2127,8 +3045,4 @@ RunService.Heartbeat:Connect(function()
         return
     end
     pcall(Loop, dt)
-end)
-
-RunService.PreSimulation:Connect(function()
-    pcall(AntiFallTick)
 end)
